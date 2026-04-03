@@ -1,0 +1,1060 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <meta name="theme-color" content="#06060e"/>
+  <meta name="mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+  <meta name="apple-mobile-web-app-title" content="RecPro"/>
+  <title>RecPro — ক্যামেরা রেকর্ডার</title>
+  <link rel="manifest" href="manifest.json"/>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Noto+Sans+Bengali:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg: #06060e;
+      --sf: #0d0d1c;
+      --sf2: #141428;
+      --sf3: #1a1a32;
+      --bd: #1f1f3a;
+      --bd2: #282845;
+      --ac: #7c6dfa;
+      --ac2: #5b8df5;
+      --red: #f53b5b;
+      --red2: #ff6b35;
+      --grn: #2bffb0;
+      --warn: #ffa53b;
+      --cam: #3bbfff;
+      --tx: #eaeaf5;
+      --txd: #6868a0;
+      --txm: #363658;
+      --fm: 'Space Mono', monospace;
+      --fu: 'Noto Sans Bengali', sans-serif;
+      --r: 18px;
+      --rs: 12px;
+    }
+
+    * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+    html, body { height:100%; overflow:hidden; background:var(--bg); color:var(--tx); font-family:var(--fu); -webkit-font-smoothing:antialiased; }
+
+    #app { display:flex; flex-direction:column; height:100dvh; max-width:430px; margin:0 auto; overflow:hidden; }
+
+    /* ── HEADER ── */
+    .hdr {
+      display:flex; align-items:center; justify-content:space-between;
+      padding:13px 18px 12px;
+      border-bottom:1px solid var(--bd);
+      background:rgba(6,6,14,.97);
+      backdrop-filter:blur(24px);
+      flex-shrink:0; z-index:20;
+    }
+    .logo { display:flex; align-items:center; gap:10px; }
+    .logo-ico {
+      width:35px; height:35px;
+      background:linear-gradient(135deg,var(--ac),var(--ac2));
+      border-radius:10px;
+      display:flex; align-items:center; justify-content:center;
+      font-size:17px;
+      box-shadow:0 0 20px rgba(124,109,250,.45);
+    }
+    .logo-tx { font-family:var(--fm); font-size:15px; font-weight:700; letter-spacing:2px; color:var(--tx); }
+    .logo-tx span { color:var(--ac); }
+    .hdr-right { display:flex; align-items:center; gap:8px; }
+    .sdot { width:8px; height:8px; border-radius:50%; background:var(--txm); transition:all .3s; }
+    .sdot.ready { background:var(--grn); box-shadow:0 0 8px var(--grn); }
+    .sdot.rec { background:var(--red); box-shadow:0 0 10px var(--red); animation:pd 1s infinite; }
+    .sdot.paused { background:var(--warn); box-shadow:0 0 8px var(--warn); }
+    @keyframes pd { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.4;transform:scale(.65)} }
+    .stx { font-family:var(--fm); font-size:10px; color:var(--txd); letter-spacing:1px; }
+
+    /* ── TABS ── */
+    .tabs { display:flex; border-bottom:1px solid var(--bd); flex-shrink:0; background:var(--bg); }
+    .tab { flex:1; padding:11px 4px; font-size:12px; font-weight:600; color:var(--txd); background:none; border:none; cursor:pointer; border-bottom:2px solid transparent; transition:all .2s; font-family:var(--fu); }
+    .tab.on { color:var(--ac); border-bottom-color:var(--ac); }
+
+    /* ── CONTENT ── */
+    .ct { flex:1; overflow-y:auto; -webkit-overflow-scrolling:touch; scrollbar-width:none; }
+    .ct::-webkit-scrollbar { display:none; }
+    .pg { display:none; }
+    .pg.on { display:block; }
+
+    /* ══════════════════════════════════
+       CAMERA PAGE
+    ══════════════════════════════════ */
+    #pg-cam { padding:0; }
+
+    /* Fullscreen-style preview */
+    .cam-view {
+      width:100%; aspect-ratio:9/16;
+      background:#000;
+      position:relative;
+      overflow:hidden;
+    }
+    /* portrait crop for phone recording */
+    @media (min-aspect-ratio: 9/14) {
+      .cam-view { aspect-ratio:16/9; }
+    }
+    #preview {
+      width:100%; height:100%;
+      object-fit:cover;
+      background:#000;
+      transform:scaleX(1);
+      transition:transform .3s;
+    }
+    #preview.mirror { transform:scaleX(-1); }
+
+    /* Overlay HUD */
+    .hud {
+      position:absolute; inset:0;
+      pointer-events:none;
+    }
+    /* Recording border glow */
+    .hud::before {
+      content:'';
+      position:absolute; inset:0;
+      border:3px solid transparent;
+      border-radius:0;
+      transition:border-color .3s, box-shadow .3s;
+    }
+    .hud.recording::before {
+      border-color:var(--red);
+      box-shadow:inset 0 0 30px rgba(245,59,91,.25);
+      animation:borderpulse 2s infinite;
+    }
+    @keyframes borderpulse {
+      0%,100%{box-shadow:inset 0 0 20px rgba(245,59,91,.2)}
+      50%{box-shadow:inset 0 0 45px rgba(245,59,91,.4)}
+    }
+    .hud.paused::before { border-color:var(--warn); box-shadow:inset 0 0 20px rgba(255,165,59,.2); }
+
+    /* Top HUD bar */
+    .hud-top {
+      position:absolute; top:0; left:0; right:0;
+      display:flex; align-items:center; justify-content:space-between;
+      padding:14px 14px 0;
+      pointer-events:all;
+    }
+    .rec-badge {
+      display:flex; align-items:center; gap:6px;
+      background:rgba(6,6,14,.75);
+      border:1px solid rgba(245,59,91,.3);
+      backdrop-filter:blur(10px);
+      border-radius:20px;
+      padding:5px 12px;
+      opacity:0; transition:opacity .3s;
+    }
+    .rec-badge.visible { opacity:1; }
+    .rec-dot { width:7px; height:7px; border-radius:50%; background:var(--red); animation:pd 1s infinite; }
+    .rec-txt { font-family:var(--fm); font-size:11px; color:var(--red); letter-spacing:1px; }
+    .timer-hud { font-family:var(--fm); font-size:22px; font-weight:700; color:#fff; text-shadow:0 2px 10px rgba(0,0,0,.8); letter-spacing:2px; opacity:0; transition:opacity .3s; }
+    .timer-hud.visible { opacity:1; }
+    .pause-badge {
+      background:rgba(255,165,59,.15); border:1px solid rgba(255,165,59,.3);
+      border-radius:20px; padding:5px 12px;
+      font-family:var(--fm); font-size:11px; color:var(--warn);
+      letter-spacing:1px; opacity:0; transition:opacity .3s;
+    }
+    .pause-badge.visible { opacity:1; }
+
+    /* Top right controls */
+    .hud-tr {
+      display:flex; flex-direction:column; gap:8px; align-items:flex-end;
+      position:absolute; top:14px; right:14px;
+      pointer-events:all;
+    }
+    .hud-btn {
+      width:40px; height:40px;
+      background:rgba(6,6,14,.7);
+      border:1px solid rgba(255,255,255,.1);
+      border-radius:50%;
+      display:flex; align-items:center; justify-content:center;
+      font-size:18px; cursor:pointer;
+      backdrop-filter:blur(10px);
+      transition:all .2s;
+    }
+    .hud-btn:active { transform:scale(.88); opacity:.7; }
+
+    /* Bottom HUD controls */
+    .hud-bottom {
+      position:absolute; bottom:0; left:0; right:0;
+      padding:16px 20px 20px;
+      background:linear-gradient(to top, rgba(6,6,14,.9) 0%, transparent 100%);
+      pointer-events:all;
+    }
+
+    /* Info row */
+    .info-row {
+      display:flex; align-items:center; justify-content:space-between;
+      margin-bottom:14px;
+    }
+    .info-chip {
+      background:rgba(6,6,14,.7);
+      border:1px solid var(--bd2);
+      border-radius:20px;
+      padding:4px 10px;
+      font-size:10px; font-family:var(--fm);
+      color:var(--txd);
+      backdrop-filter:blur(8px);
+    }
+    .info-chip.active { color:var(--grn); border-color:rgba(43,255,176,.25); }
+
+    /* Main controls row */
+    .ctrl-row {
+      display:grid; grid-template-columns:1fr 72px 1fr;
+      gap:12px; align-items:center;
+    }
+    .side-ctrl {
+      display:flex; flex-direction:column; align-items:center; gap:6px;
+      cursor:pointer; transition:all .2s;
+    }
+    .side-ctrl:active { transform:scale(.92); opacity:.7; }
+    .side-ctrl.disabled { opacity:.3; pointer-events:none; }
+    .sc-ico {
+      width:48px; height:48px;
+      background:rgba(20,20,40,.8);
+      border:1px solid var(--bd2);
+      border-radius:50%;
+      display:flex; align-items:center; justify-content:center;
+      font-size:20px;
+      backdrop-filter:blur(8px);
+    }
+    .sc-lbl { font-size:10px; font-weight:600; color:rgba(255,255,255,.6); letter-spacing:.5px; }
+
+    /* Main record button */
+    .btn-rec-main {
+      width:72px; height:72px;
+      border-radius:50%;
+      border:3px solid rgba(255,255,255,.25);
+      background:transparent;
+      display:flex; align-items:center; justify-content:center;
+      cursor:pointer; position:relative;
+      transition:all .25s;
+    }
+    .btn-rec-main:active { transform:scale(.92); }
+    .btn-rec-inner {
+      width:52px; height:52px;
+      border-radius:50%;
+      background:var(--red);
+      transition:all .3s;
+      box-shadow:0 0 20px rgba(245,59,91,.6);
+    }
+    .btn-rec-main.recording .btn-rec-inner {
+      border-radius:10px;
+      width:28px; height:28px;
+      background:var(--red);
+    }
+    .btn-rec-main.paused .btn-rec-inner {
+      background:var(--warn);
+      box-shadow:0 0 20px rgba(255,165,59,.5);
+    }
+    /* Pulse ring */
+    .rec-ring-outer {
+      position:absolute; inset:-8px;
+      border-radius:50%;
+      border:2px solid rgba(245,59,91,.4);
+      animation:rring 2.5s infinite;
+      display:none;
+    }
+    .btn-rec-main.recording .rec-ring-outer { display:block; }
+    @keyframes rring { 0%{transform:scale(1);opacity:.6} 100%{transform:scale(1.5);opacity:0} }
+
+    /* ── QUICK SETTINGS ── */
+    .qset {
+      display:flex; gap:8px; overflow-x:auto; padding:10px 16px 0;
+      scrollbar-width:none; flex-shrink:0;
+    }
+    .qset::-webkit-scrollbar { display:none; }
+    .qchip {
+      flex-shrink:0;
+      display:flex; align-items:center; gap:5px;
+      background:var(--sf); border:1px solid var(--bd);
+      border-radius:20px; padding:6px 12px;
+      font-size:11px; font-weight:600; color:var(--txd);
+      cursor:pointer; transition:all .2s; white-space:nowrap;
+    }
+    .qchip.on { background:rgba(124,109,250,.12); border-color:rgba(124,109,250,.3); color:var(--ac); }
+    .qchip:active { transform:scale(.95); }
+
+    /* ── SETTINGS PANEL (full) ── */
+    .set-panel {
+      padding:12px 14px 16px;
+      border-top:1px solid var(--bd);
+      margin-top:10px;
+    }
+    .sbox { background:var(--sf); border-radius:var(--r); border:1px solid var(--bd); margin-bottom:12px; overflow:hidden; }
+    .sh { padding:11px 15px; font-size:10px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; color:var(--txd); border-bottom:1px solid var(--bd); }
+    .sr { display:flex; align-items:center; justify-content:space-between; padding:13px 15px; border-bottom:1px solid var(--bd); gap:10px; }
+    .sr:last-child { border-bottom:none; }
+    .slb { font-size:13px; color:var(--tx); font-weight:500; }
+    .ssb { font-size:11px; color:var(--txd); margin-top:2px; }
+    .tgl { width:46px; height:25px; background:var(--sf2); border:1px solid var(--bd); border-radius:13px; position:relative; cursor:pointer; transition:all .3s; flex-shrink:0; }
+    .tgl.on { background:var(--ac); border-color:var(--ac); box-shadow:0 0 10px rgba(124,109,250,.4); }
+    .tgl::after { content:''; position:absolute; width:19px; height:19px; background:#fff; border-radius:50%; top:2px; left:2px; transition:transform .3s; box-shadow:0 2px 5px rgba(0,0,0,.4); }
+    .tgl.on::after { transform:translateX(21px); }
+    select.sel { background:var(--sf2); border:1px solid var(--bd); border-radius:10px; padding:7px 26px 7px 10px; font-size:12px; color:var(--tx); font-family:var(--fm); cursor:pointer; -webkit-appearance:none; appearance:none; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='7' fill='none'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%236868a0' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 8px center; }
+
+    /* ══════════════════════════════════
+       RECORDINGS PAGE
+    ══════════════════════════════════ */
+    #pg-recs { padding:14px; }
+
+    .stor-w { background:var(--sf); border-radius:var(--r); border:1px solid var(--bd); padding:13px 15px; margin-bottom:13px; }
+    .stor-h { display:flex; justify-content:space-between; margin-bottom:9px; }
+    .stor-l { font-size:10px; font-weight:700; letter-spacing:1px; text-transform:uppercase; color:var(--txd); }
+    .stor-s { font-family:var(--fm); font-size:12px; color:var(--grn); }
+    .stor-bar { height:4px; background:var(--sf3); border-radius:4px; overflow:hidden; }
+    .stor-fill { height:100%; background:linear-gradient(90deg,var(--ac),var(--ac2)); border-radius:4px; transition:width .5s; }
+    .rh { display:flex; align-items:center; justify-content:space-between; margin-bottom:11px; }
+    .rtl { font-size:11px; font-weight:700; letter-spacing:1px; text-transform:uppercase; color:var(--txd); }
+    .rcnt { font-family:var(--fm); font-size:11px; color:var(--ac); background:rgba(124,109,250,.1); padding:3px 10px; border-radius:20px; border:1px solid rgba(124,109,250,.2); }
+    .emp { display:flex; flex-direction:column; align-items:center; padding:50px 20px; gap:10px; }
+    .ei { font-size:48px; opacity:.15; }
+    .et { font-size:13px; color:var(--txd); text-align:center; line-height:1.7; }
+
+    .card {
+      background:var(--sf); border:1px solid var(--bd);
+      border-radius:var(--r); padding:13px 15px;
+      margin-bottom:9px;
+      display:flex; align-items:center; gap:12px;
+      position:relative; overflow:hidden;
+      transition:transform .15s;
+    }
+    .card::before { content:''; position:absolute; left:0; top:0; bottom:0; width:3px; border-radius:3px 0 0 3px; background:linear-gradient(180deg,var(--ac),var(--ac2)); }
+    .card:active { transform:scale(.98); }
+    .cth { width:54px; height:38px; background:var(--sf3); border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0; border:1px solid var(--bd); overflow:hidden; }
+    .ci { flex:1; min-width:0; }
+    .cn { font-size:12px; font-weight:600; color:var(--tx); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-bottom:4px; }
+    .cm { display:flex; flex-wrap:wrap; gap:7px; font-size:10px; color:var(--txd); font-family:var(--fm); }
+    .ca2 { display:flex; gap:7px; flex-shrink:0; }
+    .ib { width:34px; height:34px; border-radius:9px; background:var(--sf2); border:1px solid var(--bd); display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:15px; transition:all .2s; }
+    .ib:active { transform:scale(.88); }
+    .ib.dl { background:rgba(245,59,91,.08); border-color:rgba(245,59,91,.2); }
+
+    /* ══════════════════════════════════
+       ANDROID SCREEN RECORD INFO PAGE
+    ══════════════════════════════════ */
+    #pg-screen { padding:14px; }
+
+    .info-hero {
+      background:linear-gradient(135deg, rgba(124,109,250,.15), rgba(91,141,245,.1));
+      border:1px solid rgba(124,109,250,.2);
+      border-radius:var(--r);
+      padding:20px;
+      margin-bottom:14px;
+      text-align:center;
+    }
+    .info-hero-ico { font-size:44px; margin-bottom:10px; }
+    .info-hero-title { font-size:16px; font-weight:700; color:var(--tx); margin-bottom:6px; }
+    .info-hero-sub { font-size:12px; color:var(--txd); line-height:1.7; }
+
+    .step-card {
+      background:var(--sf); border:1px solid var(--bd);
+      border-radius:var(--r); padding:16px;
+      margin-bottom:10px; display:flex; gap:13px; align-items:flex-start;
+    }
+    .step-num {
+      width:30px; height:30px; border-radius:50%;
+      background:linear-gradient(135deg,var(--ac),var(--ac2));
+      display:flex; align-items:center; justify-content:center;
+      font-size:13px; font-weight:700; color:#fff;
+      flex-shrink:0; font-family:var(--fm);
+      box-shadow:0 0 12px rgba(124,109,250,.4);
+    }
+    .step-content {}
+    .step-title { font-size:13px; font-weight:700; color:var(--tx); margin-bottom:4px; }
+    .step-desc { font-size:12px; color:var(--txd); line-height:1.65; }
+    .step-desc b { color:var(--tx); }
+
+    .tip-box {
+      background:rgba(43,255,176,.06);
+      border:1px solid rgba(43,255,176,.15);
+      border-radius:var(--rs);
+      padding:12px 14px;
+      margin-bottom:10px;
+    }
+    .tip-title { font-size:11px; font-weight:700; letter-spacing:1px; text-transform:uppercase; color:var(--grn); margin-bottom:6px; }
+    .tip-txt { font-size:12px; color:var(--txd); line-height:1.65; }
+    .tip-txt b { color:var(--tx); }
+
+    .warn-box {
+      background:rgba(255,165,59,.06);
+      border:1px solid rgba(255,165,59,.2);
+      border-radius:var(--rs);
+      padding:12px 14px;
+      margin-bottom:10px;
+    }
+    .warn-title { font-size:11px; font-weight:700; letter-spacing:1px; text-transform:uppercase; color:var(--warn); margin-bottom:6px; }
+    .warn-txt { font-size:12px; color:var(--txd); line-height:1.65; }
+    .warn-txt b { color:var(--tx); }
+
+    .app-chip {
+      display:inline-flex; align-items:center; gap:6px;
+      background:var(--sf2); border:1px solid var(--bd2);
+      border-radius:10px; padding:8px 12px;
+      font-size:12px; font-weight:600; color:var(--tx);
+      margin:4px; cursor:pointer; transition:all .2s;
+    }
+    .app-chip:active { transform:scale(.95); opacity:.8; }
+    .app-chips-wrap { display:flex; flex-wrap:wrap; margin-top:4px; }
+
+    /* ══════════════════════════════════
+       ABOUT / SETTINGS PAGE
+    ══════════════════════════════════ */
+    #pg-about { padding:14px; }
+    .ac { background:var(--sf); border:1px solid var(--bd); border-radius:var(--r); padding:15px; margin-bottom:10px; }
+    .at { font-size:10px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; color:var(--txd); margin-bottom:10px; }
+    .ar { display:flex; justify-content:space-between; padding:7px 0; border-bottom:1px solid var(--bd); font-size:12px; }
+    .ar:last-child { border-bottom:none; }
+    .ak { color:var(--txd); }
+    .av { color:var(--tx); font-family:var(--fm); font-size:11px; }
+    .dbtn { width:100%; padding:12px; background:rgba(245,59,91,.1); border:1px solid rgba(245,59,91,.2); border-radius:var(--rs); color:var(--red); font-size:13px; font-weight:700; cursor:pointer; margin-top:4px; font-family:var(--fu); }
+    .inst-b { background:linear-gradient(135deg,rgba(124,109,250,.1),rgba(91,141,245,.08)); border:1px solid rgba(124,109,250,.2); border-radius:var(--r); padding:15px; margin-bottom:10px; display:none; }
+    .inst-b.sh { display:block; }
+    .inst-t { font-size:13px; font-weight:700; color:var(--ac); margin-bottom:5px; }
+    .inst-d { font-size:11px; color:var(--txd); line-height:1.6; margin-bottom:10px; }
+    .inst-btn { width:100%; padding:11px; background:linear-gradient(135deg,var(--ac),var(--ac2)); border:none; border-radius:var(--rs); color:#fff; font-size:13px; font-weight:700; cursor:pointer; font-family:var(--fu); }
+
+    /* ── MODAL ── */
+    .modal { position:fixed; inset:0; background:rgba(0,0,0,.93); z-index:500; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:18px; opacity:0; pointer-events:none; transition:opacity .3s; backdrop-filter:blur(14px); }
+    .modal.op { opacity:1; pointer-events:all; }
+    .mv { width:100%; max-width:400px; border-radius:var(--r); background:#000; box-shadow:0 0 60px rgba(0,0,0,.8); }
+    .mbtns { display:flex; gap:9px; margin-top:14px; }
+    .mb { padding:11px 18px; border-radius:var(--rs); border:1px solid var(--bd); font-size:13px; font-weight:600; cursor:pointer; transition:all .2s; display:flex; align-items:center; gap:7px; font-family:var(--fu); }
+    .mb.p { background:linear-gradient(135deg,var(--ac),var(--ac2)); border-color:transparent; color:#fff; }
+    .mb.s { background:var(--sf); color:var(--txd); }
+    .mb:active { transform:scale(.95); }
+
+    /* ── CONFIRM ── */
+    .cf { position:fixed; inset:0; background:rgba(0,0,0,.87); z-index:700; display:flex; align-items:flex-end; padding:18px; opacity:0; pointer-events:none; transition:opacity .3s; }
+    .cf.op { opacity:1; pointer-events:all; }
+    .cfb { width:100%; background:var(--sf2); border:1px solid var(--bd); border-radius:20px 20px 14px 14px; padding:22px 18px 18px; transform:translateY(30px); transition:transform .3s; }
+    .cf.op .cfb { transform:translateY(0); }
+    .cft { font-size:15px; font-weight:700; margin-bottom:7px; }
+    .cfm-t { font-size:12px; color:var(--txd); margin-bottom:18px; line-height:1.6; }
+    .cfbs { display:flex; gap:8px; }
+    .cfbtn { flex:1; padding:12px; border-radius:var(--rs); border:1px solid var(--bd); font-size:13px; font-weight:700; cursor:pointer; transition:all .2s; font-family:var(--fu); }
+    .cfbtn:active { transform:scale(.97); }
+    .cfbtn.danger { background:rgba(245,59,91,.12); border-color:rgba(245,59,91,.28); color:var(--red); }
+    .cfbtn.cancel { background:var(--sf); color:var(--txd); }
+
+    /* ── TOAST ── */
+    .toast { position:fixed; bottom:80px; left:50%; transform:translateX(-50%) translateY(14px); background:var(--sf2); border:1px solid var(--bd); border-radius:30px; padding:9px 18px; font-size:12px; color:var(--tx); z-index:600; opacity:0; transition:all .3s; white-space:nowrap; box-shadow:0 4px 20px rgba(0,0,0,.6); }
+    .toast.sh { opacity:1; transform:translateX(-50%) translateY(0); }
+    .toast.ok { border-color:rgba(43,255,176,.25); }
+    .toast.er { border-color:rgba(245,59,91,.25); }
+    .toast.in { border-color:rgba(124,109,250,.25); }
+  </style>
+</head>
+<body>
+<div id="app">
+
+  <!-- HEADER -->
+  <div class="hdr">
+    <div class="logo">
+      <div class="logo-ico">🎬</div>
+      <div class="logo-tx">REC<span>PRO</span></div>
+    </div>
+    <div class="hdr-right">
+      <div class="wv-wrap" style="display:flex;align-items:center;gap:3px;height:18px" id="wvwrap"></div>
+      <div class="sdot" id="sdot"></div>
+      <span class="stx" id="stx">READY</span>
+    </div>
+  </div>
+
+  <!-- TABS -->
+  <div class="tabs">
+    <button class="tab on" onclick="swTab('cam',this)">📷 রেকর্ড</button>
+    <button class="tab" onclick="swTab('recs',this)">💾 সেভ</button>
+    <button class="tab" onclick="swTab('screen',this)">🖥 স্ক্রিন গাইড</button>
+    <button class="tab" onclick="swTab('about',this)">⚙</button>
+  </div>
+
+  <div class="ct">
+
+    <!-- ════ CAMERA / RECORDER PAGE ════ -->
+    <div class="pg on" id="pg-cam">
+
+      <!-- Camera Viewfinder -->
+      <div class="cam-view" id="camView">
+        <video id="preview" autoplay muted playsinline></video>
+
+        <!-- HUD overlay -->
+        <div class="hud" id="hud">
+
+          <!-- Top left: rec badge + timer -->
+          <div class="hud-top">
+            <div style="display:flex;flex-direction:column;gap:6px">
+              <div class="rec-badge" id="recBadge">
+                <div class="rec-dot"></div>
+                <span class="rec-txt">REC</span>
+              </div>
+              <div class="pause-badge" id="pauseBadge">⏸ PAUSED</div>
+            </div>
+            <div class="timer-hud" id="timerHud">00:00:00</div>
+          </div>
+
+          <!-- Top right: flip + mic toggle -->
+          <div class="hud-tr">
+            <div class="hud-btn" id="btnFlip" onclick="flipCam()" title="ক্যামেরা ফ্লিপ">🔄</div>
+            <div class="hud-btn" id="btnMicHud" onclick="togMicHud()" title="মাইক্রোফোন">🎙</div>
+          </div>
+
+          <!-- Bottom controls -->
+          <div class="hud-bottom">
+            <!-- Info chips -->
+            <div class="info-row">
+              <div class="info-chip" id="chipQ">720p</div>
+              <div class="info-chip" id="chipSz">0 KB</div>
+              <div class="info-chip" id="chipMic">🎙 ON</div>
+            </div>
+
+            <!-- Controls -->
+            <div class="ctrl-row">
+              <div class="side-ctrl disabled" id="scPause" onclick="doPause()">
+                <div class="sc-ico" id="scPauseIco">⏸</div>
+                <span class="sc-lbl" id="scPauseLbl">বিরতি</span>
+              </div>
+
+              <button class="btn-rec-main" id="btnRec" onclick="doRec()">
+                <div class="rec-ring-outer"></div>
+                <div class="btn-rec-inner"></div>
+              </button>
+
+              <div class="side-ctrl disabled" id="scStop" onclick="doStop()">
+                <div class="sc-ico">⏹</div>
+                <span class="sc-lbl">থামাও</span>
+              </div>
+            </div>
+          </div>
+
+        </div><!-- /hud -->
+
+        <!-- No camera overlay -->
+        <div id="noCamOv" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;background:rgba(6,6,14,.9)">
+          <div style="font-size:48px;opacity:.3">📷</div>
+          <div style="font-size:13px;color:var(--txd);text-align:center;padding:0 30px;line-height:1.7">ক্যামেরা চালু করতে রেকর্ড বাটন চাপুন<br><span style="font-size:11px;color:var(--txm)">পারমিশন দিতে ভুলবেন না</span></div>
+        </div>
+      </div>
+
+      <!-- Quick setting chips -->
+      <div class="qset">
+        <div class="qchip on" id="qcQ" onclick="cycleQ()">📹 720p</div>
+        <div class="qchip" id="qcFps" onclick="cycleFps()">⚡ 30fps</div>
+        <div class="qchip on" id="qcMic" onclick="togMic()">🎙 মাইক ON</div>
+        <div class="qchip" id="qcFace" onclick="cycFace()">📷 পেছনে</div>
+        <div class="qchip" id="qcGrid" onclick="togGrid()">⊞ গ্রিড</div>
+      </div>
+
+      <!-- Settings panel -->
+      <div class="set-panel">
+        <div class="sbox">
+          <div class="sh">📹 ভিডিও সেটিংস</div>
+          <div class="sr">
+            <div><div class="slb">কোয়ালিটি</div><div class="ssb">রেজোলিউশন</div></div>
+            <select class="sel" id="selQ" onchange="onQChange()">
+              <option value="fhd">Full HD 1080p</option>
+              <option value="hd" selected>HD 720p</option>
+              <option value="sd">SD 480p</option>
+              <option value="lo">Low 360p</option>
+            </select>
+          </div>
+          <div class="sr">
+            <div><div class="slb">ফ্রেম রেট</div><div class="ssb">FPS (স্মুথনেস)</div></div>
+            <select class="sel" id="selFps" onchange="onFpsChange()">
+              <option value="60">60 fps (স্মুথ)</option>
+              <option value="30" selected>30 fps (স্ট্যান্ডার্ড)</option>
+              <option value="24">24 fps (সিনেম্যাটিক)</option>
+              <option value="15">15 fps (কম জায়গা)</option>
+            </select>
+          </div>
+          <div class="sr">
+            <div><div class="slb">বিটরেট</div><div class="ssb">ভিডিও কোয়ালিটি</div></div>
+            <select class="sel" id="selBr">
+              <option value="10">High 10 Mbps</option>
+              <option value="6">Med 6 Mbps</option>
+              <option value="3" selected>Std 3 Mbps</option>
+              <option value="1">Low 1 Mbps</option>
+            </select>
+          </div>
+        </div>
+        <div class="sbox">
+          <div class="sh">🎙 অডিও সেটিংস</div>
+          <div class="sr">
+            <div><div class="slb">মাইক্রোফোন</div><div class="ssb">ভয়েস রেকর্ড করুন</div></div>
+            <div class="tgl on" id="tMic" onclick="togMic()"></div>
+          </div>
+          <div class="sr">
+            <div><div class="slb">ক্যামেরা সাইড</div><div class="ssb">সামনে / পেছনে</div></div>
+            <select class="sel" id="selFace" onchange="onFaceChange()">
+              <option value="environment">📷 পেছনের ক্যামেরা</option>
+              <option value="user">🤳 সামনের ক্যামেরা</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div><!-- /pg-cam -->
+
+    <!-- ════ RECORDINGS PAGE ════ -->
+    <div class="pg" id="pg-recs">
+      <div class="stor-w">
+        <div class="stor-h"><span class="stor-l">🗄 স্টোরেজ</span><span class="stor-s" id="stSz">0 MB</span></div>
+        <div class="stor-bar"><div class="stor-fill" id="stFill" style="width:0%"></div></div>
+      </div>
+      <div class="rh"><span class="rtl">📂 সেভ করা ভিডিও</span><span class="rcnt" id="rCnt">0 টি</span></div>
+      <div id="rList"></div>
+    </div>
+
+    <!-- ════ ANDROID SCREEN RECORD GUIDE ════ -->
+    <div class="pg" id="pg-screen">
+
+      <div class="info-hero">
+        <div class="info-hero-ico">🖥️📱</div>
+        <div class="info-hero-title">Android স্ক্রিন রেকর্ড — সম্পূর্ণ গাইড</div>
+        <div class="info-hero-sub">ব্রাউজার থেকে Android-এ স্ক্রিন রেকর্ড সম্ভব নয়। নিচের পদ্ধতিতে সহজেই করুন।</div>
+      </div>
+
+      <div class="warn-box">
+        <div class="warn-title">⚠ কেন কাজ করে না?</div>
+        <div class="warn-txt">Android Chrome-এ <b>getDisplayMedia API</b> block করা। এটি Google-এর নিরাপত্তা নীতি — কোনো ওয়েব অ্যাপ এটি bypass করতে পারবে না। <b>স্থায়ী সমাধান হলো নেটিভ অ্যাপ ব্যবহার।</b></div>
+      </div>
+
+      <!-- Method 1: Built-in -->
+      <div style="font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--txd);margin:14px 0 8px;">পদ্ধতি ১ — Android বিল্ট-ইন (সবচেয়ে সহজ)</div>
+
+      <div class="step-card">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <div class="step-title">Quick Settings খুলুন</div>
+          <div class="step-desc">স্ক্রিনের উপর থেকে নিচে দুইবার সোয়াইপ করুন — পুরো <b>Quick Panel</b> খুলবে।</div>
+        </div>
+      </div>
+
+      <div class="step-card">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <div class="step-title">"Screen Recorder" টাইল খুঁজুন</div>
+          <div class="step-desc">প্যানেলে <b>Screen Recorder</b> বা <b>স্ক্রিন রেকর্ডার</b> আইকন দেখুন। না থাকলে পেন্সিল আইকন দিয়ে <b>Edit/Add</b> করুন।</div>
+        </div>
+      </div>
+
+      <div class="step-card">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <div class="step-title">অডিও সেটিং বেছে নিন</div>
+          <div class="step-desc">চালু করলে অপশন আসবে: <b>মিডিয়া সাউন্ড</b>, <b>মাইক্রোফোন</b>, বা দুটোই। App Review-এর জন্য দুটোই বেছে নিন।</div>
+        </div>
+      </div>
+
+      <div class="step-card">
+        <div class="step-num">4</div>
+        <div class="step-content">
+          <div class="step-title">RecPro খুলে ক্যামেরা চালু করুন</div>
+          <div class="step-desc">Android রেকর্ড চলার সময় এই অ্যাপে এসে <b>ক্যামেরা রেকর্ড</b> চালু করুন — আপনার মুখ দেখাবে (পিকচার-ইন-পিকচার স্টাইলে)।</div>
+        </div>
+      </div>
+
+      <div class="tip-box">
+        <div class="tip-title">💡 প্রো টিপ — PiP স্টাইল রিভিউ</div>
+        <div class="tip-txt">Android বিল্ট-ইন স্ক্রিন রেকর্ড চালু রেখে, এই অ্যাপের ক্যামেরায় নিজের মুখের রেকর্ড আলাদা করুন — পরে <b>CapCut</b> বা <b>VN Video Editor</b> দিয়ে একসাথে মিশিয়ে PiP ভিডিও বানান।</div>
+      </div>
+
+      <!-- Method 2: AZ Screen Recorder -->
+      <div style="font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--txd);margin:14px 0 8px;">পদ্ধতি ২ — AZ Screen Recorder (সেরা অ্যাপ)</div>
+
+      <div class="step-card">
+        <div class="step-num">★</div>
+        <div class="step-content">
+          <div class="step-title">AZ Screen Recorder — সম্পূর্ণ ফ্রি</div>
+          <div class="step-desc"><b>স্ক্রিন + মাইক + সিস্টেম অডিও</b> একসাথে রেকর্ড করে। ফ্লোটিং বাটন থেকে যেকোনো সময় শুরু/বন্ধ করা যায়। App Review এর জন্য সেরা।</div>
+        </div>
+      </div>
+
+      <div class="app-chips-wrap">
+        <div class="app-chip" onclick="openLink('https://play.google.com/store/apps/details?id=com.hecorat.screenrecorder.free')">
+          <span>🎥</span> AZ Screen Recorder
+        </div>
+        <div class="app-chip" onclick="openLink('https://play.google.com/store/apps/details?id=com.kimcy929.screenrecorder')">
+          <span>📹</span> Screen Recorder (kimcy)
+        </div>
+        <div class="app-chip" onclick="openLink('https://play.google.com/store/apps/details?id=com.duobi.screenrecorder')">
+          <span>🎬</span> XRecorder
+        </div>
+      </div>
+
+      <div class="tip-box" style="margin-top:10px">
+        <div class="tip-title">🎯 App Review ওয়ার্কফ্লো</div>
+        <div class="tip-txt">
+          <b>১.</b> AZ Screen Recorder দিয়ে স্ক্রিন রেকর্ড চালু করুন<br>
+          <b>২.</b> এই RecPro অ্যাপ দিয়ে আপনার মুখের ক্যামেরা রেকর্ড করুন<br>
+          <b>৩.</b> CapCut-এ দুটো ভিডিও একসাথে মিশিয়ে PiP বানান<br>
+          <b>৪.</b> MP4 এক্সপোর্ট করুন — YouTube/রিভিউ রেডি!
+        </div>
+      </div>
+
+    </div><!-- /pg-screen -->
+
+    <!-- ════ ABOUT PAGE ════ -->
+    <div class="pg" id="pg-about">
+      <div class="inst-b" id="instB">
+        <div class="inst-t">📲 হোম স্ক্রিনে ইনস্টল করুন</div>
+        <div class="inst-d">PWA হিসেবে ইনস্টল করুন — অফলাইনেও কাজ করবে!</div>
+        <button class="inst-btn" onclick="doPWA()">📱 ইনস্টল করুন</button>
+      </div>
+      <div class="ac">
+        <div class="at">📱 অ্যাপ তথ্য</div>
+        <div class="ar"><span class="ak">নাম</span><span class="av">RecPro v2.0</span></div>
+        <div class="ar"><span class="ak">ফরম্যাট</span><span class="av">MP4 / WebM</span></div>
+        <div class="ar"><span class="ak">স্টোরেজ</span><span class="av">IndexedDB (Local)</span></div>
+        <div class="ar"><span class="ak">PWA</span><span class="av" id="pwaS">চেক হচ্ছে...</span></div>
+      </div>
+      <div class="ac">
+        <div class="at">✨ ফিচার</div>
+        <div class="ar"><span class="ak">📷 ক্যামেরা রেকর্ড</span><span class="av" style="color:var(--grn)">✓ সব ব্রাউজার</span></div>
+        <div class="ar"><span class="ak">🔄 ক্যামেরা ফ্লিপ</span><span class="av" style="color:var(--grn)">✓</span></div>
+        <div class="ar"><span class="ak">⏸ পজ / রিজিউম</span><span class="av" style="color:var(--grn)">✓</span></div>
+        <div class="ar"><span class="ak">💾 MP4 ডাউনলোড</span><span class="av" style="color:var(--grn)">✓</span></div>
+        <div class="ar"><span class="ak">🖥 স্ক্রিন রেকর্ড</span><span class="av" style="color:var(--warn)">AZ Recorder দিয়ে</span></div>
+        <div class="ar"><span class="ak">📲 PWA অফলাইন</span><span class="av" style="color:var(--grn)">✓</span></div>
+      </div>
+      <div class="ac">
+        <div class="at">🗑 ডেটা</div>
+        <button class="dbtn" onclick="cfmClear()">🗑 সব রেকর্ডিং মুছুন</button>
+      </div>
+    </div>
+
+  </div><!-- /ct -->
+</div><!-- /app -->
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<!-- Video Modal -->
+<div class="modal" id="vModal">
+  <video class="mv" id="mvid" controls playsinline></video>
+  <div class="mbtns">
+    <button class="mb p" onclick="dlCur()">⬇ ডাউনলোড</button>
+    <button class="mb s" onclick="closeM()">✕ বন্ধ</button>
+  </div>
+</div>
+
+<!-- Confirm -->
+<div class="cf" id="cfDlg">
+  <div class="cfb">
+    <div class="cft" id="cfT">নিশ্চিত করুন</div>
+    <div class="cfm-t" id="cfM"></div>
+    <div class="cfbs">
+      <button class="cfbtn cancel" onclick="closeCf()">বাতিল</button>
+      <button class="cfbtn danger" id="cfOk">হ্যাঁ, মুছুন</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════ STATE ═══════
+let mr=null, chunks=[], stream=null, tIv=null, elapsed=0;
+let isR=false, isP=false, bytes=0, playK=null, db;
+let curFace='environment', micOn=true, gridOn=false;
+const QMap={fhd:{w:1920,h:1080},hd:{w:1280,h:720},sd:{w:854,h:480},lo:{w:640,h:360}};
+const QLabel={fhd:'1080p',hd:'720p',sd:'480p',lo:'360p'};
+let curQ='hd', curFps=30;
+
+// ═══════ DB ═══════
+async function openDB(){
+  return new Promise((res,rej)=>{
+    const req=indexedDB.open('RecProDB',1);
+    req.onupgradeneeded=e=>{const d=e.target.result;if(!d.objectStoreNames.contains('r'))d.createObjectStore('r',{keyPath:'id'})};
+    req.onsuccess=e=>{db=e.target.result;res()};req.onerror=rej;
+  });
+}
+const txDB=(m,fn)=>new Promise((res,rej)=>{
+  const t=db.transaction('r',m),s=t.objectStore('r'),req=fn(s);
+  if(req){req.onsuccess=e=>res(e.target.result);req.onerror=rej}
+  t.oncomplete=()=>res();t.onerror=rej;
+});
+const saveR=r=>txDB('readwrite',s=>s.put(r));
+const getAll=()=>txDB('readonly',s=>s.getAll());
+const delR=id=>txDB('readwrite',s=>s.delete(id));
+const clearAll=()=>txDB('readwrite',s=>s.clear());
+
+// ═══════ CAMERA ═══════
+async function initCam(){
+  try{
+    if(stream){stream.getTracks().forEach(t=>t.stop());stream=null}
+    const q=QMap[curQ];
+    const constraints={
+      video:{facingMode:curFace,width:{ideal:q.w},height:{ideal:q.h},frameRate:{ideal:curFps}},
+      audio:micOn
+    };
+    stream=await navigator.mediaDevices.getUserMedia(constraints);
+    const vid=document.getElementById('preview');
+    vid.srcObject=stream;
+    vid.className=curFace==='user'?'mirror':'';
+    document.getElementById('noCamOv').style.display='none';
+    updChips();
+  }catch(e){
+    showT('📷 ক্যামেরা পারমিশন দিন: '+e.message,'er');
+  }
+}
+
+async function flipCam(){
+  if(isR){showT('⚠ রেকর্ড চলছে','er');return}
+  curFace=curFace==='environment'?'user':'environment';
+  document.getElementById('selFace').value=curFace;
+  document.getElementById('qcFace').textContent=curFace==='user'?'🤳 সামনে':'📷 পেছনে';
+  await initCam();showT(curFace==='user'?'🤳 সামনের ক্যামেরা':'📷 পেছনের ক্যামেরা','in');
+}
+
+async function onFaceChange(){
+  if(isR)return;
+  curFace=document.getElementById('selFace').value;
+  document.getElementById('qcFace').textContent=curFace==='user'?'🤳 সামনে':'📷 পেছনে';
+  await initCam();
+}
+
+function cycFace(){
+  if(isR)return;
+  curFace=curFace==='environment'?'user':'environment';
+  document.getElementById('selFace').value=curFace;
+  document.getElementById('qcFace').textContent=curFace==='user'?'🤳 সামনে':'📷 পেছনে';
+  initCam();
+}
+
+// ═══════ SETTINGS ═══════
+function cycleQ(){
+  if(isR)return;
+  const qs=['lo','sd','hd','fhd'],i=qs.indexOf(curQ);
+  curQ=qs[(i+1)%qs.length];
+  document.getElementById('selQ').value=curQ;
+  document.getElementById('qcQ').textContent='📹 '+QLabel[curQ];
+  document.getElementById('chipQ').textContent=QLabel[curQ];
+  initCam();
+}
+function onQChange(){
+  if(isR)return;
+  curQ=document.getElementById('selQ').value;
+  document.getElementById('qcQ').textContent='📹 '+QLabel[curQ];
+  document.getElementById('chipQ').textContent=QLabel[curQ];
+  initCam();
+}
+function cycleFps(){
+  if(isR)return;
+  const fps=[15,24,30,60],i=fps.indexOf(curFps);
+  curFps=fps[(i+1)%fps.length];
+  document.getElementById('selFps').value=String(curFps);
+  document.getElementById('qcFps').textContent='⚡ '+curFps+'fps';
+  initCam();
+}
+function onFpsChange(){
+  if(isR)return;
+  curFps=parseInt(document.getElementById('selFps').value);
+  document.getElementById('qcFps').textContent='⚡ '+curFps+'fps';
+  initCam();
+}
+function togMic(){
+  if(isR)return;
+  micOn=!micOn;
+  document.getElementById('tMic').className='tgl'+(micOn?' on':'');
+  document.getElementById('qcMic').className='qchip'+(micOn?' on':'');
+  document.getElementById('qcMic').textContent=micOn?'🎙 মাইক ON':'🎙 মাইক OFF';
+  document.getElementById('chipMic').textContent=micOn?'🎙 ON':'🎙 OFF';
+  document.getElementById('chipMic').className='info-chip'+(micOn?' active':'');
+  document.getElementById('btnMicHud').textContent=micOn?'🎙':'🔇';
+  initCam();
+}
+function togMicHud(){togMic()}
+function togGrid(){
+  gridOn=!gridOn;
+  document.getElementById('qcGrid').className='qchip'+(gridOn?' on':'');
+  // simple CSS grid overlay
+  let g=document.getElementById('gridOverlay');
+  if(!g){
+    g=document.createElement('div');g.id='gridOverlay';
+    g.style.cssText='position:absolute;inset:0;pointer-events:none;';
+    g.innerHTML=`<svg width="100%" height="100%" style="opacity:.2"><line x1="33.33%" y1="0" x2="33.33%" y2="100%" stroke="white" stroke-width="1"/><line x1="66.66%" y1="0" x2="66.66%" y2="100%" stroke="white" stroke-width="1"/><line x1="0" y1="33.33%" x2="100%" y2="33.33%" stroke="white" stroke-width="1"/><line x1="0" y1="66.66%" x2="100%" y2="66.66%" stroke="white" stroke-width="1"/></svg>`;
+    document.getElementById('camView').appendChild(g);
+  }
+  g.style.display=gridOn?'block':'none';
+}
+function updChips(){
+  document.getElementById('chipQ').textContent=QLabel[curQ];
+  document.getElementById('chipMic').textContent=micOn?'🎙 ON':'🎙 OFF';
+  document.getElementById('chipMic').className='info-chip'+(micOn?' active':'');
+}
+
+// ═══════ RECORDING ═══════
+async function doRec(){isR?null:await startR()}
+async function startR(){
+  if(!stream){await initCam();if(!stream)return}
+  try{
+    // Re-get stream with current settings (ensures audio matches)
+    if(stream){stream.getTracks().forEach(t=>t.stop());stream=null}
+    const q=QMap[curQ];
+    const recStream=await navigator.mediaDevices.getUserMedia({
+      video:{facingMode:curFace,width:{ideal:q.w},height:{ideal:q.h},frameRate:{ideal:curFps}},
+      audio:micOn
+    });
+    stream=recStream;
+    document.getElementById('preview').srcObject=stream;
+    document.getElementById('preview').className=curFace==='user'?'mirror':'';
+    document.getElementById('noCamOv').style.display='none';
+
+    const mime=getMime();
+    const br=parseInt(document.getElementById('selBr').value)*1000000;
+    mr=new MediaRecorder(stream,{mimeType:mime,videoBitsPerSecond:br});
+    chunks=[];bytes=0;
+    mr.ondataavailable=e=>{if(e.data?.size>0){chunks.push(e.data);bytes+=e.data.size;document.getElementById('chipSz').textContent=fSz(bytes)}};
+    mr.onstop=onStop;
+    mr.start(1000);
+    isR=true;isP=false;updUI();startT();
+    showT('🔴 রেকর্ডিং শুরু','ok');
+  }catch(e){
+    if(e.name!=='NotAllowedError')showT('❌ '+e.message,'er');
+  }
+}
+
+function doStop(){
+  if(!isR)return;
+  if(mr?.state!=='inactive')mr.stop();
+  stopT();isR=false;isP=false;updUI();
+  setTimeout(initCam,400);
+}
+function doPause(){
+  if(!isR)return;
+  if(isP){mr.resume();isP=false;showT('▶ রেকর্ড চলছে','in')}
+  else{mr.pause();isP=true;showT('⏸ বিরতি','in')}
+  updUI();
+}
+async function onStop(){
+  if(!chunks.length)return;
+  const mime=mr.mimeType||'video/webm',ext=mime.includes('mp4')?'mp4':'webm';
+  const blob=new Blob(chunks,{type:mime}),buf=await blob.arrayBuffer();
+  const id=Date.now(),name=`ক্যামেরা_${fDT(new Date(id))}`;
+  await saveR({id,name,size:blob.size,duration:elapsed,date:new Date(id).toISOString(),mimeType:mime,ext,buffer:buf});
+  document.getElementById('chipSz').textContent='0 KB';
+  showT('✅ সেভ হয়েছে! '+fSz(blob.size),'ok');loadRecs();
+}
+
+function getMime(){
+  const ts=['video/mp4;codecs=h264,aac','video/mp4','video/webm;codecs=vp9,opus','video/webm;codecs=vp8,opus','video/webm'];
+  return ts.find(t=>MediaRecorder.isTypeSupported(t))||'video/webm';
+}
+
+// ═══════ TIMER ═══════
+function startT(){elapsed=0;tIv=setInterval(()=>{if(!isP){elapsed++;renderT()}},1000)}
+function stopT(){clearInterval(tIv);tIv=null}
+function renderT(){
+  const h=String(Math.floor(elapsed/3600)).padStart(2,'0'),m=String(Math.floor((elapsed%3600)/60)).padStart(2,'0'),s=String(elapsed%60).padStart(2,'0');
+  document.getElementById('timerHud').textContent=`${h}:${m}:${s}`;
+}
+
+// ═══════ UI ═══════
+function updUI(){
+  const dot=document.getElementById('sdot'),stx=document.getElementById('stx');
+  const bRec=document.getElementById('btnRec');
+  const hud=document.getElementById('hud');
+  const recBadge=document.getElementById('recBadge');
+  const pauseBadge=document.getElementById('pauseBadge');
+  const timerHud=document.getElementById('timerHud');
+  const scPause=document.getElementById('scPause');
+  const scStop=document.getElementById('scStop');
+  const wvwrap=document.getElementById('wvwrap');
+
+  if(isR){
+    scPause.classList.remove('disabled');scStop.classList.remove('disabled');
+    timerHud.classList.add('visible');
+    if(isP){
+      dot.className='sdot paused';stx.textContent='PAUSED';
+      bRec.className='btn-rec-main paused';
+      hud.className='hud paused';
+      recBadge.classList.remove('visible');pauseBadge.classList.add('visible');
+      document.getElementById('scPauseIco').textContent='▶';
+      document.getElementById('scPauseLbl').textContent='চালু';
+      wvwrap.innerHTML='';
+    }else{
+      dot.className='sdot rec';stx.textContent='REC';
+      bRec.className='btn-rec-main recording';
+      hud.className='hud recording';
+      recBadge.classList.add('visible');pauseBadge.classList.remove('visible');
+      document.getElementById('scPauseIco').textContent='⏸';
+      document.getElementById('scPauseLbl').textContent='বিরতি';
+      wvwrap.innerHTML='<div style="width:3px;background:var(--red);border-radius:3px;animation:wav 1s infinite 0s"></div><div style="width:3px;background:var(--red);border-radius:3px;animation:wav 1s infinite .15s"></div><div style="width:3px;background:var(--red);border-radius:3px;animation:wav 1s infinite .3s"></div>';
+    }
+  }else{
+    scPause.classList.add('disabled');scStop.classList.add('disabled');
+    bRec.className='btn-rec-main';
+    hud.className='hud';
+    dot.className='sdot ready';stx.textContent='READY';
+    recBadge.classList.remove('visible');pauseBadge.classList.remove('visible');timerHud.classList.remove('visible');
+    document.getElementById('scPauseIco').textContent='⏸';
+    document.getElementById('scPauseLbl').textContent='বিরতি';
+    wvwrap.innerHTML='';
+  }
+}
+
+// ═══════ RECORDINGS ═══════
+async function loadRecs(){
+  const list=(await getAll()).sort((a,b)=>b.id-a.id);
+  const el=document.getElementById('rList');
+  document.getElementById('rCnt').textContent=list.length+' টি';
+  if(!list.length){el.innerHTML='<div class="emp"><div class="ei">🎬</div><div class="et">এখনো কোনো রেকর্ডিং নেই।<br>রেকর্ড ট্যাবে গিয়ে শুরু করুন।</div></div>';updStor(0);return}
+  let tot=0;el.innerHTML='';list.forEach(r=>{tot+=r.size;el.appendChild(mkCard(r))});updStor(tot);
+}
+function mkCard(r){
+  const d=document.createElement('div');d.className='card';
+  d.innerHTML=`<div class="cth">📷</div>
+  <div class="ci"><div class="cn">${r.name}</div>
+  <div class="cm"><span>⏱ ${fDur(r.duration)}</span><span>📦 ${fSz(r.size)}</span><span>📅 ${fDat(r.date)}</span></div></div>
+  <div class="ca2"><div class="ib" onclick="playR(${r.id})">▶</div><div class="ib" onclick="dlR(${r.id})">⬇</div><div class="ib dl" onclick="cfmDel(${r.id},'${r.name.replace(/'/g,"\\'")}')">🗑</div></div>`;
+  return d;
+}
+function updStor(b){const mb=b/1048576;document.getElementById('stSz').textContent=mb.toFixed(1)+' MB';document.getElementById('stFill').style.width=Math.min((mb/500)*100,100)+'%'}
+async function playR(id){const list=await getAll(),r=list.find(x=>x.id===id);if(!r)return;playK=id;const url=URL.createObjectURL(new Blob([r.buffer],{type:r.mimeType}));const v=document.getElementById('mvid');v.src=url;document.getElementById('vModal').classList.add('op');v.play().catch(()=>{})}
+async function dlR(id){const list=await getAll(),r=list.find(x=>x.id===id);if(!r)return;const url=URL.createObjectURL(new Blob([r.buffer],{type:r.mimeType}));const a=document.createElement('a');a.href=url;a.download=r.name+'.'+r.ext;a.click();URL.revokeObjectURL(url);showT('⬇ ডাউনলোড হচ্ছে...','in')}
+async function dlCur(){if(playK)await dlR(playK)}
+function closeM(){const v=document.getElementById('mvid');v.pause();URL.revokeObjectURL(v.src);v.src='';document.getElementById('vModal').classList.remove('op');playK=null}
+function cfmDel(id,name){document.getElementById('cfT').textContent='মুছুন?';document.getElementById('cfM').textContent=`"${name}" স্থায়ীভাবে মুছে যাবে।`;document.getElementById('cfOk').onclick=async()=>{await delR(id);showT('🗑 মুছে গেছে','er');loadRecs();closeCf()};document.getElementById('cfDlg').classList.add('op')}
+function cfmClear(){document.getElementById('cfT').textContent='সব মুছুন?';document.getElementById('cfM').textContent='সব রেকর্ডিং স্থায়ীভাবে মুছে যাবে।';document.getElementById('cfOk').onclick=async()=>{await clearAll();showT('🗑 সব মুছে গেছে','er');loadRecs();closeCf()};document.getElementById('cfDlg').classList.add('op')}
+function closeCf(){document.getElementById('cfDlg').classList.remove('op')}
+
+// ═══════ TABS ═══════
+function swTab(n,el){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
+  document.querySelectorAll('.pg').forEach(p=>p.classList.remove('on'));
+  el.classList.add('on');document.getElementById('pg-'+n).classList.add('on');
+  if(n==='recs')loadRecs();
+}
+
+// ═══════ TOAST ═══════
+let tTm;
+function showT(msg,type='in'){const t=document.getElementById('toast');t.textContent=msg;t.className='toast sh '+type;clearTimeout(tTm);tTm=setTimeout(()=>t.classList.remove('sh'),3000)}
+
+// ═══════ HELPERS ═══════
+function fSz(b){if(b<1024)return b+' B';if(b<1048576)return(b/1024).toFixed(1)+' KB';return(b/1048576).toFixed(2)+' MB'}
+function fDur(s){if(!s)return'0s';const h=Math.floor(s/3600),m=Math.floor((s%3600)/60),ss=s%60;return h?`${h}:${String(m).padStart(2,'0')}:${String(ss).padStart(2,'0')}`:`${m}:${String(ss).padStart(2,'0')}`}
+function fDat(iso){const d=new Date(iso);return`${d.getDate()}/${d.getMonth()+1}/${String(d.getFullYear()).slice(-2)}`}
+function fDT(d){return`${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}_${String(d.getHours()).padStart(2,'0')}${String(d.getMinutes()).padStart(2,'0')}`}
+function openLink(url){window.open(url,'_blank')}
+
+// CSS for waveform
+const wvStyle=document.createElement('style');
+wvStyle.textContent='@keyframes wav{0%,100%{height:4px}50%{height:16px}}';
+document.head.appendChild(wvStyle);
+
+// ═══════ PWA ═══════
+let dPWA=null;
+window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();dPWA=e;document.getElementById('instB').classList.add('sh')});
+function doPWA(){if(dPWA){dPWA.prompt();dPWA.userChoice.then(r=>{if(r.outcome==='accepted'){showT('✅ ইনস্টল হয়েছে!','ok');document.getElementById('instB').classList.remove('sh')}dPWA=null})}}
+
+// ═══════ INIT ═══════
+async function init(){
+  await openDB();await loadRecs();
+  document.getElementById('sdot').className='sdot ready';
+  const isPWA=window.matchMedia('(display-mode: standalone)').matches||navigator.standalone;
+  document.getElementById('pwaS').textContent=isPWA?'✓ ইনস্টলড':'✗ ব্রাউজার';
+  if('serviceWorker' in navigator)navigator.serviceWorker.register('./sw.js').catch(()=>{});
+}
+init();
+</script>
+</body>
+</html>

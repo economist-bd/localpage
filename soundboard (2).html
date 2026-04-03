@@ -1,0 +1,1091 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SoundBoard BD - ইন্সট্যান্ট সাউন্ড</title>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+Da+2:wght@400;600;700;800&family=Hind+Siliguri:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --red: #cc1f1f;
+    --red-dark: #9e1515;
+    --red-light: #e53935;
+    --gold: #f5a623;
+    --bg: #f7f7f7;
+    --white: #fff;
+    --text: #222;
+    --muted: #888;
+    --card-bg: #fff;
+    --shadow: 0 2px 12px rgba(0,0,0,0.10);
+    --btn-blue: #1976d2;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Hind Siliguri', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  /* NAVBAR */
+  nav {
+    background: var(--red);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    padding: 0 18px;
+    height: 56px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+  }
+  .nav-logo {
+    font-family: 'Baloo Da 2', cursive;
+    font-size: 1.45rem;
+    font-weight: 800;
+    letter-spacing: 1px;
+    flex: 1;
+  }
+  .nav-logo span { color: var(--gold); }
+  .nav-right { display: flex; align-items: center; gap: 10px; }
+  .nav-search {
+    display: flex;
+    align-items: center;
+    background: rgba(255,255,255,0.18);
+    border-radius: 24px;
+    padding: 5px 14px;
+    gap: 8px;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .nav-search:hover { background: rgba(255,255,255,0.28); }
+  .nav-search svg { width: 19px; height: 19px; fill: #fff; }
+  .nav-refresh {
+    background: rgba(255,255,255,0.18);
+    border: none;
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.4s;
+    color: #fff;
+    font-size: 16px;
+  }
+  .nav-refresh:hover { background: rgba(255,255,255,0.28); }
+  .nav-refresh.spinning { animation: spin 0.8s linear; }
+  @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+  /* SEARCH BAR */
+  .search-area {
+    background: var(--red);
+    padding: 0 18px 16px;
+  }
+  .search-input-wrap {
+    display: flex;
+    background: #fff;
+    border-radius: 28px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.13);
+  }
+  .search-input-wrap input {
+    flex: 1;
+    border: none;
+    outline: none;
+    padding: 10px 18px;
+    font-size: 1rem;
+    font-family: 'Hind Siliguri', sans-serif;
+    background: transparent;
+    color: #222;
+  }
+  .search-input-wrap button {
+    background: var(--gold);
+    border: none;
+    padding: 10px 18px;
+    cursor: pointer;
+    font-size: 1rem;
+    color: #fff;
+    font-weight: 700;
+    transition: background 0.2s;
+  }
+  .search-input-wrap button:hover { background: #e09010; }
+
+  /* GITHUB CONFIG BOX */
+  .github-config {
+    margin: 12px 13px 0;
+    background: #fff;
+    border: 2px solid var(--red-light);
+    border-radius: 14px;
+    padding: 14px 16px;
+  }
+  .github-config h3 {
+    font-family: 'Baloo Da 2', cursive;
+    color: var(--red-dark);
+    font-size: 0.95rem;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .github-inputs {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .github-inputs input {
+    border: 1.5px solid #ddd;
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: 0.85rem;
+    font-family: 'Hind Siliguri', sans-serif;
+    outline: none;
+    transition: border-color 0.2s;
+    width: 100%;
+  }
+  .github-inputs input:focus { border-color: var(--red-light); }
+  .github-inputs input::placeholder { color: #bbb; }
+  .github-row { display: flex; gap: 8px; }
+  .github-row input { flex: 1; }
+  .github-load-btn {
+    background: var(--red);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 9px 18px;
+    font-size: 0.88rem;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: 'Hind Siliguri', sans-serif;
+    transition: background 0.2s, transform 0.15s;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .github-load-btn:hover { background: var(--red-dark); transform: scale(1.03); }
+  .github-status {
+    font-size: 0.78rem;
+    margin-top: 8px;
+    padding: 6px 10px;
+    border-radius: 6px;
+    display: none;
+  }
+  .github-status.ok { background: #e8f5e9; color: #2e7d32; display: block; }
+  .github-status.err { background: #ffebee; color: #c62828; display: block; }
+  .github-status.loading { background: #e3f2fd; color: #1565c0; display: block; }
+
+  /* TRENDING BANNER */
+  .trending-banner {
+    background: linear-gradient(90deg, #c0392b 0%, #e74c3c 100%);
+    color: #fff;
+    text-align: center;
+    padding: 7px;
+    font-size: 0.88rem;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+  .trending-banner span { color: var(--gold); }
+
+  /* SECTION TITLE */
+  .section-title {
+    font-family: 'Baloo Da 2', cursive;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--red-dark);
+    padding: 16px 16px 6px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .section-title::after {
+    content: '';
+    flex: 1;
+    height: 2px;
+    background: linear-gradient(90deg, var(--red-light), transparent);
+    border-radius: 2px;
+    margin-left: 6px;
+  }
+
+  /* SOUND GRID */
+  .sound-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    padding: 0 13px 16px;
+  }
+  @media (min-width: 600px) {
+    .sound-grid { grid-template-columns: repeat(4, 1fr); }
+  }
+
+  /* SOUND CARD */
+  .sound-card {
+    background: var(--card-bg);
+    border-radius: 16px;
+    box-shadow: var(--shadow);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 14px 8px 10px;
+    gap: 7px;
+    transition: transform 0.15s, box-shadow 0.15s;
+    cursor: pointer;
+  }
+  .sound-card:hover {
+    transform: translateY(-3px) scale(1.03);
+    box-shadow: 0 6px 22px rgba(200,30,30,0.14);
+  }
+  .sound-card.playing .sound-btn-wrap { animation: pulse 0.4s; }
+
+  @keyframes pulse {
+    0% { transform: scale(1); }
+    40% { transform: scale(0.88); }
+    100% { transform: scale(1); }
+  }
+
+  .sound-btn-wrap {
+    width: 68px;
+    height: 68px;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: transform 0.1s;
+  }
+  .sound-btn-wrap:active { transform: scale(0.91); }
+
+  .btn-3d {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    border: none;
+    cursor: pointer;
+    position: relative;
+    outline: none;
+    transition: box-shadow 0.1s, transform 0.1s;
+  }
+  .btn-3d::before {
+    content: '';
+    position: absolute;
+    inset: 6px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.28);
+    top: 4px;
+    left: 10px;
+    width: 36px;
+    height: 20px;
+  }
+  .btn-red {
+    background: radial-gradient(circle at 38% 32%, #ff5252 0%, #cc1f1f 55%, #7c0a0a 100%);
+    box-shadow: 0 6px 0 #7c0a0a, 0 8px 18px rgba(180,20,20,0.35);
+  }
+  .btn-red:active {
+    box-shadow: 0 2px 0 #7c0a0a, 0 2px 8px rgba(180,20,20,0.3);
+    transform: translateY(4px);
+  }
+  .btn-black {
+    background: radial-gradient(circle at 38% 32%, #555 0%, #222 55%, #000 100%);
+    box-shadow: 0 6px 0 #000, 0 8px 18px rgba(0,0,0,0.4);
+  }
+  .btn-black:active { box-shadow: 0 2px 0 #000; transform: translateY(4px); }
+  .btn-blue {
+    background: radial-gradient(circle at 38% 32%, #42a5f5 0%, #1565c0 55%, #0d3b7a 100%);
+    box-shadow: 0 6px 0 #0d3b7a, 0 8px 18px rgba(21,101,192,0.35);
+  }
+  .btn-blue:active { box-shadow: 0 2px 0 #0d3b7a; transform: translateY(4px); }
+  .btn-green {
+    background: radial-gradient(circle at 38% 32%, #66bb6a 0%, #2e7d32 55%, #1b4d1c 100%);
+    box-shadow: 0 6px 0 #1b4d1c, 0 8px 18px rgba(46,125,50,0.35);
+  }
+  .btn-green:active { box-shadow: 0 2px 0 #1b4d1c; transform: translateY(4px); }
+  .btn-yellow {
+    background: radial-gradient(circle at 38% 32%, #ffe066 0%, #c8a000 55%, #7a5f00 100%);
+    box-shadow: 0 6px 0 #7a5f00, 0 8px 18px rgba(200,160,0,0.35);
+  }
+  .btn-yellow:active { box-shadow: 0 2px 0 #7a5f00; transform: translateY(4px); }
+  .btn-purple {
+    background: radial-gradient(circle at 38% 32%, #ce93d8 0%, #7b1fa2 55%, #4a0072 100%);
+    box-shadow: 0 6px 0 #4a0072, 0 8px 18px rgba(123,31,162,0.35);
+  }
+  .btn-purple:active { box-shadow: 0 2px 0 #4a0072; transform: translateY(4px); }
+  .btn-cyan {
+    background: radial-gradient(circle at 38% 32%, #80deea 0%, #00838f 55%, #004d55 100%);
+    box-shadow: 0 6px 0 #004d55, 0 8px 18px rgba(0,131,143,0.35);
+  }
+  .btn-cyan:active { box-shadow: 0 2px 0 #004d55; transform: translateY(4px); }
+  .btn-orange {
+    background: radial-gradient(circle at 38% 32%, #ffb74d 0%, #e65100 55%, #8a2e00 100%);
+    box-shadow: 0 6px 0 #8a2e00, 0 8px 18px rgba(230,81,0,0.35);
+  }
+  .btn-orange:active { box-shadow: 0 2px 0 #8a2e00; transform: translateY(4px); }
+  .btn-brown {
+    background: radial-gradient(circle at 38% 32%, #a1887f 0%, #5d4037 55%, #321911 100%);
+    box-shadow: 0 6px 0 #321911, 0 8px 18px rgba(93,64,55,0.35);
+  }
+  .btn-brown:active { box-shadow: 0 2px 0 #321911; transform: translateY(4px); }
+  .btn-silver {
+    background: radial-gradient(circle at 38% 32%, #f5f5f5 0%, #9e9e9e 55%, #424242 100%);
+    box-shadow: 0 6px 0 #424242, 0 8px 18px rgba(0,0,0,0.2);
+  }
+  .btn-silver:active { box-shadow: 0 2px 0 #424242; transform: translateY(4px); }
+
+  .sound-name {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--text);
+    text-align: center;
+    line-height: 1.3;
+    min-height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .sound-actions {
+    display: flex;
+    gap: 5px;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  .action-btn {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: transform 0.15s, opacity 0.15s;
+    font-size: 12px;
+  }
+  .action-btn:active { transform: scale(0.88); }
+  .action-btn.heart  { background: #e53935; color: #fff; }
+  .action-btn.link   { background: #29b6f6; color: #fff; }
+  .action-btn.share  { background: #26a69a; color: #fff; }
+  .action-btn.dl     { background: #43a047; color: #fff; font-size: 14px; }
+  .action-btn:hover  { opacity: 0.82; }
+
+  /* PLAYING INDICATOR */
+  .playing-bar {
+    width: 100%;
+    height: 3px;
+    background: #eee;
+    border-radius: 2px;
+    overflow: hidden;
+    display: none;
+  }
+  .playing-bar.active { display: block; }
+  .playing-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--red), var(--gold));
+    border-radius: 2px;
+    width: 0%;
+    transition: width 0.1s linear;
+  }
+
+  /* LOADING SKELETON */
+  .skeleton-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    padding: 0 13px 16px;
+  }
+  @media (min-width: 600px) { .skeleton-grid { grid-template-columns: repeat(4, 1fr); } }
+  .skeleton-card {
+    background: #fff;
+    border-radius: 16px;
+    padding: 14px 8px 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+  .skeleton-circle {
+    width: 64px; height: 64px;
+    border-radius: 50%;
+    background: linear-gradient(90deg, #eee 25%, #ddd 50%, #eee 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.4s infinite;
+  }
+  .skeleton-line {
+    width: 70%; height: 12px; border-radius: 6px;
+    background: linear-gradient(90deg, #eee 25%, #ddd 50%, #eee 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.4s infinite;
+  }
+  @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+
+  /* CATEGORIES CHIPS */
+  .categories-row {
+    display: flex;
+    gap: 9px;
+    overflow-x: auto;
+    padding: 10px 13px 4px;
+    scrollbar-width: none;
+  }
+  .categories-row::-webkit-scrollbar { display: none; }
+  .chip {
+    background: #fff;
+    border: 2px solid var(--red);
+    color: var(--red-dark);
+    border-radius: 20px;
+    padding: 5px 14px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+    font-family: 'Hind Siliguri', sans-serif;
+  }
+  .chip:hover, .chip.active {
+    background: var(--red);
+    color: #fff;
+  }
+
+  /* UPLOAD AREA */
+  .upload-section {
+    margin: 16px 13px;
+    background: linear-gradient(135deg, #fff5f5 0%, #fff 100%);
+    border: 2px dashed var(--red-light);
+    border-radius: 16px;
+    padding: 20px;
+    text-align: center;
+  }
+  .upload-section h3 {
+    font-family: 'Baloo Da 2', cursive;
+    color: var(--red-dark);
+    font-size: 1rem;
+    margin-bottom: 6px;
+  }
+  .upload-section p {
+    font-size: 0.82rem;
+    color: var(--muted);
+    margin-bottom: 12px;
+  }
+  .upload-btn {
+    background: var(--red);
+    color: #fff;
+    border: none;
+    border-radius: 24px;
+    padding: 9px 24px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: 'Hind Siliguri', sans-serif;
+    transition: background 0.2s, transform 0.15s;
+    box-shadow: 0 3px 10px rgba(200,30,30,0.25);
+  }
+  .upload-btn:hover { background: var(--red-dark); transform: scale(1.04); }
+
+  /* TOAST */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(60px);
+    background: #222;
+    color: #fff;
+    border-radius: 24px;
+    padding: 10px 22px;
+    font-size: 0.92rem;
+    font-weight: 600;
+    z-index: 1000;
+    opacity: 0;
+    transition: opacity 0.3s, transform 0.3s;
+    pointer-events: none;
+  }
+  .toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  /* FOOTER */
+  footer {
+    text-align: center;
+    padding: 18px;
+    font-size: 0.78rem;
+    color: var(--muted);
+    border-top: 1px solid #eee;
+    margin-top: 10px;
+  }
+  footer span { color: var(--red); font-weight: 700; }
+
+  /* MODAL */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.55);
+    z-index: 200;
+    align-items: flex-end;
+    justify-content: center;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: #fff;
+    border-radius: 24px 24px 0 0;
+    width: 100%;
+    max-width: 480px;
+    padding: 22px 22px 34px;
+    animation: slideUp 0.28s cubic-bezier(0.4,0,0.2,1);
+  }
+  @keyframes slideUp {
+    from { transform: translateY(100%); }
+    to { transform: translateY(0); }
+  }
+  .modal-handle {
+    width: 42px; height: 4px;
+    background: #ddd;
+    border-radius: 2px;
+    margin: 0 auto 18px;
+  }
+  .modal h2 {
+    font-family: 'Baloo Da 2', cursive;
+    font-size: 1.25rem;
+    color: var(--red-dark);
+    margin-bottom: 6px;
+  }
+  .modal p { font-size: 0.85rem; color: var(--muted); margin-bottom: 16px; }
+  .modal-btns { display: flex; flex-direction: column; gap: 10px; }
+  .modal-btn {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: var(--btn-blue);
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    padding: 13px 18px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: 'Hind Siliguri', sans-serif;
+    transition: background 0.15s, transform 0.15s;
+  }
+  .modal-btn:hover { background: #1251a3; transform: scale(1.02); }
+  .modal-btn svg { width: 20px; height: 20px; fill: #fff; flex-shrink: 0; }
+  .modal-close { background: #eee; color: #555; margin-top: 6px; }
+  .modal-close:hover { background: #ddd; }
+
+  /* RIPPLE */
+  @keyframes ripple { to { transform: scale(2.5); opacity: 0; } }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo">Sound<span>Board</span> BD</div>
+  <div class="nav-right">
+    <button class="nav-refresh" id="refreshBtn" onclick="refreshFromGitHub()" title="GitHub থেকে রিফ্রেশ">🔄</button>
+    <div class="nav-search" onclick="document.querySelector('.search-input-wrap input').focus()">
+      <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+    </div>
+  </div>
+</nav>
+
+<div class="search-area">
+  <div class="search-input-wrap">
+    <input type="text" id="searchInput" placeholder="সাউন্ড খুঁজুন..." oninput="filterSounds()">
+    <button onclick="filterSounds()">🔍</button>
+  </div>
+</div>
+
+<!-- GITHUB CONFIG -->
+<div class="github-config">
+  <h3>🐙 GitHub Repository থেকে সাউন্ড লোড করুন</h3>
+  <div class="github-inputs">
+    <div class="github-row">
+      <input type="text" id="ghUser" placeholder="GitHub Username (যেমন: yourname)" />
+      <input type="text" id="ghRepo" placeholder="Repository Name (যেমন: sounds)" />
+    </div>
+    <div class="github-row">
+      <input type="text" id="ghFolder" placeholder="Folder Path (খালি রাখলে root, যেমন: sounds/bd)" />
+      <button class="github-load-btn" onclick="loadFromGitHub()">▶ লোড করুন</button>
+    </div>
+  </div>
+  <div class="github-status" id="githubStatus"></div>
+</div>
+
+<div class="trending-banner">🔥 <span>বাংলাদেশে ট্রেন্ডিং</span> — আজকের সেরা সাউন্ড</div>
+
+<div class="categories-row" id="categories">
+  <div class="chip active" onclick="filterByCategory('all', this)">সব</div>
+  <div class="chip" onclick="filterByCategory('funny', this)">😂 মজার</div>
+  <div class="chip" onclick="filterByCategory('meme', this)">🎭 মিম</div>
+  <div class="chip" onclick="filterByCategory('bengali', this)">🇧🇩 বাংলা</div>
+  <div class="chip" onclick="filterByCategory('music', this)">🎵 মিউজিক</div>
+  <div class="chip" onclick="filterByCategory('anime', this)">✨ এনিমে</div>
+  <div class="chip" onclick="filterByCategory('effect', this)">💥 ইফেক্ট</div>
+  <div class="chip" id="ghChip" style="display:none" onclick="filterByCategory('github', this)">🐙 GitHub</div>
+</div>
+
+<div class="section-title" id="sectionTitle">🔥 ট্রেন্ডিং সাউন্ড</div>
+<div class="sound-grid" id="soundGrid"></div>
+
+<div class="upload-section">
+  <h3>📤 আপনার সাউন্ড আপলোড করুন</h3>
+  <p>নিজের সাউন্ড আপলোড করে সবার সাথে শেয়ার করুন!</p>
+  <button class="upload-btn" onclick="showToast('আপলোড ফিচার শীঘ্রই আসছে! 🎉')">+ সাউন্ড আপলোড</button>
+</div>
+
+<footer>
+  &copy; 2026 <span>SoundBoard BD</span> — সবার জন্য ইন্সট্যান্ট সাউন্ড 🔊
+</footer>
+
+<div class="toast" id="toast"></div>
+
+<!-- SHARE MODAL -->
+<div class="modal-overlay" id="shareModal" onclick="closeModal()">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-handle"></div>
+    <h2 id="modalSoundName">সাউন্ড শেয়ার করুন</h2>
+    <p>এই সাউন্ডটি শেয়ার করুন বন্ধুদের সাথে</p>
+    <div class="modal-btns">
+      <button class="modal-btn" onclick="shareAction('link')">
+        <svg viewBox="0 0 24 24"><path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/></svg>
+        লিঙ্ক কপি করুন
+      </button>
+      <button class="modal-btn" style="background:#25d366" onclick="shareAction('whatsapp')">
+        <svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+        WhatsApp এ শেয়ার
+      </button>
+      <button class="modal-btn" style="background:#e1306c" onclick="shareAction('instagram')">
+        <svg viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+        Instagram এ শেয়ার
+      </button>
+      <button class="modal-btn modal-close" onclick="closeModal()">বাতিল করুন</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ===================== BUILT-IN SOUNDS =====================
+const builtinSounds = [
+  { id:1,  name:"VINE BOOM SOUND",    cat:"meme",    color:"btn-red",    freq:80,  type:"boom",      src:null },
+  { id:2,  name:"FAAAH",              cat:"funny",   color:"btn-black",  freq:150, type:"fart",      src:null },
+  { id:3,  name:"Fart",               cat:"funny",   color:"btn-brown",  freq:120, type:"fart2",     src:null },
+  { id:4,  name:"একবার ধোকা খাইছি",  cat:"bengali", color:"btn-red",    freq:220, type:"voice",     src:null },
+  { id:5,  name:"cat laugh meme 1",   cat:"meme",    color:"btn-red",    freq:440, type:"laugh",     src:null },
+  { id:6,  name:"Metal pipe clang",   cat:"effect",  color:"btn-black",  freq:700, type:"clang",     src:null },
+  { id:7,  name:"Kyu re madarchod",   cat:"bengali", color:"btn-red",    freq:200, type:"voice2",    src:null },
+  { id:8,  name:"Bengali gaali",      cat:"bengali", color:"btn-green",  freq:180, type:"voice3",    src:null },
+  { id:9,  name:"na na na",           cat:"meme",    color:"btn-red",    freq:330, type:"tune",      src:null },
+  { id:10, name:"Kata kella",         cat:"bengali", color:"btn-red",    freq:260, type:"voice4",    src:null },
+  { id:11, name:"dun dun dunnnnnnn",  cat:"music",   color:"btn-red",    freq:55,  type:"dramatic",  src:null },
+  { id:12, name:"baby laughing meme", cat:"funny",   color:"btn-cyan",   freq:500, type:"laugh2",    src:null },
+  { id:13, name:"Dudu Khao",          cat:"bengali", color:"btn-silver", freq:380, type:"voice5",    src:null },
+  { id:14, name:"GopGopGop",          cat:"funny",   color:"btn-yellow", freq:160, type:"funny1",    src:null },
+  { id:15, name:"Maaf Koira Dilam",   cat:"bengali", color:"btn-silver", freq:240, type:"voice6",    src:null },
+  { id:16, name:"anime ahh",          cat:"anime",   color:"btn-red",    freq:420, type:"anime1",    src:null },
+  { id:17, name:"গরিবের আওয়াজ",      cat:"bengali", color:"btn-green",  freq:190, type:"voice7",    src:null },
+  { id:18, name:"Kis color chaddi",   cat:"funny",   color:"btn-yellow", freq:310, type:"funny2",    src:null },
+  { id:19, name:"oebreuwo",           cat:"meme",    color:"btn-purple", freq:350, type:"meme1",     src:null },
+  { id:20, name:"FAHHHHHH",           cat:"funny",   color:"btn-red",    freq:90,  type:"scream",    src:null },
+  { id:21, name:"Звук фотоаппарата",  cat:"effect",  color:"btn-purple", freq:800, type:"camera",    src:null },
+  { id:22, name:"Airhorn",            cat:"effect",  color:"btn-orange", freq:440, type:"horn",      src:null },
+  { id:23, name:"বাংলা ড্রামস",       cat:"music",   color:"btn-red",    freq:60,  type:"drum",      src:null },
+  { id:24, name:"Sad violin",         cat:"music",   color:"btn-blue",   freq:220, type:"violin",    src:null },
+];
+
+// ===================== STATE =====================
+let githubSounds  = [];   // sounds loaded from GitHub
+let allSounds     = [...builtinSounds];
+let activeCategory = 'all';
+let audioCtx = null;
+const AUDIO_EXTS = ['mp3','wav','ogg','flac','aac','m4a','opus','webm'];
+
+// saved GitHub config — default to economist-bd/soundboard
+const DEFAULT_GH = { user: 'economist-bd', repo: 'soundboard', folder: '' };
+let savedGhConfig = JSON.parse(localStorage.getItem('ghConfig') || 'null') || DEFAULT_GH;
+if (savedGhConfig.user) {
+  document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('ghUser').value   = savedGhConfig.user   || '';
+    document.getElementById('ghRepo').value   = savedGhConfig.repo   || '';
+    document.getElementById('ghFolder').value = savedGhConfig.folder || '';
+    loadFromGitHub(true); // silent auto-load
+  });
+}
+
+// ===================== GITHUB LOADER =====================
+async function loadFromGitHub(silent = false) {
+  const user   = document.getElementById('ghUser').value.trim();
+  const repo   = document.getElementById('ghRepo').value.trim();
+  const folder = document.getElementById('ghFolder').value.trim();
+
+  if (!user || !repo) {
+    setGhStatus('err', '⚠️ Username এবং Repository name দিন।');
+    return;
+  }
+
+  const path = folder ? folder.replace(/^\/|\/$/g,'') : '';
+  const apiUrl = `https://api.github.com/repos/${user}/${repo}/contents/${path}`;
+
+  setGhStatus('loading', '⏳ GitHub থেকে লোড হচ্ছে...');
+  spinRefresh(true);
+
+  try {
+    const res = await fetch(apiUrl, { headers: { Accept: 'application/vnd.github.v3+json' } });
+    if (!res.ok) throw new Error(`HTTP ${res.status} — repo/folder খুঁজে পাওয়া যায়নি।`);
+
+    const files = await res.json();
+    const audioFiles = files.filter(f =>
+      f.type === 'file' &&
+      AUDIO_EXTS.some(ext => f.name.toLowerCase().endsWith('.' + ext))
+    );
+
+    if (audioFiles.length === 0) {
+      setGhStatus('err', '❌ এই folder এ কোনো audio file নেই। (.mp3, .wav, .ogg, .flac, .aac, .m4a সাপোর্ট করে)');
+      spinRefresh(false);
+      return;
+    }
+
+    const colors = ['btn-red','btn-blue','btn-green','btn-purple','btn-cyan','btn-orange','btn-yellow','btn-brown','btn-silver','btn-black'];
+
+    githubSounds = audioFiles.map((f, i) => ({
+      id: 1000 + i,
+      name: f.name.replace(/\.[^.]+$/, '').replace(/[_-]/g,' '),
+      cat: 'github',
+      color: colors[i % colors.length],
+      freq: 440,
+      type: 'github',
+      src: f.download_url,
+      filename: f.name,
+    }));
+
+    // save config
+    localStorage.setItem('ghConfig', JSON.stringify({ user, repo, folder }));
+
+    allSounds = [...builtinSounds, ...githubSounds];
+    document.getElementById('ghChip').style.display = '';
+    setGhStatus('ok', `✅ ${audioFiles.length}টি সাউন্ড লোড হয়েছে "${user}/${repo}${path ? '/'+path : ''}" থেকে।`);
+    filterSounds();
+    if (!silent) showToast(`🎵 ${audioFiles.length}টি সাউন্ড GitHub থেকে লোড হয়েছে!`);
+  } catch(e) {
+    setGhStatus('err', `❌ ত্রুটি: ${e.message}`);
+  }
+  spinRefresh(false);
+}
+
+function refreshFromGitHub() {
+  const user = document.getElementById('ghUser').value.trim();
+  if (!user) { showToast('⚠️ আগে GitHub config দিন'); return; }
+  loadFromGitHub(false);
+}
+
+function setGhStatus(type, msg) {
+  const el = document.getElementById('githubStatus');
+  el.className = 'github-status ' + type;
+  el.textContent = msg;
+}
+
+function spinRefresh(on) {
+  document.getElementById('refreshBtn').classList.toggle('spinning', on);
+}
+
+// ===================== AUDIO CONTEXT =====================
+function getAudioCtx() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  return audioCtx;
+}
+
+// ===================== SINGLE-PLAY STATE =====================
+let currentAudio    = null;   // active HTML Audio (GitHub sounds)
+let currentCard     = null;   // card currently marked .playing
+let currentOscNodes = [];     // active oscillator nodes (synth sounds)
+let currentStopTimer = null;  // safety timeout
+
+function stopCurrent() {
+  // stop HTML audio
+  if (currentAudio) {
+    currentAudio.pause();
+    currentAudio.currentTime = 0;
+    currentAudio = null;
+  }
+  // stop oscillators
+  currentOscNodes.forEach(n => { try { n.stop(); } catch(_){} });
+  currentOscNodes = [];
+  // clear safety timer
+  if (currentStopTimer) { clearTimeout(currentStopTimer); currentStopTimer = null; }
+  // remove playing class from previous card
+  if (currentCard) { currentCard.classList.remove('playing'); currentCard = null; }
+}
+
+// ===================== PLAY SOUND =====================
+const audioCache = {};
+
+function playSound(soundObj, cardEl) {
+  // Stop whatever is currently playing
+  stopCurrent();
+
+  // Mark new card
+  currentCard = cardEl;
+  cardEl.classList.add('playing');
+
+  // ── GitHub / real audio file ──────────────────────────
+  if (soundObj.src) {
+    let audio = audioCache[soundObj.src];
+    if (!audio) {
+      audio = new Audio(soundObj.src);
+      audio.crossOrigin = 'anonymous';
+      audioCache[soundObj.src] = audio;
+    }
+    audio.currentTime = 0;
+    currentAudio = audio;
+
+    audio.onended = () => {
+      if (currentCard === cardEl) stopCurrent();
+    };
+    audio.onerror = () => {
+      showToast('❌ সাউন্ড প্লে হয়নি।');
+      if (currentCard === cardEl) stopCurrent();
+    };
+    audio.play().catch(() => {
+      showToast('❌ সাউন্ড প্লে হয়নি।');
+      stopCurrent();
+    });
+
+    // safety fallback: clear after 3 min max
+    currentStopTimer = setTimeout(stopCurrent, 180000);
+    return;
+  }
+
+  // ── Synth fallback for builtin sounds ─────────────────
+  const ctx  = getAudioCtx();
+  const type = soundObj.type;
+  const freq = soundObj.freq;
+
+  // Helper to track oscillator nodes
+  function makeOsc() {
+    const o = ctx.createOscillator();
+    const g = ctx.createGain();
+    o.connect(g); g.connect(ctx.destination);
+    currentOscNodes.push(o);
+    return { o, g };
+  }
+
+  let duration = 0.5; // default synth duration
+
+  if (type === 'boom') {
+    const {o,g} = makeOsc();
+    o.type = 'sawtooth'; o.frequency.setValueAtTime(freq, ctx.currentTime);
+    o.frequency.exponentialRampToValueAtTime(10, ctx.currentTime + 0.5);
+    g.gain.setValueAtTime(1, ctx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.6);
+    o.start(); o.stop(ctx.currentTime + 0.6); duration = 0.6;
+
+  } else if (type === 'clang') {
+    const {o,g} = makeOsc();
+    o.type = 'square'; o.frequency.setValueAtTime(800, ctx.currentTime);
+    o.frequency.exponentialRampToValueAtTime(200, ctx.currentTime + 0.3);
+    g.gain.setValueAtTime(0.8, ctx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
+    o.start(); o.stop(ctx.currentTime + 0.35); duration = 0.35;
+
+  } else if (type === 'horn') {
+    const {o,g} = makeOsc();
+    o.type = 'sawtooth'; o.frequency.setValueAtTime(440, ctx.currentTime);
+    g.gain.setValueAtTime(0.6, ctx.currentTime);
+    g.gain.setValueAtTime(0.6, ctx.currentTime + 0.4);
+    g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.5);
+    o.start(); o.stop(ctx.currentTime + 0.5); duration = 0.5;
+
+  } else if (type === 'dramatic') {
+    [55,65,82].forEach((hz,i) => {
+      const {o:oo,g:gg} = makeOsc();
+      oo.type = 'triangle'; oo.frequency.value = hz;
+      gg.gain.setValueAtTime(0, ctx.currentTime + i*0.18);
+      gg.gain.linearRampToValueAtTime(0.5, ctx.currentTime + i*0.18 + 0.1);
+      gg.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i*0.18 + 0.9);
+      oo.start(ctx.currentTime + i*0.18); oo.stop(ctx.currentTime + i*0.18 + 1);
+    }); duration = 1.5;
+
+  } else if (type === 'camera') {
+    const {o,g} = makeOsc();
+    o.type = 'sine'; o.frequency.setValueAtTime(1200, ctx.currentTime);
+    o.frequency.setValueAtTime(200, ctx.currentTime + 0.05);
+    g.gain.setValueAtTime(0.7, ctx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.25);
+    o.start(); o.stop(ctx.currentTime + 0.25); duration = 0.25;
+
+  } else if (type === 'drum') {
+    [0, 0.25, 0.5, 0.75].forEach(t => {
+      const {o:oo,g:gg} = makeOsc();
+      oo.type = 'sine'; oo.frequency.setValueAtTime(150, ctx.currentTime+t);
+      oo.frequency.exponentialRampToValueAtTime(40, ctx.currentTime+t+0.15);
+      gg.gain.setValueAtTime(0.8, ctx.currentTime+t);
+      gg.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime+t+0.18);
+      oo.start(ctx.currentTime+t); oo.stop(ctx.currentTime+t+0.2);
+    }); duration = 1.0;
+
+  } else if (type === 'violin') {
+    const {o,g} = makeOsc();
+    o.type = 'sine'; o.frequency.setValueAtTime(220, ctx.currentTime);
+    o.frequency.linearRampToValueAtTime(180, ctx.currentTime + 0.5);
+    g.gain.setValueAtTime(0, ctx.currentTime);
+    g.gain.linearRampToValueAtTime(0.5, ctx.currentTime + 0.1);
+    g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 1.2);
+    o.start(); o.stop(ctx.currentTime + 1.2); duration = 1.2;
+
+  } else {
+    const {o,g} = makeOsc();
+    o.type = 'sine'; o.frequency.setValueAtTime(freq, ctx.currentTime);
+    g.gain.setValueAtTime(0.6, ctx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
+    o.start(); o.stop(ctx.currentTime + 0.45); duration = 0.45;
+  }
+
+  // Auto-clear after synth finishes
+  currentStopTimer = setTimeout(() => {
+    if (currentCard === cardEl) stopCurrent();
+  }, (duration + 0.1) * 1000);
+}
+
+// ===================== DOWNLOAD =====================
+function downloadSound(soundObj) {
+  if (!soundObj.src) {
+    showToast('⚠️ Built-in সাউন্ড ডাউনলোড করা যাবে না।');
+    return;
+  }
+  showToast('⬇️ ডাউনলোড শুরু হচ্ছে...');
+  fetch(soundObj.src)
+    .then(r => r.blob())
+    .then(blob => {
+      const url = URL.createObjectURL(blob);
+      const a   = document.createElement('a');
+      a.href     = url;
+      a.download = soundObj.filename || soundObj.name + '.mp3';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showToast('✅ ডাউনলোড সম্পন্ন!');
+    })
+    .catch(() => {
+      // fallback: direct link
+      const a = document.createElement('a');
+      a.href = soundObj.src;
+      a.download = soundObj.filename || soundObj.name;
+      a.target = '_blank';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    });
+}
+
+// ===================== RENDER =====================
+function renderSounds(list) {
+  const grid = document.getElementById('soundGrid');
+  grid.innerHTML = '';
+
+  if (list.length === 0) {
+    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:#aaa;padding:32px;font-size:0.95rem;">😕 কোনো সাউন্ড পাওয়া যায়নি</div>';
+    return;
+  }
+
+  list.forEach(s => {
+    const isGh = !!s.src;
+    const card = document.createElement('div');
+    card.className = 'sound-card';
+    card.dataset.id = s.id;
+
+    const dlBtn = isGh
+      ? `<button class="action-btn dl" onclick="event.stopPropagation();downloadSound(window.__sounds[${s.id}])" title="ডাউনলোড">⬇</button>`
+      : '';
+
+    card.innerHTML = `
+      <div class="sound-btn-wrap" onclick="playSound(window.__sounds[${s.id}], this.closest('.sound-card'))">
+        <button class="btn-3d ${s.color}" aria-label="${s.name}"></button>
+      </div>
+      <div class="sound-name">${s.name}</div>
+      <div class="sound-actions">
+        <button class="action-btn heart" onclick="event.stopPropagation();toggleFav(this)" title="ফেভারিট">♥</button>
+        <button class="action-btn link"  onclick="event.stopPropagation();copyLink('${s.name}')" title="লিঙ্ক কপি">🔗</button>
+        <button class="action-btn share" onclick="event.stopPropagation();openShare('${s.name}')" title="শেয়ার">➤</button>
+        ${dlBtn}
+      </div>
+    `;
+    grid.appendChild(card);
+  });
+}
+
+// Global sound lookup for onclick handlers
+function rebuildLookup() {
+  window.__sounds = {};
+  allSounds.forEach(s => { window.__sounds[s.id] = s; });
+}
+
+// ===================== FILTER =====================
+function filterSounds() {
+  const q = document.getElementById('searchInput').value.toLowerCase();
+  const filtered = allSounds.filter(s =>
+    (activeCategory === 'all' || s.cat === activeCategory) &&
+    s.name.toLowerCase().includes(q)
+  );
+  rebuildLookup();
+  renderSounds(filtered);
+  const title = document.getElementById('sectionTitle');
+  title.textContent = q
+    ? `🔍 "${document.getElementById('searchInput').value}" এর ফলাফল`
+    : activeCategory === 'github'
+    ? '🐙 GitHub সাউন্ড'
+    : '🔥 ট্রেন্ডিং সাউন্ড';
+}
+
+function filterByCategory(cat, el) {
+  activeCategory = cat;
+  document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  filterSounds();
+}
+
+// ===================== ACTIONS =====================
+function toggleFav(btn) {
+  const on = btn.dataset.fav === '1';
+  btn.dataset.fav = on ? '0' : '1';
+  btn.style.background = on ? '#e53935' : '#ff8a80';
+  showToast(on ? '💔 ফেভারিট থেকে সরানো হয়েছে' : 'ফেভারিটে যোগ করা হয়েছে! ❤️');
+}
+
+function copyLink(name) {
+  navigator.clipboard?.writeText(`https://soundboard-bd.com/sound/${encodeURIComponent(name)}`).catch(() => {});
+  showToast('লিঙ্ক কপি হয়েছে! 🔗');
+}
+
+let currentShareName = '';
+function openShare(name) {
+  currentShareName = name;
+  document.getElementById('modalSoundName').textContent = name;
+  document.getElementById('shareModal').classList.add('open');
+}
+function closeModal() {
+  document.getElementById('shareModal').classList.remove('open');
+}
+function shareAction(platform) {
+  closeModal();
+  showToast(platform === 'link' ? 'লিঙ্ক কপি হয়েছে! 🔗' : platform === 'whatsapp' ? 'WhatsApp এ শেয়ার হচ্ছে... 💚' : 'Instagram এ শেয়ার হচ্ছে... 🌸');
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+// ===================== INIT =====================
+rebuildLookup();
+renderSounds(allSounds);
+
+// Auto-load if saved config exists
+if (savedGhConfig.user) {
+  document.getElementById('ghUser').value   = savedGhConfig.user   || '';
+  document.getElementById('ghRepo').value   = savedGhConfig.repo   || '';
+  document.getElementById('ghFolder').value = savedGhConfig.folder || '';
+  loadFromGitHub(true);
+}
+</script>
+</body>
+</html>

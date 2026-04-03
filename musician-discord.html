@@ -1,0 +1,1094 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>MusicHub — Musicians Community</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+  :root {
+    --bg-primary: #0e0e14;
+    --bg-secondary: #16161f;
+    --bg-tertiary: #1e1e2e;
+    --bg-hover: #252535;
+    --accent: #7c4dff;
+    --accent-light: #9c6fff;
+    --accent-glow: rgba(124, 77, 255, 0.3);
+    --green: #43d98c;
+    --orange: #ff8c42;
+    --pink: #ff4d8d;
+    --text-primary: #e8e8f0;
+    --text-secondary: #8888aa;
+    --text-muted: #55556a;
+    --border: #2a2a3e;
+    --border-light: #333350;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    height: 100vh;
+    display: flex;
+    overflow: hidden;
+  }
+
+  /* ── SETUP MODAL ── */
+  #setup-modal {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.85);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 9999;
+    backdrop-filter: blur(8px);
+  }
+  #setup-modal.hidden { display: none; }
+  .setup-box {
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-light);
+    border-radius: 20px;
+    padding: 40px;
+    width: 460px;
+    box-shadow: 0 30px 80px rgba(0,0,0,0.6), 0 0 60px var(--accent-glow);
+  }
+  .setup-box h2 {
+    font-size: 24px; font-weight: 700;
+    background: linear-gradient(135deg, #7c4dff, #ff4d8d);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    margin-bottom: 6px;
+  }
+  .setup-box p { color: var(--text-secondary); font-size: 14px; margin-bottom: 28px; }
+  .setup-box label { font-size: 12px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.8px; display: block; margin-bottom: 6px; }
+  .setup-box input, .setup-box select {
+    width: 100%; padding: 12px 14px;
+    background: var(--bg-secondary); border: 1px solid var(--border);
+    border-radius: 10px; color: var(--text-primary); font-size: 14px;
+    margin-bottom: 18px; outline: none; transition: border 0.2s;
+  }
+  .setup-box input:focus, .setup-box select:focus { border-color: var(--accent); }
+  .setup-box select option { background: var(--bg-secondary); }
+  .instrument-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 20px;
+  }
+  .instr-btn {
+    padding: 8px; background: var(--bg-secondary); border: 1px solid var(--border);
+    border-radius: 8px; color: var(--text-secondary); font-size: 12px; cursor: pointer;
+    text-align: center; transition: all 0.2s;
+  }
+  .instr-btn:hover { border-color: var(--accent); color: var(--text-primary); }
+  .instr-btn.selected { background: var(--accent-glow); border-color: var(--accent); color: var(--accent-light); }
+  .btn-primary {
+    width: 100%; padding: 14px; background: linear-gradient(135deg, #7c4dff, #9c4fff);
+    border: none; border-radius: 10px; color: #fff; font-size: 15px; font-weight: 600;
+    cursor: pointer; transition: all 0.2s;
+  }
+  .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 8px 25px var(--accent-glow); }
+
+  /* ── LAYOUT ── */
+  #server-sidebar {
+    width: 72px; background: var(--bg-primary);
+    display: flex; flex-direction: column; align-items: center;
+    padding: 12px 0; gap: 8px; border-right: 1px solid var(--border);
+    overflow-y: auto;
+  }
+  .server-icon {
+    width: 48px; height: 48px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; cursor: pointer; transition: all 0.2s;
+    position: relative;
+  }
+  .server-icon.home {
+    background: linear-gradient(135deg, #7c4dff, #ff4d8d);
+    border-radius: 16px;
+  }
+  .server-icon.channel-server {
+    background: var(--bg-tertiary); border: 1px solid var(--border);
+    font-size: 14px; font-weight: 700; color: var(--text-secondary);
+    border-radius: 50%;
+  }
+  .server-icon.channel-server:hover, .server-icon.channel-server.active {
+    border-color: var(--accent); color: var(--accent-light); border-radius: 16px;
+  }
+  .server-icon.add-server {
+    background: var(--bg-tertiary); border: 2px dashed var(--border);
+    color: var(--green); border-radius: 50%;
+  }
+  .server-icon.add-server:hover { border-color: var(--green); border-radius: 16px; }
+  .server-divider { width: 32px; height: 2px; background: var(--border); border-radius: 1px; }
+
+  #channel-sidebar {
+    width: 240px; background: var(--bg-secondary);
+    display: flex; flex-direction: column;
+    border-right: 1px solid var(--border);
+  }
+  .channel-header {
+    padding: 16px; border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .channel-header h3 { font-size: 15px; font-weight: 700; }
+  .channel-header span { font-size: 11px; color: var(--text-secondary); }
+  .channels-list { flex: 1; overflow-y: auto; padding: 8px 0; }
+  .channel-category {
+    padding: 16px 8px 6px 8px;
+    font-size: 11px; font-weight: 700; color: var(--text-muted);
+    text-transform: uppercase; letter-spacing: 1px;
+    display: flex; align-items: center; justify-content: space-between; cursor: pointer;
+  }
+  .channel-item {
+    padding: 8px 8px 8px 16px; margin: 1px 8px;
+    border-radius: 6px; cursor: pointer; display: flex;
+    align-items: center; gap: 8px; color: var(--text-secondary);
+    font-size: 14px; transition: all 0.15s;
+  }
+  .channel-item:hover { background: var(--bg-hover); color: var(--text-primary); }
+  .channel-item.active { background: var(--bg-hover); color: var(--text-primary); }
+  .channel-item .ch-icon { font-size: 16px; width: 20px; text-align: center; }
+  .channel-item .unread-badge {
+    margin-left: auto; background: var(--pink); color: #fff;
+    font-size: 10px; font-weight: 700; border-radius: 10px;
+    padding: 2px 6px; min-width: 18px; text-align: center;
+  }
+  .user-panel {
+    padding: 10px 12px; border-top: 1px solid var(--border);
+    display: flex; align-items: center; gap: 10px;
+    background: var(--bg-primary);
+  }
+  .user-avatar-sm {
+    width: 34px; height: 34px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; font-weight: 700; flex-shrink: 0;
+    position: relative;
+  }
+  .user-avatar-sm .online-dot {
+    position: absolute; bottom: 0; right: 0;
+    width: 10px; height: 10px; border-radius: 50%;
+    background: var(--green); border: 2px solid var(--bg-primary);
+  }
+  .user-info-sm { flex: 1; min-width: 0; }
+  .user-info-sm .name { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .user-info-sm .tag { font-size: 11px; color: var(--text-secondary); }
+  .user-controls { display: flex; gap: 4px; }
+  .user-controls button {
+    width: 28px; height: 28px; background: none; border: none;
+    color: var(--text-secondary); cursor: pointer; border-radius: 4px;
+    font-size: 13px; transition: all 0.15s;
+  }
+  .user-controls button:hover { background: var(--bg-hover); color: var(--text-primary); }
+
+  /* ── MAIN CHAT ── */
+  #main-content {
+    flex: 1; display: flex; flex-direction: column; overflow: hidden;
+  }
+  .chat-header {
+    padding: 14px 20px; border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 12px; flex-shrink: 0;
+    background: var(--bg-secondary);
+  }
+  .chat-header .ch-name { font-size: 16px; font-weight: 700; }
+  .chat-header .ch-desc { font-size: 13px; color: var(--text-secondary); }
+  .chat-header .header-actions { margin-left: auto; display: flex; gap: 8px; }
+  .header-btn {
+    padding: 6px 12px; background: var(--bg-hover); border: 1px solid var(--border);
+    border-radius: 8px; color: var(--text-secondary); font-size: 12px; cursor: pointer;
+    transition: all 0.15s;
+  }
+  .header-btn:hover { border-color: var(--accent); color: var(--accent-light); }
+
+  .messages-area {
+    flex: 1; overflow-y: auto; padding: 20px;
+    display: flex; flex-direction: column; gap: 4px;
+  }
+  .messages-area::-webkit-scrollbar { width: 6px; }
+  .messages-area::-webkit-scrollbar-track { background: transparent; }
+  .messages-area::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+  .message-group { display: flex; gap: 14px; padding: 6px 0; }
+  .message-group:hover { background: rgba(255,255,255,0.02); border-radius: 8px; padding: 6px 8px; margin: 0 -8px; }
+  .msg-avatar {
+    width: 40px; height: 40px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; font-weight: 700; flex-shrink: 0; margin-top: 2px;
+  }
+  .msg-content { flex: 1; min-width: 0; }
+  .msg-meta { display: flex; align-items: baseline; gap: 10px; margin-bottom: 4px; }
+  .msg-author { font-size: 14px; font-weight: 600; }
+  .msg-time { font-size: 11px; color: var(--text-muted); }
+  .msg-instruments { display: flex; gap: 4px; }
+  .instrument-tag {
+    font-size: 10px; padding: 1px 6px; border-radius: 10px;
+    font-weight: 600; background: var(--accent-glow); color: var(--accent-light);
+    border: 1px solid var(--accent);
+  }
+  .msg-text { font-size: 14px; color: var(--text-primary); line-height: 1.6; word-break: break-word; }
+  .msg-text a { color: var(--accent-light); text-decoration: none; }
+  .msg-text a:hover { text-decoration: underline; }
+
+  .music-share-card {
+    margin-top: 8px; padding: 14px; background: var(--bg-tertiary);
+    border: 1px solid var(--border); border-left: 3px solid var(--accent);
+    border-radius: 10px; display: flex; align-items: center; gap: 14px;
+    max-width: 420px;
+  }
+  .music-share-card .play-btn {
+    width: 40px; height: 40px; background: var(--accent);
+    border: none; border-radius: 50%; color: #fff; font-size: 14px;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; transition: all 0.2s;
+  }
+  .music-share-card .play-btn:hover { transform: scale(1.1); background: var(--accent-light); }
+  .music-share-card .track-info .track-title { font-size: 13px; font-weight: 600; }
+  .music-share-card .track-info .track-meta { font-size: 11px; color: var(--text-secondary); margin-top: 2px; }
+  .waveform {
+    display: flex; align-items: center; gap: 2px; height: 24px; margin-top: 6px;
+  }
+  .waveform-bar {
+    width: 3px; border-radius: 2px; background: var(--accent);
+    opacity: 0.6; animation: wave 1.2s ease-in-out infinite;
+  }
+
+  @keyframes wave {
+    0%, 100% { transform: scaleY(1); }
+    50% { transform: scaleY(0.3); }
+  }
+
+  .date-divider {
+    display: flex; align-items: center; gap: 12px;
+    margin: 16px 0; color: var(--text-muted); font-size: 12px; font-weight: 500;
+  }
+  .date-divider::before, .date-divider::after {
+    content: ''; flex: 1; height: 1px; background: var(--border);
+  }
+
+  /* ── INPUT ── */
+  .chat-input-area {
+    padding: 16px 20px; flex-shrink: 0;
+  }
+  .input-box {
+    background: var(--bg-tertiary); border: 1px solid var(--border);
+    border-radius: 12px; display: flex; align-items: flex-end; gap: 8px; padding: 10px 14px;
+    transition: border 0.2s;
+  }
+  .input-box:focus-within { border-color: var(--border-light); }
+  .input-actions-left { display: flex; gap: 4px; align-items: center; }
+  .input-btn {
+    width: 32px; height: 32px; background: none; border: none;
+    color: var(--text-muted); cursor: pointer; border-radius: 6px;
+    font-size: 15px; display: flex; align-items: center; justify-content: center;
+    transition: all 0.15s;
+  }
+  .input-btn:hover { color: var(--text-primary); background: var(--bg-hover); }
+  #message-input {
+    flex: 1; background: none; border: none; color: var(--text-primary);
+    font-size: 14px; resize: none; outline: none; max-height: 120px;
+    font-family: 'Inter', sans-serif; line-height: 1.5;
+  }
+  #message-input::placeholder { color: var(--text-muted); }
+  .send-btn {
+    width: 34px; height: 34px; background: var(--accent); border: none;
+    border-radius: 8px; color: #fff; cursor: pointer; font-size: 14px;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s; flex-shrink: 0;
+  }
+  .send-btn:hover { background: var(--accent-light); transform: scale(1.05); }
+  .send-btn:disabled { background: var(--bg-hover); color: var(--text-muted); cursor: not-allowed; transform: none; }
+
+  /* ── MEMBERS SIDEBAR ── */
+  #members-sidebar {
+    width: 240px; background: var(--bg-secondary);
+    border-left: 1px solid var(--border);
+    overflow-y: auto; padding: 16px 8px;
+    display: none;
+  }
+  #members-sidebar.open { display: block; }
+  .members-sidebar h4 {
+    font-size: 11px; font-weight: 700; color: var(--text-muted);
+    text-transform: uppercase; letter-spacing: 1px; padding: 0 8px; margin-bottom: 8px;
+  }
+  .member-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px; border-radius: 8px; cursor: pointer; transition: all 0.15s;
+  }
+  .member-item:hover { background: var(--bg-hover); }
+  .member-avatar {
+    width: 34px; height: 34px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 700; flex-shrink: 0; position: relative;
+  }
+  .member-avatar .status-dot {
+    position: absolute; bottom: 0; right: 0;
+    width: 10px; height: 10px; border-radius: 50%;
+    border: 2px solid var(--bg-secondary);
+  }
+  .status-dot.online { background: var(--green); }
+  .status-dot.away { background: var(--orange); }
+  .status-dot.offline { background: var(--text-muted); }
+  .member-info .member-name { font-size: 13px; font-weight: 500; }
+  .member-info .member-role { font-size: 11px; color: var(--text-secondary); }
+
+  /* ── VOICE CHANNEL ── */
+  .voice-channel-item {
+    padding: 8px 8px 8px 16px; margin: 1px 8px;
+    border-radius: 6px; cursor: pointer;
+    color: var(--text-secondary); font-size: 14px;
+    transition: all 0.15s;
+  }
+  .voice-channel-item:hover { background: var(--bg-hover); color: var(--text-primary); }
+  .voice-channel-header {
+    display: flex; align-items: center; gap: 8px;
+  }
+  .voice-user {
+    padding: 4px 8px 4px 36px; display: flex; align-items: center; gap: 8px;
+    color: var(--text-secondary); font-size: 12px;
+  }
+  .voice-user .speaking-indicator {
+    width: 8px; height: 8px; border-radius: 50%; background: var(--green);
+    animation: pulse 1s ease-in-out infinite;
+  }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
+
+  /* ── NOTIFICATION TOAST ── */
+  #toast {
+    position: fixed; bottom: 24px; right: 24px;
+    background: var(--bg-tertiary); border: 1px solid var(--accent);
+    border-radius: 12px; padding: 14px 18px; z-index: 1000;
+    display: flex; align-items: center; gap: 12px;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+    transform: translateY(100px); opacity: 0;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    max-width: 320px;
+  }
+  #toast.show { transform: translateY(0); opacity: 1; }
+  #toast .toast-icon { font-size: 20px; }
+  #toast .toast-text { font-size: 13px; }
+  #toast .toast-title { font-weight: 600; margin-bottom: 2px; }
+  #toast .toast-msg { color: var(--text-secondary); }
+
+  /* ── LOADING ── */
+  .loading-dots {
+    display: flex; gap: 4px; align-items: center; padding: 8px 0;
+  }
+  .loading-dots span {
+    width: 8px; height: 8px; border-radius: 50%; background: var(--accent);
+    animation: bounce 1.2s ease-in-out infinite;
+  }
+  .loading-dots span:nth-child(2) { animation-delay: 0.2s; }
+  .loading-dots span:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes bounce { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+
+  .empty-state {
+    flex: 1; display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    color: var(--text-muted); gap: 12px;
+  }
+  .empty-state .emoji { font-size: 48px; }
+  .empty-state h3 { font-size: 18px; color: var(--text-secondary); }
+  .empty-state p { font-size: 14px; text-align: center; max-width: 280px; }
+
+  /* scroll to bottom btn */
+  .scroll-bottom-btn {
+    position: absolute; bottom: 80px; right: 30px;
+    width: 36px; height: 36px; background: var(--accent);
+    border: none; border-radius: 50%; color: #fff; cursor: pointer;
+    font-size: 14px; display: none; align-items: center; justify-content: center;
+    box-shadow: 0 4px 15px var(--accent-glow); transition: all 0.2s;
+  }
+  .scroll-bottom-btn.visible { display: flex; }
+  #main-content { position: relative; }
+
+  /* Supabase warning banner */
+  #api-warning {
+    background: linear-gradient(90deg, rgba(255,140,66,0.15), rgba(255,140,66,0.05));
+    border-bottom: 1px solid rgba(255,140,66,0.3);
+    padding: 8px 16px; font-size: 12px; color: var(--orange);
+    display: flex; align-items: center; gap: 8px; flex-shrink: 0;
+  }
+  #api-warning.hidden { display: none; }
+  #api-warning a { color: var(--orange); font-weight: 600; cursor: pointer; text-decoration: underline; }
+</style>
+</head>
+<body>
+
+<!-- SETUP MODAL -->
+<div id="setup-modal">
+  <div class="setup-box">
+    <h2>🎵 Join MusicHub</h2>
+    <p>Create your musician profile to get started</p>
+    <label>Display Name</label>
+    <input type="text" id="setup-name" placeholder="e.g. JazzMaster99" maxlength="32"/>
+    <label>Your Instruments</label>
+    <div class="instrument-grid" id="instrument-grid">
+      <div class="instr-btn" data-v="🎸 Guitar">🎸 Guitar</div>
+      <div class="instr-btn" data-v="🥁 Drums">🥁 Drums</div>
+      <div class="instr-btn" data-v="🎹 Piano">🎹 Piano</div>
+      <div class="instr-btn" data-v="🎺 Trumpet">🎺 Trumpet</div>
+      <div class="instr-btn" data-v="🎻 Violin">🎻 Violin</div>
+      <div class="instr-btn" data-v="🎙 Vocals">🎙 Vocals</div>
+      <div class="instr-btn" data-v="🎷 Saxophone">🎷 Sax</div>
+      <div class="instr-btn" data-v="🪗 Accordion">🪗 Accordion</div>
+      <div class="instr-btn" data-v="🎤 Producer">🎤 Producer</div>
+    </div>
+    <label>Favorite Genre</label>
+    <select id="setup-genre">
+      <option value="">Select a genre...</option>
+      <option>Jazz</option><option>Rock</option><option>Classical</option>
+      <option>Hip-Hop</option><option>Electronic</option><option>Pop</option>
+      <option>Blues</option><option>Metal</option><option>Folk</option>
+      <option>R&B</option><option>Country</option><option>Reggae</option>
+    </select>
+    <label>Supabase Anon Key <span style="color:var(--text-muted);font-weight:400">(paste here or skip)</span></label>
+    <input type="text" id="setup-key" placeholder="eyJhbGci... (optional, for persistence)"/>
+    <button class="btn-primary" onclick="setupProfile()">Enter MusicHub 🎶</button>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast">
+  <span class="toast-icon">🎵</span>
+  <div class="toast-text">
+    <div class="toast-title" id="toast-title"></div>
+    <div class="toast-msg" id="toast-msg"></div>
+  </div>
+</div>
+
+<!-- SERVER SIDEBAR -->
+<div id="server-sidebar">
+  <div class="server-icon home" title="MusicHub Home">🎵</div>
+  <div class="server-divider"></div>
+  <div class="server-icon channel-server active" title="General Musicians" data-server="general">GM</div>
+  <div class="server-icon channel-server" title="Jazz Collective" data-server="jazz">JZ</div>
+  <div class="server-icon channel-server" title="Rock Underground" data-server="rock">RK</div>
+  <div class="server-icon channel-server" title="Beat Makers" data-server="beats">BM</div>
+  <div class="server-icon channel-server" title="Classical Guild" data-server="classical">CG</div>
+  <div class="server-divider"></div>
+  <div class="server-icon add-server" title="Add Server" onclick="showToast('🏗️','Coming soon!','Create your own server is in beta')">+</div>
+</div>
+
+<!-- CHANNEL SIDEBAR -->
+<div id="channel-sidebar">
+  <div class="channel-header">
+    <div>
+      <h3 id="server-name">General Musicians</h3>
+      <span id="online-count">🟢 Loading...</span>
+    </div>
+  </div>
+  <div class="channels-list" id="channels-list">
+    <!-- dynamically filled -->
+  </div>
+  <div class="user-panel" id="user-panel">
+    <div class="user-avatar-sm" id="user-avatar-sm" style="background:#7c4dff">?
+      <div class="online-dot"></div>
+    </div>
+    <div class="user-info-sm">
+      <div class="name" id="panel-name">Loading...</div>
+      <div class="tag" id="panel-tag">#0000</div>
+    </div>
+    <div class="user-controls">
+      <button title="Mute"><i class="fas fa-microphone-slash"></i></button>
+      <button title="Deafen"><i class="fas fa-headphones"></i></button>
+      <button title="Settings" onclick="showToast('⚙️','Settings','Profile settings coming soon!')"><i class="fas fa-cog"></i></button>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN CONTENT -->
+<div id="main-content">
+  <div id="api-warning">
+    <i class="fas fa-exclamation-triangle"></i>
+    <span>No Supabase API key — messages saved in memory only. <a onclick="promptApiKey()">Add key</a> to enable persistence.</span>
+  </div>
+  <div class="chat-header">
+    <span style="color:var(--text-secondary);font-size:18px">#</span>
+    <div>
+      <div class="ch-name" id="channel-title">general</div>
+      <div class="ch-desc" id="channel-desc">Welcome to MusicHub! Share your music, collab, and jam.</div>
+    </div>
+    <div class="header-actions">
+      <button class="header-btn" onclick="toggleMembers()"><i class="fas fa-users"></i> Members</button>
+      <button class="header-btn" onclick="showToast('🔍','Search','Message search coming soon!')"><i class="fas fa-search"></i> Search</button>
+    </div>
+  </div>
+
+  <div class="messages-area" id="messages-area">
+    <div class="empty-state" id="empty-state">
+      <div class="emoji">🎸</div>
+      <h3>Welcome to MusicHub!</h3>
+      <p>Be the first to say something in this channel.</p>
+    </div>
+  </div>
+
+  <button class="scroll-bottom-btn" id="scroll-btn" onclick="scrollToBottom()">
+    <i class="fas fa-chevron-down"></i>
+  </button>
+
+  <div class="chat-input-area">
+    <div class="input-box">
+      <div class="input-actions-left">
+        <button class="input-btn" title="Attach file" onclick="showToast('📎','Attachments','File sharing coming soon!')"><i class="fas fa-plus"></i></button>
+        <button class="input-btn" title="Share music" onclick="shareMusic()">🎵</button>
+      </div>
+      <textarea id="message-input" rows="1" placeholder="Message #general..." 
+        onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
+      <button class="send-btn" id="send-btn" onclick="sendMessage()">
+        <i class="fas fa-paper-plane"></i>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- MEMBERS SIDEBAR -->
+<div id="members-sidebar">
+  <h4>Online — <span id="members-count">0</span></h4>
+  <div id="members-list"></div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+// CONFIG
+// ═══════════════════════════════════════════════════════════
+const SUPABASE_URL = 'https://kcltjymlzystiksxevja.supabase.co';
+let SUPABASE_KEY = '';
+let supabaseReady = false;
+
+const COLORS = ['#7c4dff','#ff4d8d','#43d98c','#ff8c42','#4dc8ff','#ffcc42','#ff6b6b','#a78bfa'];
+const userColor = COLORS[Math.floor(Math.random() * COLORS.length)];
+
+const SERVERS = {
+  general: { name: 'General Musicians', desc: 'For all musicians 🎶' },
+  jazz: { name: 'Jazz Collective', desc: 'All things jazz 🎷' },
+  rock: { name: 'Rock Underground', desc: 'Loud and proud 🎸' },
+  beats: { name: 'Beat Makers', desc: 'Producers & beatmakers 🎛️' },
+  classical: { name: 'Classical Guild', desc: 'Timeless music 🎻' }
+};
+
+const CHANNELS = {
+  text: [
+    { id: 'general', name: 'general', desc: 'General chat for all musicians' },
+    { id: 'intros', name: 'introductions', desc: 'Introduce yourself!' },
+    { id: 'collabs', name: 'collabs-wanted', desc: 'Find collaborators' },
+    { id: 'feedback', name: 'track-feedback', desc: 'Get feedback on your music' },
+    { id: 'gear', name: 'gear-talk', desc: 'Discuss instruments & gear' },
+    { id: 'theory', name: 'music-theory', desc: 'Theory discussion' },
+  ],
+  voice: [
+    { id: 'jam-room-1', name: 'Jam Room 1', users: [] },
+    { id: 'jam-room-2', name: 'Jam Room 2', users: ['SaxGod', 'BassLord'] },
+    { id: 'practice-lounge', name: 'Practice Lounge', users: ['JazzCat'] },
+  ]
+};
+
+// State
+let currentUser = null;
+let currentChannel = 'general';
+let currentServer = 'general';
+let messages = {}; // channelId -> []
+let members = [];
+let membersOpen = false;
+let realtimeChannel = null;
+
+// ═══════════════════════════════════════════════════════════
+// SUPABASE
+// ═══════════════════════════════════════════════════════════
+async function supaFetch(path, method = 'GET', body = null, extra = {}) {
+  if (!supabaseReady) return null;
+  const opts = {
+    method,
+    headers: {
+      'apikey': SUPABASE_KEY,
+      'Authorization': `Bearer ${SUPABASE_KEY}`,
+      'Content-Type': 'application/json',
+      'Prefer': 'return=representation',
+      ...extra.headers
+    }
+  };
+  if (body) opts.body = JSON.stringify(body);
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, opts);
+    if (!res.ok) return null;
+    const text = await res.text();
+    return text ? JSON.parse(text) : [];
+  } catch { return null; }
+}
+
+async function initSupabase() {
+  if (!SUPABASE_KEY) return;
+  // Create tables via RPC if not exist (graceful — just try inserting)
+  supabaseReady = true;
+  document.getElementById('api-warning').classList.add('hidden');
+  await loadMessagesFromDB();
+  await loadMembersFromDB();
+  setupRealtime();
+}
+
+async function loadMessagesFromDB() {
+  const rows = await supaFetch(`messages?channel_id=eq.${currentChannel}&order=created_at.asc&limit=80`);
+  if (!rows) return;
+  messages[currentChannel] = rows.map(r => ({
+    id: r.id, author: r.author_name, color: r.author_color,
+    instruments: r.instruments ? r.instruments.split(',') : [],
+    text: r.content, time: new Date(r.created_at), musicShare: r.music_share ? JSON.parse(r.music_share) : null
+  }));
+  renderMessages();
+}
+
+async function saveMessageToDB(msg) {
+  await supaFetch('messages', 'POST', {
+    channel_id: currentChannel,
+    author_name: msg.author,
+    author_color: msg.color,
+    instruments: msg.instruments.join(','),
+    content: msg.text,
+    music_share: msg.musicShare ? JSON.stringify(msg.musicShare) : null
+  });
+}
+
+async function upsertMember() {
+  if (!supabaseReady || !currentUser) return;
+  await supaFetch('members', 'POST', {
+    username: currentUser.name,
+    color: currentUser.color,
+    instruments: currentUser.instruments.join(','),
+    genre: currentUser.genre,
+    last_seen: new Date().toISOString()
+  }, { headers: { 'Prefer': 'resolution=merge-duplicates,return=representation' } });
+}
+
+async function loadMembersFromDB() {
+  const rows = await supaFetch('members?order=last_seen.desc&limit=50');
+  if (!rows || !rows.length) return;
+  members = rows.map(r => ({
+    name: r.username, color: r.color,
+    instruments: r.instruments ? r.instruments.split(',') : [],
+    genre: r.genre, status: 'online'
+  }));
+  renderMembers();
+  document.getElementById('online-count').textContent = `🟢 ${members.length} online`;
+  document.getElementById('members-count').textContent = members.length;
+}
+
+function setupRealtime() {
+  // Supabase Realtime via WebSocket
+  if (!SUPABASE_KEY) return;
+  const ws = new WebSocket(`wss://kcltjymlzystiksxevja.supabase.co/realtime/v1/websocket?apikey=${SUPABASE_KEY}&vsn=1.0.0`);
+  ws.onopen = () => {
+    ws.send(JSON.stringify({ topic: 'realtime:public:messages', event: 'phx_join', payload: {}, ref: '1' }));
+  };
+  ws.onmessage = (e) => {
+    try {
+      const d = JSON.parse(e.data);
+      if (d.event === 'INSERT' && d.payload?.record) {
+        const r = d.payload.record;
+        if (r.channel_id === currentChannel) {
+          const msg = {
+            id: r.id, author: r.author_name, color: r.author_color,
+            instruments: r.instruments ? r.instruments.split(',') : [],
+            text: r.content, time: new Date(r.created_at),
+            musicShare: r.music_share ? JSON.parse(r.music_share) : null
+          };
+          if (!messages[currentChannel]) messages[currentChannel] = [];
+          // avoid dupe from own send
+          if (!messages[currentChannel].find(m => m.id === msg.id)) {
+            messages[currentChannel].push(msg);
+            appendMessage(msg);
+          }
+        }
+      }
+    } catch {}
+  };
+}
+
+// ═══════════════════════════════════════════════════════════
+// SETUP
+// ═══════════════════════════════════════════════════════════
+document.querySelectorAll('.instr-btn').forEach(btn => {
+  btn.addEventListener('click', () => btn.classList.toggle('selected'));
+});
+
+function setupProfile() {
+  const name = document.getElementById('setup-name').value.trim();
+  if (!name) { alert('Please enter a display name!'); return; }
+  const instruments = [...document.querySelectorAll('.instr-btn.selected')].map(b => b.dataset.v);
+  const genre = document.getElementById('setup-genre').value;
+  const key = document.getElementById('setup-key').value.trim();
+
+  currentUser = {
+    name, color: userColor,
+    instruments: instruments.length ? instruments : ['🎵 Musician'],
+    genre: genre || 'All genres',
+    tag: '#' + Math.floor(1000 + Math.random() * 9000)
+  };
+
+  if (key) {
+    SUPABASE_KEY = key;
+    initSupabase();
+  }
+
+  document.getElementById('setup-modal').classList.add('hidden');
+  document.getElementById('panel-name').textContent = name;
+  document.getElementById('panel-tag').textContent = currentUser.tag;
+  document.getElementById('user-avatar-sm').textContent = name[0].toUpperCase();
+  document.getElementById('user-avatar-sm').style.background = userColor;
+
+  renderChannels();
+  renderMembers();
+  loadSeedMessages();
+  updateOnlineCount();
+
+  document.getElementById('message-input').placeholder = `Message #${currentChannel}...`;
+  showToast('🎶', `Welcome, ${name}!`, `Let's make some music together`);
+}
+
+function promptApiKey() {
+  const key = prompt('Paste your Supabase anon key:');
+  if (key && key.startsWith('eyJ')) {
+    SUPABASE_KEY = key;
+    initSupabase();
+    showToast('✅', 'Supabase connected!', 'Messages will now persist');
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+// RENDER CHANNELS
+// ═══════════════════════════════════════════════════════════
+function renderChannels() {
+  const list = document.getElementById('channels-list');
+  list.innerHTML = '';
+
+  // Text channels
+  const textCat = document.createElement('div');
+  textCat.className = 'channel-category';
+  textCat.innerHTML = '<span>📝 Text Channels</span><span>+</span>';
+  list.appendChild(textCat);
+
+  CHANNELS.text.forEach(ch => {
+    const el = document.createElement('div');
+    el.className = 'channel-item' + (ch.id === currentChannel ? ' active' : '');
+    el.innerHTML = `<span class="ch-icon">#</span>${ch.name}`;
+    if (ch.id === 'collabs') el.innerHTML += '<span class="unread-badge">3</span>';
+    el.onclick = () => switchChannel(ch);
+    list.appendChild(el);
+  });
+
+  // Voice channels
+  const voiceCat = document.createElement('div');
+  voiceCat.className = 'channel-category';
+  voiceCat.innerHTML = '<span>🎙 Voice Channels</span><span>+</span>';
+  list.appendChild(voiceCat);
+
+  CHANNELS.voice.forEach(ch => {
+    const el = document.createElement('div');
+    el.className = 'voice-channel-item';
+    el.innerHTML = `<div class="voice-channel-header"><span style="color:var(--text-secondary)">🔊</span> ${ch.name}</div>`;
+    ch.users.forEach(u => {
+      const userEl = document.createElement('div');
+      userEl.className = 'voice-user';
+      userEl.innerHTML = `${ch.users[0] === u ? '<div class="speaking-indicator"></div>' : '⚪'} ${u}`;
+      el.appendChild(userEl);
+    });
+    el.onclick = () => showToast('🎙', `${ch.name}`, ch.users.length ? `${ch.users.join(', ')} is here` : 'Empty — be the first to join!');
+    list.appendChild(el);
+  });
+}
+
+function switchChannel(ch) {
+  currentChannel = ch.id;
+  document.querySelectorAll('.channel-item').forEach(el => el.classList.remove('active'));
+  event.currentTarget.classList.add('active');
+  document.getElementById('channel-title').textContent = ch.name;
+  document.getElementById('channel-desc').textContent = ch.desc;
+  document.getElementById('message-input').placeholder = `Message #${ch.name}...`;
+  if (supabaseReady) loadMessagesFromDB();
+  else renderMessages();
+}
+
+// ═══════════════════════════════════════════════════════════
+// SEED MESSAGES
+// ═══════════════════════════════════════════════════════════
+function loadSeedMessages() {
+  const now = new Date();
+  const seed = [
+    { author: 'JazzCat', color: '#43d98c', instruments: ['🎷 Saxophone', '🎹 Piano'], text: "Anyone down to jam this weekend? I've got a session room booked Saturday evening 🎷", time: new Date(now - 3600000 * 2) },
+    { author: 'BassLord', color: '#ff4d8d', instruments: ['🎸 Guitar'], text: "Just dropped my new EP! Would love some feedback from you all 🤘", time: new Date(now - 3600000 * 1.5), musicShare: { title: 'Midnight Groove', artist: 'BassLord', duration: '3:42' } },
+    { author: 'DrumQueen', color: '#ff8c42', instruments: ['🥁 Drums'], text: "That EP is fire! The groove on track 3 is insane", time: new Date(now - 3600000) },
+    { author: 'ViolinVirtuoso', color: '#4dc8ff', instruments: ['🎻 Violin'], text: "Does anyone have recommendations for good mic preamps under $500? Working on recording strings at home", time: new Date(now - 1800000) },
+    { author: 'SaxGod', color: '#a78bfa', instruments: ['🎷 Saxophone'], text: "Focusrite Scarlett is solid for that budget! Also check out the Universal Audio Volt series 🎙", time: new Date(now - 900000) },
+  ];
+  messages['general'] = seed;
+  renderMessages();
+}
+
+// ═══════════════════════════════════════════════════════════
+// MESSAGES
+// ═══════════════════════════════════════════════════════════
+function renderMessages() {
+  const area = document.getElementById('messages-area');
+  const msgs = messages[currentChannel] || [];
+  const emptyState = document.getElementById('empty-state');
+
+  if (msgs.length === 0) {
+    area.innerHTML = '';
+    area.appendChild(emptyState);
+    emptyState.style.display = 'flex';
+    return;
+  }
+  emptyState.style.display = 'none';
+  area.innerHTML = '';
+
+  let lastDate = null;
+  msgs.forEach(msg => {
+    const msgDate = msg.time.toDateString();
+    if (msgDate !== lastDate) {
+      const div = document.createElement('div');
+      div.className = 'date-divider';
+      div.textContent = formatDate(msg.time);
+      area.appendChild(div);
+      lastDate = msgDate;
+    }
+    area.appendChild(createMessageEl(msg));
+  });
+  scrollToBottom();
+}
+
+function appendMessage(msg) {
+  const area = document.getElementById('messages-area');
+  const emptyState = document.getElementById('empty-state');
+  emptyState.style.display = 'none';
+  area.appendChild(createMessageEl(msg));
+  scrollToBottom();
+}
+
+function createMessageEl(msg) {
+  const group = document.createElement('div');
+  group.className = 'message-group';
+
+  const instrTags = msg.instruments.map(i => `<span class="instrument-tag">${i}</span>`).join('');
+  const timeStr = msg.time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+  let musicHtml = '';
+  if (msg.musicShare) {
+    const bars = Array.from({length: 20}, (_,i) => {
+      const h = 4 + Math.random() * 16;
+      return `<div class="waveform-bar" style="height:${h}px;animation-delay:${i*0.06}s"></div>`;
+    }).join('');
+    musicHtml = `
+      <div class="music-share-card">
+        <button class="play-btn" onclick="this.innerHTML = this.innerHTML.includes('play') ? '⏸' : '▶'">▶</button>
+        <div class="track-info">
+          <div class="track-title">🎵 ${msg.musicShare.title}</div>
+          <div class="track-meta">${msg.musicShare.artist} • ${msg.musicShare.duration || '?'}</div>
+          <div class="waveform">${bars}</div>
+        </div>
+      </div>`;
+  }
+
+  group.innerHTML = `
+    <div class="msg-avatar" style="background:${msg.color}">${msg.author[0].toUpperCase()}</div>
+    <div class="msg-content">
+      <div class="msg-meta">
+        <span class="msg-author" style="color:${msg.color}">${msg.author}</span>
+        <div class="msg-instruments">${instrTags}</div>
+        <span class="msg-time">Today at ${timeStr}</span>
+      </div>
+      <div class="msg-text">${escapeHtml(msg.text)}</div>
+      ${musicHtml}
+    </div>`;
+  return group;
+}
+
+// ═══════════════════════════════════════════════════════════
+// SEND MESSAGE
+// ═══════════════════════════════════════════════════════════
+async function sendMessage() {
+  if (!currentUser) return;
+  const input = document.getElementById('message-input');
+  const text = input.value.trim();
+  if (!text) return;
+
+  input.value = '';
+  autoResize(input);
+
+  const msg = {
+    id: Date.now(),
+    author: currentUser.name,
+    color: currentUser.color,
+    instruments: currentUser.instruments,
+    text,
+    time: new Date(),
+    musicShare: null
+  };
+
+  if (!messages[currentChannel]) messages[currentChannel] = [];
+
+  if (supabaseReady) {
+    await saveMessageToDB(msg);
+    // realtime will append it; but add locally too if no realtime
+    messages[currentChannel].push(msg);
+    appendMessage(msg);
+  } else {
+    messages[currentChannel].push(msg);
+    appendMessage(msg);
+  }
+}
+
+function handleKey(e) {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    sendMessage();
+  }
+}
+
+function autoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+}
+
+function shareMusic() {
+  if (!currentUser) return;
+  const title = prompt('Track / song title:');
+  if (!title) return;
+
+  const msg = {
+    id: Date.now(),
+    author: currentUser.name,
+    color: currentUser.color,
+    instruments: currentUser.instruments,
+    text: `Check out my latest track! 🎵`,
+    time: new Date(),
+    musicShare: { title, artist: currentUser.name, duration: '?:??' }
+  };
+
+  if (!messages[currentChannel]) messages[currentChannel] = [];
+  messages[currentChannel].push(msg);
+  appendMessage(msg);
+  if (supabaseReady) saveMessageToDB(msg);
+  showToast('🎵', 'Music shared!', `"${title}" posted to #${currentChannel}`);
+}
+
+// ═══════════════════════════════════════════════════════════
+// MEMBERS
+// ═══════════════════════════════════════════════════════════
+function renderMembers() {
+  const list = document.getElementById('members-list');
+  const localMembers = currentUser ? [{ name: currentUser.name, color: currentUser.color, instruments: currentUser.instruments, genre: currentUser.genre, status: 'online' }, ...members.filter(m => m.name !== currentUser.name)] : members;
+
+  list.innerHTML = localMembers.map(m => `
+    <div class="member-item">
+      <div class="member-avatar" style="background:${m.color}">${m.name[0].toUpperCase()}
+        <div class="status-dot ${m.status || 'online'}"></div>
+      </div>
+      <div class="member-info">
+        <div class="member-name">${m.name}</div>
+        <div class="member-role">${m.instruments[0] || '🎵'} • ${m.genre || 'Musician'}</div>
+      </div>
+    </div>`).join('');
+
+  document.getElementById('members-count').textContent = localMembers.length;
+}
+
+function toggleMembers() {
+  membersOpen = !membersOpen;
+  document.getElementById('members-sidebar').classList.toggle('open', membersOpen);
+}
+
+function updateOnlineCount() {
+  document.getElementById('online-count').textContent = `🟢 ${1 + Math.floor(Math.random() * 12)} online`;
+}
+
+// ═══════════════════════════════════════════════════════════
+// SCROLL
+// ═══════════════════════════════════════════════════════════
+function scrollToBottom() {
+  const area = document.getElementById('messages-area');
+  area.scrollTop = area.scrollHeight;
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  const area = document.getElementById('messages-area');
+  area.addEventListener('scroll', () => {
+    const btn = document.getElementById('scroll-btn');
+    const isNearBottom = area.scrollHeight - area.scrollTop - area.clientHeight < 100;
+    btn.classList.toggle('visible', !isNearBottom);
+  });
+});
+
+// ═══════════════════════════════════════════════════════════
+// SERVERS
+// ═══════════════════════════════════════════════════════════
+document.querySelectorAll('.server-icon.channel-server').forEach(el => {
+  el.addEventListener('click', () => {
+    document.querySelectorAll('.server-icon.channel-server').forEach(e => e.classList.remove('active'));
+    el.classList.add('active');
+    const srv = el.dataset.server;
+    if (SERVERS[srv]) {
+      document.getElementById('server-name').textContent = SERVERS[srv].name;
+      currentServer = srv;
+      updateOnlineCount();
+      showToast('🎵', SERVERS[srv].name, SERVERS[srv].desc);
+    }
+  });
+});
+
+// ═══════════════════════════════════════════════════════════
+// TOAST
+// ═══════════════════════════════════════════════════════════
+let toastTimer;
+function showToast(icon, title, msg) {
+  document.querySelector('#toast .toast-icon').textContent = icon;
+  document.getElementById('toast-title').textContent = title;
+  document.getElementById('toast-msg').textContent = msg;
+  const toast = document.getElementById('toast');
+  toast.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => toast.classList.remove('show'), 3500);
+}
+
+// ═══════════════════════════════════════════════════════════
+// UTILS
+// ═══════════════════════════════════════════════════════════
+function escapeHtml(text) {
+  return text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function formatDate(date) {
+  const today = new Date();
+  const yesterday = new Date(today); yesterday.setDate(today.getDate() - 1);
+  if (date.toDateString() === today.toDateString()) return 'Today';
+  if (date.toDateString() === yesterday.toDateString()) return 'Yesterday';
+  return date.toLocaleDateString([], { month: 'long', day: 'numeric', year: 'numeric' });
+}
+
+// ═══════════════════════════════════════════════════════════
+// SQL HELPER (show user what tables to create)
+// ═══════════════════════════════════════════════════════════
+// Run this in your Supabase SQL editor:
+/*
+create table if not exists messages (
+  id bigserial primary key,
+  channel_id text not null default 'general',
+  author_name text not null,
+  author_color text,
+  instruments text,
+  content text not null,
+  music_share text,
+  created_at timestamptz default now()
+);
+
+create table if not exists members (
+  id bigserial primary key,
+  username text unique not null,
+  color text,
+  instruments text,
+  genre text,
+  last_seen timestamptz default now()
+);
+
+alter table messages enable row level security;
+alter table members enable row level security;
+create policy "allow all" on messages for all using (true) with check (true);
+create policy "allow all" on members for all using (true) with check (true);
+*/
+</script>
+</body>
+</html>

@@ -1,0 +1,298 @@
+ <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IWD 2026 Interactive Quiz</title>
+    <style>
+        :root {
+            --un-blue: #005bbb;
+            --un-light-blue: #e6f0fa;
+            --success: #28a745;
+            --error: #dc3545;
+            --text-dark: #333;
+            --bg-color: #f4f7f6;
+        }
+
+        * {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .quiz-container {
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 450px; /* Mobile-first optimized width */
+            padding: 25px;
+            overflow: hidden;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--un-light-blue);
+        }
+
+        .header h2 {
+            color: var(--un-blue);
+            font-size: 1.5rem;
+        }
+
+        .high-score {
+            font-size: 0.9rem;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .question-text {
+            font-size: 1.1rem;
+            color: var(--text-dark);
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .options-list {
+            list-style-type: none;
+        }
+
+        .option-btn {
+            width: 100%;
+            background-color: white;
+            border: 2px solid var(--un-light-blue);
+            padding: 12px 15px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: left;
+            color: var(--text-dark);
+        }
+
+        .option-btn:hover {
+            background-color: var(--un-light-blue);
+        }
+
+        .option-btn:disabled {
+            cursor: not-allowed;
+        }
+
+        .correct {
+            background-color: var(--success) !important;
+            color: white !important;
+            border-color: var(--success) !important;
+        }
+
+        .wrong {
+            background-color: var(--error) !important;
+            color: white !important;
+            border-color: var(--error) !important;
+        }
+
+        .feedback-box {
+            display: none;
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 8px;
+            background-color: var(--un-light-blue);
+            font-size: 0.95rem;
+            color: var(--text-dark);
+            line-height: 1.5;
+        }
+
+        .next-btn {
+            display: none;
+            width: 100%;
+            background-color: var(--un-blue);
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            margin-top: 20px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .next-btn:hover {
+            background-color: #004494;
+        }
+
+        .result-screen {
+            display: none;
+            text-align: center;
+        }
+
+        .result-screen h3 {
+            color: var(--un-blue);
+            margin-bottom: 15px;
+        }
+
+        .score-circle {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background-color: var(--un-light-blue);
+            color: var(--un-blue);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2rem;
+            font-weight: bold;
+            margin: 0 auto 20px auto;
+        }
+    </style>
+</head>
+<body>
+
+<div class="quiz-container">
+    <div class="header">
+        <h2>IWD 2026 Campaign</h2>
+        <div class="high-score" id="highScoreDisplay">Highest Score: 0</div>
+    </div>
+
+    <div id="quizSection">
+        <div class="question-text" id="questionText">Loading question...</div>
+        <ul class="options-list" id="optionsList">
+            </ul>
+        <div class="feedback-box" id="feedbackBox"></div>
+        <button class="next-btn" id="nextBtn" onclick="nextQuestion()">Next Question</button>
+    </div>
+
+    <div class="result-screen" id="resultSection">
+        <h3>Campaign Quiz Completed!</h3>
+        <div class="score-circle" id="finalScore">0/4</div>
+        <p style="margin-bottom: 20px; color: #555;">Thank you for standing up for Rights, Justice, and Action for ALL women and girls.</p>
+        <button class="next-btn" style="display: block;" onclick="restartQuiz()">Retake Quiz</button>
+    </div>
+</div>
+
+<script>
+    const quizData = [
+        {
+            question: "What is the official theme for UN Women's International Women's Day 2026?",
+            options: ["Break the Bias", "Rights. Justice. Action. For ALL Women and Girls", "Invest in Women", "Inspire Inclusion"],
+            correct: 1,
+            explanation: "This year's theme is a powerful call to amplify our collective determination to secure the rights and empowerment of all women and girls globally."
+        },
+        {
+            question: "According to the IWD 2026 campaign, what is one of the main structural barriers to equal justice?",
+            options: ["Lack of internet access", "Climate change", "Discriminatory laws and weak legal protections", "Corporate monopolies"],
+            correct: 2,
+            explanation: "Achieving equal justice requires us to actively dismantle harmful practices, social norms, and discriminatory laws that erode women's rights."
+        },
+        {
+            question: "Taking 'ACTION' for gender equality means...",
+            options: ["Waiting for laws to change naturally", "Working collectively to rebuild social norms", "Only focusing on corporate leadership", "Ignoring historical inequalities"],
+            correct: 1,
+            explanation: "Words are not enough. Meaningful change happens when we take collective action to challenge harmful norms and champion equality in our everyday lives."
+        },
+        {
+            question: "True or False: Achieving gender equality is solely the responsibility of women.",
+            options: ["True", "False"],
+            correct: 1,
+            explanation: "Gender equality benefits everyone. Achieving it requires partnership and action from all individuals, regardless of gender, to create a fair and just society."
+        }
+    ];
+
+    let currentQuestion = 0;
+    let score = 0;
+
+    const questionText = document.getElementById("questionText");
+    const optionsList = document.getElementById("optionsList");
+    const feedbackBox = document.getElementById("feedbackBox");
+    const nextBtn = document.getElementById("nextBtn");
+    const quizSection = document.getElementById("quizSection");
+    const resultSection = document.getElementById("resultSection");
+    const finalScore = document.getElementById("finalScore");
+    const highScoreDisplay = document.getElementById("highScoreDisplay");
+
+    // Load High Score from Local Storage
+    let savedHighScore = localStorage.getItem("iwdQuizHighScore") || 0;
+    highScoreDisplay.innerText = `Highest Score: ${savedHighScore}`;
+
+    function loadQuestion() {
+        feedbackBox.style.display = "none";
+        nextBtn.style.display = "none";
+        optionsList.innerHTML = "";
+        
+        const q = quizData[currentQuestion];
+        questionText.innerText = `${currentQuestion + 1}. ${q.question}`;
+
+        q.options.forEach((opt, index) => {
+            const btn = document.createElement("button");
+            btn.innerText = opt;
+            btn.classList.add("option-btn");
+            btn.onclick = () => selectAnswer(index, btn);
+            optionsList.appendChild(btn);
+        });
+    }
+
+    function selectAnswer(selectedIndex, btnElement) {
+        const q = quizData[currentQuestion];
+        const allBtns = optionsList.querySelectorAll(".option-btn");
+        
+        allBtns.forEach(btn => btn.disabled = true); // Disable all buttons
+
+        if (selectedIndex === q.correct) {
+            btnElement.classList.add("correct");
+            score++;
+        } else {
+            btnElement.classList.add("wrong");
+            allBtns[q.correct].classList.add("correct"); // Show correct answer
+        }
+
+        feedbackBox.innerHTML = `<strong>Explanation:</strong> ${q.explanation}`;
+        feedbackBox.style.display = "block";
+        nextBtn.style.display = "block";
+    }
+
+    function nextQuestion() {
+        currentQuestion++;
+        if (currentQuestion < quizData.length) {
+            loadQuestion();
+        } else {
+            showResults();
+        }
+    }
+
+    function showResults() {
+        quizSection.style.display = "none";
+        resultSection.style.display = "block";
+        finalScore.innerText = `${score}/${quizData.length}`;
+
+        // Save high score to mobile storage
+        if (score > savedHighScore) {
+            localStorage.setItem("iwdQuizHighScore", score);
+            highScoreDisplay.innerText = `Highest Score: ${score}`;
+        }
+    }
+
+    function restartQuiz() {
+        currentQuestion = 0;
+        score = 0;
+        resultSection.style.display = "none";
+        quizSection.style.display = "block";
+        loadQuestion();
+    }
+
+    // Initialize Quiz
+    loadQuestion();
+</script>
+
+</body>
+</html>

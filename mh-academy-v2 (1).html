@@ -1,0 +1,1324 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MH Academy v2 — CollegeConnect BD</title>
+<link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&family=Syne:wght@700;800;900&display=swap" rel="stylesheet">
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getFirestore, collection, addDoc, getDocs, doc, setDoc, getDoc, query, orderBy, limit, onSnapshot, serverTimestamp, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
+
+// ══════════════════════════════════════════════
+//  🔥 Firebase Config — আপনার config এখানে
+// ══════════════════════════════════════════════
+const firebaseConfig = {
+  apiKey: "YOUR_API_KEY",
+  authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+  projectId: "YOUR_PROJECT_ID",
+  storageBucket: "YOUR_PROJECT_ID.appspot.com",
+  messagingSenderId: "YOUR_SENDER_ID",
+  appId: "YOUR_APP_ID"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+const storage = getStorage(app);
+
+// ══════════════════════════════════════════════
+//  DEMO DATA
+// ══════════════════════════════════════════════
+const demoStudents = [
+  { name:'রাফি আহমেদ', college:'জিয়াউদ্দিন কলেজ', role:'student', quizScore:980, quizCount:48, notesUploaded:3 },
+  { name:'তানভীর হোসেন', college:'কিশোরগঞ্জ সরকারি কলেজ', role:'student', quizScore:945, quizCount:45, notesUploaded:2 },
+  { name:'সাদিয়া ইসলাম', college:'গুরুদয়াল কলেজ', role:'student', quizScore:912, quizCount:42, notesUploaded:5 },
+  { name:'নাফিস করিম', college:'জিয়াউদ্দিন কলেজ', role:'student', quizScore:876, quizCount:39, notesUploaded:1 },
+  { name:'মিথিলা রহমান', college:'ভৈরব কলেজ', role:'student', quizScore:841, quizCount:37, notesUploaded:4 },
+  { name:'আরমান হক', college:'কিশোরগঞ্জ সরকারি কলেজ', role:'student', quizScore:820, quizCount:35, notesUploaded:2 },
+  { name:'সুমাইয়া বেগম', college:'গুরুদয়াল কলেজ', role:'student', quizScore:798, quizCount:33, notesUploaded:6 },
+  { name:'ইমরান খান', college:'ভৈরব কলেজ', role:'student', quizScore:762, quizCount:31, notesUploaded:0 },
+  { name:'নুসরাত জাহান', college:'জিয়াউদ্দিন কলেজ', role:'student', quizScore:741, quizCount:29, notesUploaded:3 },
+  { name:'সাকিব আলম', college:'কুলিয়ারচর কলেজ', role:'student', quizScore:720, quizCount:28, notesUploaded:1 },
+  { name:'ফারহানা আক্তার', college:'কিশোরগঞ্জ সরকারি কলেজ', role:'student', quizScore:698, quizCount:26, notesUploaded:2 },
+  { name:'জাহিদ হাসান', college:'গুরুদয়াল কলেজ', role:'student', quizScore:675, quizCount:24, notesUploaded:0 },
+];
+const demoTeachers = [
+  { name:'মো. মঞ্জুরুল হক', college:'জিয়াউদ্দিন স্কুল এন্ড কলেজ', role:'teacher', quizScore:0, quizCount:0, notesUploaded:12 },
+  { name:'রহিমা আক্তার', college:'গুরুদয়াল কলেজ', role:'teacher', quizScore:0, quizCount:0, notesUploaded:8 },
+  { name:'করিম হোসেন', college:'কিশোরগঞ্জ সরকারি কলেজ', role:'teacher', quizScore:0, quizCount:0, notesUploaded:6 },
+  { name:'আনিসুর রহমান', college:'ভৈরব কলেজ', role:'teacher', quizScore:0, quizCount:0, notesUploaded:9 },
+];
+const demoNotes = [
+  { title:'চাহিদা ও যোগান — সম্পূর্ণ নোট', desc:'HSC অর্থনীতির ১ম অধ্যায়ের বিস্তারিত নোট, চার্ট ও উদাহরণ সহ।', subject:'econ', authorName:'মঞ্জুরুল স্যার', downloads:234, likes:87, url:'' },
+  { title:'জাতীয় আয় ও GDP', desc:'জাতীয় আয় পরিমাপ পদ্ধতি, GNP, GDP এর পার্থক্য ও হিসাব।', subject:'econ', authorName:'মঞ্জুরুল স্যার', downloads:189, likes:64, url:'' },
+  { title:'মুদ্রাস্ফীতি ও মুদ্রানীতি', desc:'কেন্দ্রীয় ব্যাংক, মুদ্রানীতির হাতিয়ার ও বাস্তব উদাহরণ।', subject:'econ', authorName:'মঞ্জুরুল স্যার', downloads:143, likes:58, url:'' },
+  { title:'Paragraph Writing Guide', desc:'HSC English 1st Paper — সব ধরনের Paragraph এর উদাহরণ।', subject:'eng', authorName:'রহিমা আক্তার', downloads:312, likes:102, url:'' },
+  { title:'Grammar Master — All Tenses', desc:'১২টি Tense এর সহজ ব্যাখ্যা, উদাহরণ ও অনুশীলনী।', subject:'eng', authorName:'রহিমা আক্তার', downloads:421, likes:138, url:'' },
+  { title:'রাসায়নিক বিক্রিয়া', desc:'HSC রসায়ন — জৈব ও অজৈব বিক্রিয়ার সম্পূর্ণ সারসংক্ষেপ।', subject:'sci', authorName:'করিম হোসেন', downloads:156, likes:49, url:'' },
+  { title:'ক্যালকুলাস সহজে', desc:'ডিফারেনশিয়াল ক্যালকুলাস — সূত্র, প্রমাণ ও সমাধান।', subject:'math', authorName:'আনিসুর রহমান', downloads:278, likes:93, url:'' },
+  { title:'ত্রিকোণমিতি সূত্র শীট', desc:'সকল ত্রিকোণমিতিক সূত্র এক পাতায়।', subject:'math', authorName:'আনিসুর রহমান', downloads:509, likes:167, url:'' },
+  { title:'ডেটাবেজ ম্যানেজমেন্ট', desc:'SQL, ER ডায়াগ্রাম ও নরমালাইজেশন সহজ ভাষায়।', subject:'ict', authorName:'সাকিব আলম', downloads:198, likes:71, url:'' },
+];
+const demoNotices = [
+  { text:'HSC ২০২৫ — অর্থনীতি মডেল টেস্ট আগামীকাল সকাল ১০টায়', author:'মঞ্জুরুল স্যার' },
+  { text:'নতুন অধ্যায় — ৬ষ্ঠ অধ্যায়ের নোট আপলোড করা হয়েছে', author:'মঞ্জুরুল স্যার' },
+  { text:'বিশ্ববিদ্যালয় ভর্তি কোচিং রেজিস্ট্রেশন শুরু হয়েছে', author:'প্রশাসন' },
+];
+
+window._demoSeeded = false;
+async function seedDemoData() {
+  if (window._demoSeeded) return;
+  window._demoSeeded = true;
+  try {
+    const existing = await getDocs(collection(db, 'demo_seeded'));
+    if (!existing.empty) return;
+    for (const s of demoStudents) {
+      await addDoc(collection(db, 'users_demo'), { ...s, createdAt: serverTimestamp() });
+    }
+    for (const t of demoTeachers) {
+      await addDoc(collection(db, 'users_demo'), { ...t, createdAt: serverTimestamp() });
+    }
+    for (const n of demoNotes) {
+      await addDoc(collection(db, 'notes'), { ...n, createdAt: serverTimestamp(), isDemo: true });
+    }
+    for (const n of demoNotices) {
+      await addDoc(collection(db, 'notices'), { ...n, createdAt: serverTimestamp() });
+    }
+    await addDoc(collection(db, 'demo_seeded'), { at: serverTimestamp() });
+  } catch(e) { console.log('Demo seed:', e.message); }
+}
+
+// ══════════════════════════════════════════════
+//  QUIZ DATA
+// ══════════════════════════════════════════════
+const quizData = {
+  econ:[
+    {q:'চাহিদা বিধি অনুযায়ী দাম বাড়লে চাহিদার কী হয়?',opts:['বাড়ে','কমে','অপরিবর্তিত','দ্বিগুণ হয়'],ans:1,exp:'চাহিদা বিধিতে দাম ও চাহিদার বিপরীত সম্পর্ক।'},
+    {q:'GDP-র পূর্ণরূপ কী?',opts:['General Domestic Product','Gross Domestic Product','Gross Development Plan','General Development Policy'],ans:1,exp:'GDP = Gross Domestic Product।'},
+    {q:'মুক্তবাজারে দাম নির্ধারণ হয়?',opts:['সরকার','চাহিদা ও যোগান','উৎপাদনকারী','ভোক্তা'],ans:1,exp:'চাহিদা ও যোগানের মিথস্ক্রিয়ায়।'},
+    {q:'স্থিতিস্থাপক চাহিদায় Ed = ?',opts:['১ এর কম','১ এর সমান','১ এর বেশি','শূন্য'],ans:2,exp:'স্থিতিস্থাপক চাহিদায় Ed > 1।'},
+    {q:'বাংলাদেশের কেন্দ্রীয় ব্যাংক?',opts:['সোনালী ব্যাংক','অগ্রণী ব্যাংক','বাংলাদেশ ব্যাংক','ব্র্যাক ব্যাংক'],ans:2,exp:'বাংলাদেশ ব্যাংক কেন্দ্রীয় ব্যাংক।'},
+  ],
+  eng:[
+    {q:'Which sentence is correct?',opts:['He go to school','He goes to school','He going to school','He gone to school'],ans:1,exp:'3rd person singular-এ verb-এ s/es যোগ হয়।'},
+    {q:'Synonym of "happy":',opts:['Sad','Joyful','Angry','Tired'],ans:1,exp:'Joyful = আনন্দিত।'},
+    {q:'Passive of "He writes a letter":',opts:['A letter is written by him','A letter was written','A letter has been written','A letter will be written'],ans:0,exp:'Present Simple Passive: is/am/are + V3।'},
+    {q:'Which is a conjunction?',opts:['Quickly','Beautiful','Because','Run'],ans:2,exp:'Because = conjunction।'},
+    {q:'Antonym of "ancient":',opts:['Old','Modern','Historic','Antique'],ans:1,exp:'Modern = আধুনিক।'},
+  ],
+  math:[
+    {q:'sin²θ + cos²θ = ?',opts:['0','2','1','θ'],ans:2,exp:'মৌলিক ত্রিকোণমিতিক পরিচয়।'},
+    {q:'√144 = ?',opts:['11','12','13','14'],ans:1,exp:'12×12=144।'},
+    {q:'log₁₀(100) = ?',opts:['1','2','10','100'],ans:1,exp:'10²=100।'},
+    {q:'ত্রিভুজের তিন কোণের সমষ্টি?',opts:['90°','180°','270°','360°'],ans:1,exp:'সর্বদা 180°।'},
+    {q:'2x+5=15 হলে x=?',opts:['3','4','5','6'],ans:2,exp:'2x=10, x=5।'},
+  ],
+  ict:[
+    {q:'HTML-এর পূর্ণরূপ?',opts:['Hyper Text Markup Language','High Tech Modern Language','Hyper Transfer Markup','Hyper Tech Markup Link'],ans:0,exp:'HyperText Markup Language।'},
+    {q:'CPU-র পূর্ণরূপ?',opts:['Central Processing Unit','Computer Processing Unit','Central Program Unit','Control Processing Unit'],ans:0,exp:'Central Processing Unit।'},
+    {q:'Internet-এর জনক?',opts:['Bill Gates','Tim Berners-Lee','Vint Cerf','Steve Jobs'],ans:2,exp:'Vint Cerf — Father of the Internet।'},
+    {q:'Binary 10 = দশমিকে?',opts:['1','2','3','4'],ans:1,exp:'1×2¹+0×2⁰=2।'},
+    {q:'www = ?',opts:['World Wide Web','World Wide Wire','Wide Web World','Web Wide World'],ans:0,exp:'World Wide Web।'},
+  ],
+};
+
+// ══════════════════════════════════════════════
+//  AUTH STATE
+// ══════════════════════════════════════════════
+let currentUser = null;
+let currentUserData = null;
+
+onAuthStateChanged(auth, async (user) => {
+  if (user) {
+    currentUser = user;
+    const snap = await getDoc(doc(db, 'users', user.uid));
+    currentUserData = snap.exists() ? snap.data() : {};
+    await seedDemoData();
+    showApp();
+    loadDashboard();
+  } else {
+    currentUser = null; currentUserData = null;
+    showAuth();
+  }
+});
+
+// ══════════════════════════════════════════════
+//  AUTH
+// ══════════════════════════════════════════════
+window.doRegister = async () => {
+  const name = g('reg-name').value.trim();
+  const email = g('reg-email').value.trim();
+  const pass = g('reg-pass').value;
+  const role = g('reg-role').value;
+  const college = g('reg-college').value.trim();
+  const phone = g('reg-phone').value.trim();
+  if (!name||!email||!pass||!college) return toast('সব তথ্য পূরণ করুন!','error');
+  setBtnLoading('reg-btn', true);
+  try {
+    const cred = await createUserWithEmailAndPassword(auth, email, pass);
+    await updateProfile(cred.user, { displayName: name });
+    await setDoc(doc(db, 'users', cred.user.uid), {
+      name, email, role, college, phone: phone||'',
+      photoURL:'', createdAt: serverTimestamp(),
+      quizScore:0, quizCount:0, notesUploaded:0
+    });
+    toast('স্বাগতম ' + name + '! 🎉');
+  } catch(e) { toast(authErr(e.code),'error'); }
+  setBtnLoading('reg-btn', false);
+};
+
+window.doLogin = async () => {
+  const email = g('login-email').value.trim();
+  const pass = g('login-pass').value;
+  if (!email||!pass) return toast('ইমেইল ও পাসওয়ার্ড দিন!','error');
+  setBtnLoading('login-btn', true);
+  try {
+    await signInWithEmailAndPassword(auth, email, pass);
+    toast('লগইন সফল! 🎉');
+  } catch(e) { toast(authErr(e.code),'error'); }
+  setBtnLoading('login-btn', false);
+};
+
+window.doLogout = async () => { await signOut(auth); toast('লগআউট হয়েছে।'); };
+
+function authErr(code) {
+  return {'auth/email-already-in-use':'এই ইমেইল আগে থেকেই নিবন্ধিত।','auth/weak-password':'পাসওয়ার্ড কমপক্ষে ৬ অক্ষর।','auth/user-not-found':'এই ইমেইলে অ্যাকাউন্ট নেই।','auth/wrong-password':'পাসওয়ার্ড ভুল।','auth/invalid-credential':'ইমেইল বা পাসওয়ার্ড ভুল।'}[code]||'একটি সমস্যা হয়েছে।';
+}
+
+function showAuth() { g('auth-screen').style.display='flex'; g('app-screen').style.display='none'; }
+function showApp() {
+  g('auth-screen').style.display='none'; g('app-screen').style.display='flex';
+  const n = currentUser?.displayName||'';
+  g('sidebar-username').textContent = n;
+  g('sidebar-role').textContent = currentUserData?.role==='teacher'?'👨‍🏫 শিক্ষক':'👨‍🎓 শিক্ষার্থী';
+  g('sidebar-avatar').textContent = n.charAt(0)||'?';
+  if (currentUserData?.photoURL) {
+    g('sidebar-avatar').style.backgroundImage = `url(${currentUserData.photoURL})`;
+    g('sidebar-avatar').style.backgroundSize = 'cover';
+    g('sidebar-avatar').textContent = '';
+  }
+  if (currentUserData?.role==='teacher') g('teacher-notice-row').style.display='flex';
+}
+
+// ══════════════════════════════════════════════
+//  DASHBOARD
+// ══════════════════════════════════════════════
+async function loadDashboard() {
+  try {
+    const [uSnap, nSnap, dSnap] = await Promise.all([
+      getDocs(collection(db,'users')),
+      getDocs(collection(db,'notes')),
+      getDocs(collection(db,'users_demo')),
+    ]);
+    g('stat-users').textContent = uSnap.size + dSnap.size;
+    g('stat-notes').textContent = nSnap.size;
+    let total=0; uSnap.forEach(d=>total+=(d.data().quizCount||0));
+    dSnap.forEach(d=>total+=(d.data().quizCount||0));
+    g('stat-quizzes').textContent = total;
+    loadDashLeaderboard();
+    loadNotices();
+  } catch(e) { console.log(e); }
+}
+
+async function loadDashLeaderboard() {
+  try {
+    const [realSnap, demoSnap] = await Promise.all([
+      getDocs(query(collection(db,'users'), orderBy('quizScore','desc'), limit(5))),
+      getDocs(query(collection(db,'users_demo'), orderBy('quizScore','desc'), limit(5))),
+    ]);
+    let all = [];
+    realSnap.forEach(d => all.push(d.data()));
+    demoSnap.forEach(d => all.push(d.data()));
+    all.sort((a,b)=>(b.quizScore||0)-(a.quizScore||0));
+    const medals=['🥇','🥈','🥉'];
+    const colors=['#c8861a','#1a5fa8','#2d7a4f','#6a30a8','#c0392b'];
+    g('dash-lb').innerHTML = all.slice(0,5).map((u,i)=>`
+      <div class="lb-item ${i<3?'top'+(i+1):''}">
+        <div class="lb-rank">${medals[i]||i+1}</div>
+        <div class="lb-avatar" style="background:${colors[i%5]}">${(u.name||'?').charAt(0)}</div>
+        <div class="lb-info"><div class="lb-name">${u.name}</div><div class="lb-college">${u.college}</div></div>
+        <div class="lb-score">${u.quizScore||0}</div>
+      </div>`).join('') || '<p style="color:var(--muted);padding:12px 0;font-size:13px">কুইজ দিন, র‍্যাংকিংয়ে আসুন!</p>';
+  } catch(e){ console.log(e); }
+}
+
+// ══════════════════════════════════════════════
+//  MEMBERS PAGE
+// ══════════════════════════════════════════════
+async function loadMembers() {
+  g('members-list').innerHTML='<p style="color:var(--muted);text-align:center;padding:32px">লোড হচ্ছে...</p>';
+  try {
+    const [realSnap, demoSnap] = await Promise.all([
+      getDocs(collection(db,'users')),
+      getDocs(collection(db,'users_demo')),
+    ]);
+    let members = [];
+    realSnap.forEach(d => members.push({...d.data(), isReal:true}));
+    demoSnap.forEach(d => members.push({...d.data(), isReal:false}));
+    members.sort((a,b)=>(b.quizScore||0)-(a.quizScore||0));
+
+    const filter = window._memberFilter||'all';
+    if(filter!=='all') members = members.filter(m=>m.role===filter);
+
+    const colors=['#c8861a','#1a5fa8','#2d7a4f','#6a30a8','#c0392b','#e67e22','#27ae60'];
+    g('members-list').innerHTML = members.map((m,i)=>`
+      <div class="member-card">
+        <div class="member-top">
+          <div class="member-av" style="background:${m.photoURL?'transparent':colors[i%7]};${m.photoURL?`background-image:url(${m.photoURL});background-size:cover`:''}">${m.photoURL?'':m.name.charAt(0)}</div>
+          <div>
+            <div class="member-name">${m.name} ${m.isReal?'<span class="live-badge">LIVE</span>':''}</div>
+            <div class="member-college">${m.college}</div>
+            <div class="member-role-tag ${m.role==='teacher'?'teacher-tag':'student-tag'}">${m.role==='teacher'?'শিক্ষক':'শিক্ষার্থী'}</div>
+          </div>
+        </div>
+        <div class="member-stats">
+          <div><div class="ms-val">${m.quizScore||0}</div><div class="ms-label">পয়েন্ট</div></div>
+          <div><div class="ms-val">${m.quizCount||0}</div><div class="ms-label">কুইজ</div></div>
+          <div><div class="ms-val">${m.notesUploaded||0}</div><div class="ms-label">নোট</div></div>
+        </div>
+      </div>`).join('');
+    g('member-count').textContent = members.length;
+  } catch(e) { g('members-list').innerHTML='<p style="color:var(--red);text-align:center;padding:32px">লোড করতে সমস্যা।</p>'; }
+}
+
+window.filterMembers = (f,el) => {
+  window._memberFilter=f;
+  document.querySelectorAll('.member-filter-chip').forEach(c=>c.classList.remove('selected'));
+  el.classList.add('selected');
+  loadMembers();
+};
+
+// ══════════════════════════════════════════════
+//  NOTICES
+// ══════════════════════════════════════════════
+function loadNotices() {
+  onSnapshot(query(collection(db,'notices'), orderBy('createdAt','desc'), limit(6)), snap => {
+    const dots=['var(--red)','var(--primary)','var(--green)','var(--blue)'];
+    let html='';
+    snap.forEach((d,i)=>{
+      const n=d.data();
+      const date=n.createdAt?.toDate?n.createdAt.toDate().toLocaleDateString('bn-BD'):'সম্প্রতি';
+      html+=`<div class="notice-item"><div class="notice-dot" style="background:${dots[i%4]}"></div><div><div class="notice-text">${n.text}</div><div class="notice-meta">📅 ${date} • ${n.author||'প্রশাসন'}</div></div></div>`;
+    });
+    g('notices-container').innerHTML=html||'<p style="color:var(--muted);font-size:13px">কোনো নোটিশ নেই।</p>';
+  });
+}
+
+window.postNotice = async () => {
+  const text=g('notice-input').value.trim();
+  if(!text) return toast('নোটিশ লিখুন!','error');
+  try {
+    await addDoc(collection(db,'notices'),{text,author:currentUser.displayName,createdAt:serverTimestamp()});
+    g('notice-input').value='';
+    toast('নোটিশ পোস্ট হয়েছে! ✅');
+  } catch(e){toast('সমস্যা হয়েছে।','error');}
+};
+
+// ══════════════════════════════════════════════
+//  NOTES
+// ══════════════════════════════════════════════
+window._notesFilter='all';
+window.filterNotes = (f,el)=>{
+  window._notesFilter=f;
+  document.querySelectorAll('.filter-chip').forEach(c=>c.classList.remove('selected'));
+  el.classList.add('selected');
+  loadNotes();
+};
+
+async function loadNotes() {
+  g('notes-grid').innerHTML='<p style="color:var(--muted);grid-column:1/-1;text-align:center;padding:40px">লোড হচ্ছে...</p>';
+  try {
+    const snap = await getDocs(query(collection(db,'notes'), orderBy('createdAt','desc')));
+    const tagMap={econ:'tag-econ',eng:'tag-eng',sci:'tag-sci',math:'tag-math',ict:'tag-ict'};
+    const slabel={econ:'অর্থনীতি',eng:'ইংরেজি',sci:'বিজ্ঞান',math:'গণিত',ict:'ICT'};
+    let html='';
+    snap.forEach(d=>{
+      const n={id:d.id,...d.data()};
+      if(window._notesFilter!=='all'&&n.subject!==window._notesFilter)return;
+      const date=n.createdAt?.toDate?n.createdAt.toDate().toLocaleDateString('bn-BD'):'';
+      const fileIcon = n.fileType==='pdf'?'📄':'📝';
+      html+=`<div class="note-card">
+        <span class="note-subject ${tagMap[n.subject]||'tag-econ'}">${slabel[n.subject]||n.subject}</span>
+        <div class="note-title">${fileIcon} ${n.title}</div>
+        <div class="note-desc">${n.desc}</div>
+        ${n.thumbnailURL?`<img src="${n.thumbnailURL}" style="width:100%;height:120px;object-fit:cover;border-radius:8px;margin-bottom:10px" alt="preview">`:''}
+        <div class="note-footer">
+          <div class="note-author">👤 ${n.authorName}</div>
+          <button class="note-download-btn" onclick="downloadNote('${n.id}','${n.url||''}')">⬇ ডাউনলোড</button>
+        </div>
+        <div class="note-stats" style="margin-top:8px;font-size:11px;color:var(--muted)">⬇ ${n.downloads||0} &nbsp;❤️ ${n.likes||0} &nbsp;📅 ${date}</div>
+      </div>`;
+    });
+    g('notes-grid').innerHTML=html||'<p style="color:var(--muted);grid-column:1/-1;text-align:center;padding:40px">এখনো কোনো নোট নেই।</p>';
+  } catch(e){g('notes-grid').innerHTML='<p style="color:var(--red);grid-column:1/-1;text-align:center;padding:32px">লোড করতে সমস্যা।</p>';}
+}
+
+window.downloadNote = async (id, url) => {
+  try { await updateDoc(doc(db,'notes',id),{downloads:increment(1)}); } catch(e){}
+  if(url) window.open(url,'_blank');
+  else toast('ডাউনলোড লিঙ্ক শীঘ্রই যোগ হবে।');
+};
+
+// ══════════════════════════════════════════════
+//  FILE UPLOAD (Firebase Storage)
+// ══════════════════════════════════════════════
+window.uploadNote = async () => {
+  const title=g('note-title').value.trim();
+  const desc=g('note-desc').value.trim();
+  const subject=g('note-subject').value;
+  const file=g('note-file').files[0];
+  if(!title||!desc) return toast('শিরোনাম ও বিবরণ দিন!','error');
+  
+  setBtnLoading('upload-note-btn',true);
+  try {
+    let url='', thumbnailURL='', fileType='';
+    if(file) {
+      fileType = file.type.includes('pdf')?'pdf':'image';
+      const path=`notes/${currentUser.uid}/${Date.now()}_${file.name}`;
+      const storageRef=ref(storage,path);
+      await new Promise((res,rej)=>{
+        const task=uploadBytesResumable(storageRef,file);
+        task.on('state_changed',
+          snap=>{
+            const pct=Math.round(snap.bytesTransferred/snap.totalBytes*100);
+            g('upload-progress').style.display='block';
+            g('upload-progress-bar').style.width=pct+'%';
+            g('upload-progress-text').textContent=pct+'%';
+          },
+          rej,
+          async()=>{ url=await getDownloadURL(task.snapshot.ref); res(); }
+        );
+      });
+      if(fileType==='image') thumbnailURL=url;
+    }
+    await addDoc(collection(db,'notes'),{
+      title,desc,subject,url,thumbnailURL,fileType,
+      authorName:currentUser.displayName,
+      authorId:currentUser.uid,
+      downloads:0,likes:0,
+      createdAt:serverTimestamp()
+    });
+    await updateDoc(doc(db,'users',currentUser.uid),{notesUploaded:increment(1)});
+    g('note-title').value=''; g('note-desc').value=''; g('note-file').value='';
+    g('upload-progress').style.display='none';
+    closeModal('upload-modal');
+    toast('নোট আপলোড হয়েছে! ✅');
+    loadNotes();
+  } catch(e){ toast('আপলোড করতে সমস্যা: '+e.message,'error'); }
+  setBtnLoading('upload-note-btn',false);
+};
+
+// ══════════════════════════════════════════════
+//  PROFILE PHOTO UPLOAD
+// ══════════════════════════════════════════════
+window.uploadProfilePhoto = async () => {
+  const file=g('profile-photo-input').files[0];
+  if(!file) return toast('ছবি বেছে নিন!','error');
+  if(!file.type.includes('image')) return toast('শুধু ছবি ফাইল (.jpg/.png) আপলোড করুন।','error');
+  if(file.size>2*1024*1024) return toast('ছবির সাইজ ২MB-এর বেশি নয়।','error');
+  setBtnLoading('photo-upload-btn',true);
+  try {
+    const path=`profiles/${currentUser.uid}/photo_${Date.now()}`;
+    const storageRef=ref(storage,path);
+    const task=uploadBytesResumable(storageRef,file);
+    await new Promise((res,rej)=>{
+      task.on('state_changed',null,rej,async()=>{
+        const photoURL=await getDownloadURL(task.snapshot.ref);
+        await updateDoc(doc(db,'users',currentUser.uid),{photoURL});
+        await updateProfile(currentUser,{photoURL});
+        currentUserData.photoURL=photoURL;
+        g('profile-avatar-lg').style.backgroundImage=`url(${photoURL})`;
+        g('profile-avatar-lg').style.backgroundSize='cover';
+        g('profile-avatar-lg').textContent='';
+        g('sidebar-avatar').style.backgroundImage=`url(${photoURL})`;
+        g('sidebar-avatar').style.backgroundSize='cover';
+        g('sidebar-avatar').textContent='';
+        toast('প্রোফাইল ছবি আপডেট হয়েছে! ✅');
+        res();
+      });
+    });
+  } catch(e){ toast('আপলোড সমস্যা।','error'); }
+  setBtnLoading('photo-upload-btn',false);
+};
+
+// ══════════════════════════════════════════════
+//  QUIZ
+// ══════════════════════════════════════════════
+let qSub='econ', qIdx=0, qScore=0, qAnswered=false;
+window.selectSubject=(s,el)=>{qSub=s;document.querySelectorAll('.qsubject-chip').forEach(c=>c.classList.remove('selected'));el.classList.add('selected');};
+window.startQuiz=()=>{qIdx=0;qScore=0;qAnswered=false;g('quiz-start').style.display='none';g('quiz-result').style.display='none';g('quiz-active').style.display='block';loadQ();};
+function loadQ(){
+  const qs=quizData[qSub],q=qs[qIdx%qs.length],total=qs.length;
+  g('q-fill').style.width=`${((qIdx+1)/total)*100}%`;
+  g('q-counter').textContent=`প্রশ্ন ${qIdx+1} / ${total}`;
+  g('q-text').textContent=q.q;
+  g('q-explanation').style.display='none';
+  g('q-next-btn').style.display='none';
+  qAnswered=false;
+  const L=['ক','খ','গ','ঘ'];
+  g('q-options').innerHTML=q.opts.map((o,i)=>`<button class="q-option" onclick="answerQ(${i})">${L[i]}. ${o}</button>`).join('');
+}
+window.answerQ=(idx)=>{
+  if(qAnswered)return; qAnswered=true;
+  const q=quizData[qSub][qIdx%quizData[qSub].length];
+  document.querySelectorAll('.q-option').forEach((o,i)=>{o.disabled=true;if(i===q.ans)o.classList.add('correct');else if(i===idx)o.classList.add('wrong');});
+  if(idx===q.ans)qScore++;
+  g('q-explanation').textContent='💡 '+q.exp; g('q-explanation').style.display='block';
+  const btn=g('q-next-btn'); btn.style.display='inline-block';
+  const total=quizData[qSub].length;
+  if(qIdx+1>=total){btn.textContent='ফলাফল দেখুন 🎉';btn.onclick=showQResult;}
+  else{btn.textContent='পরবর্তী প্রশ্ন →';btn.onclick=()=>{qIdx++;loadQ();};}
+};
+async function showQResult(){
+  const total=quizData[qSub].length;
+  g('quiz-active').style.display='none'; g('quiz-result').style.display='block';
+  g('result-score').textContent=`${qScore}/${total}`;
+  const pct=(qScore/total)*100;
+  g('result-msg').textContent=pct>=80?'🎉 অসাধারণ!':pct>=60?'👍 ভালো করেছ!':'💪 আবার চেষ্টা করো!';
+  try {
+    await addDoc(collection(db,'quizResults'),{userId:currentUser.uid,userName:currentUser.displayName,college:currentUserData?.college||'',subject:qSub,score:qScore,total,createdAt:serverTimestamp()});
+    await updateDoc(doc(db,'users',currentUser.uid),{quizScore:increment(qScore*10),quizCount:increment(1)});
+    toast(`+${qScore*10} পয়েন্ট অর্জিত! 🏆`);
+    // WhatsApp notify
+    sendWhatsAppNotify(qScore,total);
+  } catch(e){console.log(e);}
+}
+window.restartQuiz=()=>{g('quiz-result').style.display='none';g('quiz-start').style.display='block';};
+
+// ══════════════════════════════════════════════
+//  WHATSAPP NOTIFICATION
+// ══════════════════════════════════════════════
+function sendWhatsAppNotify(score,total){
+  const phone=currentUserData?.phone||'';
+  if(!phone) return;
+  const msg=encodeURIComponent(`🎓 MH Academy কুইজ ফলাফল!\nনাম: ${currentUser.displayName}\nবিষয়: ${qSub}\nস্কোর: ${score}/${total}\nপয়েন্ট: +${score*10}\n\n👉 https://economist-bd.github.io/Connect-students-bd/`);
+  // WhatsApp Click-to-Chat (no API key needed)
+  g('wa-preview-msg').textContent=`স্কোর ${score}/${total} — পয়েন্ট +${score*10}`;
+  g('wa-phone').textContent=phone;
+  g('wa-link').href=`https://wa.me/${phone.replace(/[^0-9]/g,'')}?text=${msg}`;
+  g('wa-modal').style.display='flex';
+}
+
+window.sendManualWA = () => {
+  const phone=g('wa-manual-phone').value.trim();
+  const msg=g('wa-manual-msg').value.trim();
+  if(!phone||!msg) return toast('ফোন নম্বর ও বার্তা দিন!','error');
+  const encoded=encodeURIComponent(msg);
+  window.open(`https://wa.me/${phone.replace(/[^0-9]/g,'')}?text=${encoded}`,'_blank');
+};
+
+// ══════════════════════════════════════════════
+//  LEADERBOARD
+// ══════════════════════════════════════════════
+async function loadLeaderboard(){
+  try {
+    const [rSnap,dSnap]=await Promise.all([
+      getDocs(query(collection(db,'users'),orderBy('quizScore','desc'),limit(10))),
+      getDocs(query(collection(db,'users_demo'),orderBy('quizScore','desc'),limit(10))),
+    ]);
+    let all=[];
+    rSnap.forEach(d=>all.push({...d.data(),isReal:true}));
+    dSnap.forEach(d=>all.push({...d.data(),isReal:false}));
+    all.sort((a,b)=>(b.quizScore||0)-(a.quizScore||0));
+    const medals=['🥇','🥈','🥉'];
+    const colors=['#c8861a','#1a5fa8','#2d7a4f','#6a30a8','#c0392b','#e67e22','#27ae60','#2980b9','#8e44ad','#c0392b'];
+    g('lb-all').innerHTML=all.slice(0,10).map((u,i)=>`
+      <div class="lb-item ${i<3?'top'+(i+1):''}">
+        <div class="lb-rank">${medals[i]||i+1}</div>
+        <div class="lb-avatar" style="background:${u.photoURL?'transparent':colors[i%10]};${u.photoURL?`background-image:url(${u.photoURL});background-size:cover`:''}">${u.photoURL?'':u.name.charAt(0)}</div>
+        <div class="lb-info"><div class="lb-name">${u.name} ${u.isReal?'<span class="live-badge">LIVE</span>':''}</div><div class="lb-college">${u.college}</div></div>
+        <div><div class="lb-score">${u.quizScore||0}</div><div class="lb-badge">${u.quizCount||0} কুইজ</div></div>
+      </div>`).join('')||'<p style="color:var(--muted);text-align:center;padding:20px">কুইজ দিন, র‍্যাংকিং দেখুন!</p>';
+  } catch(e){console.log(e);}
+}
+
+// ══════════════════════════════════════════════
+//  VIDEO CLASSES
+// ══════════════════════════════════════════════
+const videoClasses=[
+  {id:1,title:'অর্থনীতি — চাহিদা ও যোগান',teacher:'মঞ্জুরুল স্যার',subject:'econ',duration:'৪৫ মিনিট',status:'live',viewers:23,youtubeId:'dQw4w9WgXcQ',price:0,thumb:'https://img.youtube.com/vi/dQw4w9WgXcQ/mqdefault.jpg'},
+  {id:2,title:'অর্থনীতি — জাতীয় আয়',teacher:'মঞ্জুরুল স্যার',subject:'econ',duration:'৫০ মিনিট',status:'recorded',viewers:145,youtubeId:'dQw4w9WgXcQ',price:0,thumb:'https://img.youtube.com/vi/dQw4w9WgXcQ/mqdefault.jpg'},
+  {id:3,title:'ইংরেজি — Paragraph Writing',teacher:'রহিমা আক্তার',subject:'eng',duration:'৩৮ মিনিট',status:'recorded',viewers:98,youtubeId:'dQw4w9WgXcQ',price:0,thumb:'https://img.youtube.com/vi/dQw4w9WgXcQ/mqdefault.jpg'},
+  {id:4,title:'গণিত — ক্যালকুলাস',teacher:'আনিসুর স্যার',subject:'math',duration:'৬০ মিনিট',status:'upcoming',viewers:0,youtubeId:'',price:99,thumb:''},
+  {id:5,title:'ICT — ডেটাবেজ',teacher:'করিম স্যার',subject:'ict',duration:'৪২ মিনিট',status:'recorded',viewers:67,youtubeId:'dQw4w9WgXcQ',price:0,thumb:'https://img.youtube.com/vi/dQw4w9WgXcQ/mqdefault.jpg'},
+  {id:6,title:'পদার্থ — নিউটনের সূত্র',teacher:'রহিমা আক্তার',subject:'sci',duration:'৫৫ মিনিট',status:'upcoming',viewers:0,youtubeId:'',price:149,thumb:''},
+];
+
+function loadVideos(){
+  const statusColors={live:'#c0392b',recorded:'#2d7a4f',upcoming:'#1a5fa8'};
+  const statusLabels={live:'🔴 লাইভ',recorded:'✅ রেকর্ডেড',upcoming:'⏳ আসছে'};
+  const slabel={econ:'অর্থনীতি',eng:'ইংরেজি',sci:'বিজ্ঞান',math:'গণিত',ict:'ICT'};
+  g('video-grid').innerHTML=videoClasses.map(v=>`
+    <div class="video-card" onclick="openVideo(${v.id})">
+      <div class="video-thumb" style="${v.thumb?`background-image:url(${v.thumb});background-size:cover;background-position:center`:'background:var(--dark)'}">
+        ${!v.thumb?`<div style="font-size:40px;display:flex;align-items:center;justify-content:center;height:100%">📹</div>`:''}
+        <div class="video-status-badge" style="background:${statusColors[v.status]}">${statusLabels[v.status]}</div>
+        ${v.status==='live'?`<div class="viewers-badge">👁 ${v.viewers} জন দেখছেন</div>`:''}
+        <div class="play-overlay"><div class="play-btn">▶</div></div>
+      </div>
+      <div class="video-info">
+        <span class="note-subject ${v.subject==='econ'?'tag-econ':v.subject==='eng'?'tag-eng':v.subject==='math'?'tag-math':v.subject==='sci'?'tag-sci':'tag-ict'}">${slabel[v.subject]}</span>
+        <div class="video-title">${v.title}</div>
+        <div class="video-meta">👨‍🏫 ${v.teacher} &nbsp;•&nbsp; ⏱ ${v.duration}</div>
+        ${v.price>0?`<div class="video-price">৳ ${v.price}</div>`:'<div style="font-size:12px;color:var(--green);font-weight:600;margin-top:6px">✅ বিনামূল্যে</div>'}
+      </div>
+    </div>`).join('');
+}
+
+window.openVideo=(id)=>{
+  const v=videoClasses.find(x=>x.id===id);
+  if(!v) return;
+  if(v.price>0&&v.status==='upcoming'){
+    openPayment(v.title,v.price);
+    return;
+  }
+  if(!v.youtubeId){toast('ভিডিও শীঘ্রই যোগ হবে।');return;}
+  g('video-player-title').textContent=v.title;
+  g('video-player-iframe').src=`https://www.youtube.com/embed/${v.youtubeId}?autoplay=1&rel=0`;
+  g('video-player-modal').style.display='flex';
+};
+
+window.closeVideoPlayer=()=>{
+  g('video-player-iframe').src='';
+  g('video-player-modal').style.display='none';
+};
+
+// ══════════════════════════════════════════════
+//  PAYMENT (bKash / Nagad)
+// ══════════════════════════════════════════════
+function openPayment(courseName,price){
+  g('payment-course-name').textContent=courseName;
+  g('payment-amount').textContent=price;
+  g('payment-modal').style.display='flex';
+}
+
+window.openPaymentDirect=(name,price)=>openPayment(name,price);
+
+window.confirmPayment=async()=>{
+  const method=document.querySelector('input[name="pay-method"]:checked')?.value;
+  const txn=g('payment-txn').value.trim();
+  if(!method) return toast('পেমেন্ট পদ্ধতি বেছে নিন!','error');
+  if(!txn) return toast('Transaction ID দিন!','error');
+  setBtnLoading('pay-confirm-btn',true);
+  try {
+    await addDoc(collection(db,'payments'),{
+      userId:currentUser.uid,
+      userName:currentUser.displayName,
+      courseName:g('payment-course-name').textContent,
+      amount:g('payment-amount').textContent,
+      method, txn, status:'pending',
+      createdAt:serverTimestamp()
+    });
+    closeModal('payment-modal');
+    g('payment-txn').value='';
+    toast('পেমেন্ট যাচাইয়ের জন্য পাঠানো হয়েছে! ২৪ ঘণ্টার মধ্যে একসেস পাবেন। ✅');
+  } catch(e){toast('সমস্যা হয়েছে।','error');}
+  setBtnLoading('pay-confirm-btn',false);
+};
+
+// ══════════════════════════════════════════════
+//  PROFILE
+// ══════════════════════════════════════════════
+async function loadProfile(){
+  if(!currentUser) return;
+  try {
+    const snap=await getDoc(doc(db,'users',currentUser.uid));
+    if(snap.exists()){
+      const d=snap.data();
+      g('p-score').textContent=d.quizScore||0;
+      g('p-quizzes').textContent=d.quizCount||0;
+      g('p-notes').textContent=d.notesUploaded||0;
+      g('p-college-info').textContent=d.college||'';
+      g('profile-name-display').textContent=d.name||'';
+      g('profile-role-display').textContent=d.role==='teacher'?'শিক্ষক অ্যাকাউন্ট ✓':'শিক্ষার্থী অ্যাকাউন্ট';
+      if(d.photoURL){
+        g('profile-avatar-lg').style.backgroundImage=`url(${d.photoURL})`;
+        g('profile-avatar-lg').style.backgroundSize='cover';
+        g('profile-avatar-lg').textContent='';
+      } else {
+        g('profile-avatar-lg').textContent=(d.name||'?').charAt(0);
+      }
+    }
+    const qSnap=await getDocs(query(collection(db,'quizResults'),orderBy('createdAt','desc'),limit(8)));
+    const snames={econ:'অর্থনীতি',eng:'ইংরেজি',math:'গণিত',ict:'ICT'};
+    let html='';
+    qSnap.forEach(d=>{
+      if(d.data().userId!==currentUser.uid)return;
+      const r=d.data();
+      const date=r.createdAt?.toDate?r.createdAt.toDate().toLocaleDateString('bn-BD'):'';
+      const pct=Math.round((r.score/r.total)*100);
+      html+=`<div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--border)">
+        <div><div style="font-weight:600;font-size:14px">${snames[r.subject]||r.subject}</div><div style="font-size:11px;color:var(--muted)">${date}</div></div>
+        <div style="text-align:right"><div style="font-family:'Syne',sans-serif;font-size:20px;font-weight:800;color:var(--primary)">${r.score}/${r.total}</div><div style="font-size:11px;color:${pct>=80?'var(--green)':pct>=60?'var(--primary)':'var(--red)'}">${pct}%</div></div>
+      </div>`;
+    });
+    g('quiz-history').innerHTML=html||'<p style="color:var(--muted);font-size:13px;padding:16px 0">এখনো কোনো কুইজ দেওয়া হয়নি।</p>';
+  } catch(e){console.log(e);}
+}
+
+// ══════════════════════════════════════════════
+//  NAVIGATION
+// ══════════════════════════════════════════════
+const titles={dashboard:'ড্যাশবোর্ড',notes:'নোট লাইব্রেরি',quiz:'কুইজ',leaderboard:'লিডারবোর্ড',members:'সদস্যগণ',videos:'ভিডিও ক্লাস',whatsapp:'WhatsApp',profile:'আমার প্রোফাইল'};
+
+window.navigate=(page,el)=>{
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  g('page-'+page).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  if(el) el.classList.add('active');
+  g('topbar-title').textContent=titles[page]||'';
+  closeSidebar();
+  if(page==='notes') loadNotes();
+  if(page==='leaderboard') loadLeaderboard();
+  if(page==='profile') loadProfile();
+  if(page==='members') loadMembers();
+  if(page==='videos') loadVideos();
+};
+
+window.openSidebar=()=>{g('sidebar').classList.add('open');g('overlay').classList.add('show');};
+window.closeSidebar=()=>{g('sidebar').classList.remove('open');g('overlay').classList.remove('show');};
+window.switchToLogin=()=>{g('reg-form').style.display='none';g('login-form').style.display='block';};
+window.switchToRegister=()=>{g('login-form').style.display='none';g('reg-form').style.display='block';};
+window.showUploadModal=()=>g('upload-modal').style.display='flex';
+window.closeModal=(id)=>g(id).style.display='none';
+
+// ══════════════════════════════════════════════
+//  HELPERS
+// ══════════════════════════════════════════════
+function g(id){return document.getElementById(id);}
+let toastT;
+window.toast=(msg,type='success')=>{
+  const t=g('toast'); t.textContent=msg;
+  t.style.background=type==='error'?'#c0392b':'#1a1208';
+  t.classList.add('show'); clearTimeout(toastT);
+  toastT=setTimeout(()=>t.classList.remove('show'),3500);
+};
+function setBtnLoading(id,on){
+  const b=g(id); if(!b)return;
+  b.disabled=on; b.textContent=on?'অপেক্ষা করুন...':b.dataset.label;
+}
+</script>
+
+<style>
+:root{
+  --bg:#f5f0e8;--surface:#fff;--card:#faf7f2;
+  --dark:#1a1208;--primary:#c8861a;--primary-light:#f0b84a;--primary-dark:#8a5c0a;
+  --green:#2d7a4f;--red:#c0392b;--blue:#1a5fa8;
+  --text:#2c1f0a;--muted:#7a6a50;--border:#e0d5c0;
+  --shadow:0 4px 24px rgba(26,18,8,.10);--radius:16px;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:'Hind Siliguri',sans-serif;min-height:100vh;}
+
+/* ── AUTH ── */
+#auth-screen{display:flex;min-height:100vh;align-items:center;justify-content:center;background:linear-gradient(135deg,#1a1208,#3a2808);padding:20px;}
+.auth-box{background:var(--surface);border-radius:24px;padding:36px;width:100%;max-width:420px;box-shadow:0 24px 80px rgba(0,0,0,.4);}
+.auth-logo{text-align:center;margin-bottom:24px;}
+.auth-logo .mark{font-family:'Syne',sans-serif;font-size:28px;font-weight:900;color:var(--primary);}
+.auth-logo .sub{font-size:11px;color:var(--muted);letter-spacing:1px;margin-top:2px;}
+.auth-tabs{display:flex;gap:4px;background:var(--card);border-radius:12px;padding:4px;margin-bottom:20px;}
+.auth-tab{flex:1;padding:8px;text-align:center;border-radius:9px;cursor:pointer;font-size:14px;font-weight:600;transition:all .2s;}
+.auth-tab.active{background:var(--primary);color:white;}
+.form-group{margin-bottom:14px;}
+.form-group label{display:block;font-size:12px;font-weight:600;margin-bottom:5px;}
+.form-group input,.form-group select,.form-group textarea{width:100%;padding:10px 13px;border:1.5px solid var(--border);border-radius:10px;font-size:14px;font-family:'Hind Siliguri',sans-serif;background:var(--card);color:var(--text);transition:border .2s;}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{outline:none;border-color:var(--primary);}
+.form-group textarea{resize:vertical;min-height:80px;}
+.auth-btn,.btn-primary{background:var(--primary);color:white;border:none;padding:11px 24px;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Hind Siliguri',sans-serif;transition:background .2s;}
+.auth-btn{width:100%;margin-top:6px;}
+.auth-btn:hover,.btn-primary:hover{background:var(--primary-dark);}
+.btn-secondary{background:var(--card);color:var(--text);border:1px solid var(--border);padding:9px 20px;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;font-family:'Hind Siliguri',sans-serif;}
+.auth-switch{text-align:center;margin-top:14px;font-size:13px;color:var(--muted);}
+.auth-switch span{color:var(--primary);cursor:pointer;font-weight:600;}
+
+/* ── APP ── */
+#app-screen{display:none;min-height:100vh;}
+.app{display:flex;min-height:100vh;}
+.sidebar{width:240px;background:var(--dark);color:#f5f0e8;display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:100;transition:transform .3s;overflow-y:auto;}
+.sidebar-logo{padding:22px 22px 16px;border-bottom:1px solid rgba(255,255,255,.08);}
+.sidebar-logo .mark{font-family:'Syne',sans-serif;font-size:21px;font-weight:900;color:var(--primary-light);}
+.sidebar-logo .sub{font-size:10px;color:rgba(245,240,232,.4);letter-spacing:1.5px;text-transform:uppercase;margin-top:2px;}
+.sidebar-user{display:flex;align-items:center;gap:11px;padding:14px 22px;border-bottom:1px solid rgba(255,255,255,.08);}
+.avatar{width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--primary-dark));display:flex;align-items:center;justify-content:center;font-weight:700;font-size:16px;color:white;flex-shrink:0;overflow:hidden;}
+.user-name{font-size:13px;font-weight:600;}
+.user-role{font-size:11px;color:rgba(245,240,232,.45);margin-top:1px;}
+.nav{flex:1;padding:14px 10px;}
+.nav-sl{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:rgba(245,240,232,.3);padding:8px 12px 4px;}
+.nav-item{display:flex;align-items:center;gap:11px;padding:9px 12px;border-radius:10px;cursor:pointer;transition:background .2s,color .2s;color:rgba(245,240,232,.65);font-size:14px;font-weight:500;margin-bottom:2px;}
+.nav-item:hover{background:rgba(255,255,255,.06);color:#f5f0e8;}
+.nav-item.active{background:var(--primary);color:white;}
+.nav-item .icon{font-size:17px;width:20px;text-align:center;flex-shrink:0;}
+.sidebar-footer{padding:12px 22px;border-top:1px solid rgba(255,255,255,.08);font-size:11px;color:rgba(245,240,232,.3);}
+.main{margin-left:240px;flex:1;min-width:0;}
+.topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 24px;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;}
+.topbar-title{font-family:'Syne',sans-serif;font-size:19px;font-weight:800;}
+.topbar-right{display:flex;align-items:center;gap:10px;}
+.logout-btn{padding:6px 16px;background:var(--card);border:1px solid var(--border);border-radius:20px;cursor:pointer;font-size:13px;font-weight:600;font-family:'Hind Siliguri',sans-serif;}
+.hamburger{display:none;align-items:center;justify-content:center;width:36px;height:36px;background:var(--card);border:1px solid var(--border);border-radius:10px;cursor:pointer;font-size:17px;}
+.sidebar-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:99;display:none;}
+.sidebar-overlay.show{display:block;}
+.content{padding:24px;}
+.page{display:none;animation:fadeIn .3s ease;}
+.page.active{display:block;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.section-header{margin-bottom:20px;}
+.section-header h2{font-family:'Syne',sans-serif;font-size:21px;font-weight:800;margin-bottom:3px;}
+.section-header p{color:var(--muted);font-size:13px;}
+
+/* STATS */
+.stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:20px;}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px;position:relative;overflow:hidden;}
+.stat-card::after{content:'';position:absolute;top:0;left:0;right:0;height:3px;}
+.stat-card.amber::after{background:var(--primary);}
+.stat-card.green::after{background:var(--green);}
+.stat-card.blue::after{background:var(--blue);}
+.stat-icon{font-size:24px;margin-bottom:9px;}
+.stat-value{font-family:'Syne',sans-serif;font-size:28px;font-weight:800;line-height:1;margin-bottom:3px;}
+.stat-label{font-size:12px;color:var(--muted);}
+
+/* CARDS */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:16px;}
+.card-title{font-family:'Syne',sans-serif;font-size:15px;font-weight:700;margin-bottom:14px;}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.three-col{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
+
+/* NOTICE */
+.notice-item{display:flex;gap:11px;padding:11px 0;border-bottom:1px solid var(--border);}
+.notice-item:last-child{border-bottom:none;}
+.notice-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:5px;}
+.notice-text{font-size:13px;line-height:1.5;}
+.notice-meta{font-size:11px;color:var(--muted);margin-top:2px;}
+.notice-input-row{display:flex;gap:8px;margin-bottom:12px;}
+.notice-input-row input{flex:1;padding:8px 12px;border:1.5px solid var(--border);border-radius:10px;font-size:13px;font-family:'Hind Siliguri',sans-serif;background:var(--card);}
+.notice-input-row input:focus{outline:none;border-color:var(--primary);}
+
+/* NOTES */
+.notes-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
+.note-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;transition:transform .2s,box-shadow .2s,border-color .2s;}
+.note-card:hover{transform:translateY(-3px);box-shadow:var(--shadow);border-color:var(--primary-light);}
+.note-subject{display:inline-block;font-size:11px;font-weight:600;padding:2px 9px;border-radius:20px;margin-bottom:8px;}
+.tag-econ{background:rgba(200,134,26,.12);color:#8a5c0a;}
+.tag-eng{background:rgba(26,95,168,.12);color:#1a5fa8;}
+.tag-sci{background:rgba(45,122,79,.12);color:#2d7a4f;}
+.tag-math{background:rgba(130,60,180,.12);color:#6a30a8;}
+.tag-ict{background:rgba(180,60,60,.12);color:#a83030;}
+.note-title{font-weight:700;font-size:14px;margin-bottom:5px;line-height:1.4;}
+.note-desc{font-size:12px;color:var(--muted);line-height:1.6;margin-bottom:10px;}
+.note-footer{display:flex;align-items:center;justify-content:space-between;}
+.note-author{font-size:11px;color:var(--muted);}
+.note-download-btn{background:var(--primary);color:white;border:none;padding:5px 12px;border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;font-family:'Hind Siliguri',sans-serif;}
+.note-download-btn:hover{background:var(--primary-dark);}
+
+/* FILTER */
+.filter-chips{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:16px;}
+.filter-chip,.qsubject-chip,.member-filter-chip{padding:6px 16px;border-radius:30px;border:1.5px solid var(--border);background:var(--card);cursor:pointer;font-size:13px;font-weight:500;transition:all .2s;font-family:'Hind Siliguri',sans-serif;}
+.filter-chip.selected,.qsubject-chip.selected,.member-filter-chip.selected{border-color:var(--primary);background:rgba(200,134,26,.1);color:var(--primary-dark);}
+
+/* QUIZ */
+.quiz-start-card{text-align:center;padding:36px 20px;}
+.quiz-start-card h3{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;margin-bottom:8px;}
+.qsubject-chips{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-bottom:20px;}
+.q-bar{height:5px;background:var(--border);border-radius:3px;overflow:hidden;margin-bottom:6px;}
+.q-fill{height:100%;background:var(--primary);border-radius:3px;transition:width .4s;}
+.q-meta{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:16px;}
+.q-text{font-size:16px;font-weight:600;margin-bottom:16px;line-height:1.5;}
+.q-options{display:grid;gap:8px;}
+.q-option{padding:11px 16px;border:1.5px solid var(--border);border-radius:10px;cursor:pointer;font-size:14px;background:var(--card);font-family:'Hind Siliguri',sans-serif;text-align:left;transition:all .2s;}
+.q-option:hover{border-color:var(--primary-light);}
+.q-option.correct{border-color:var(--green);background:rgba(45,122,79,.1);color:var(--green);font-weight:600;}
+.q-option.wrong{border-color:var(--red);background:rgba(192,57,43,.1);color:var(--red);}
+.q-explanation{margin-top:12px;padding:10px 14px;background:rgba(200,134,26,.08);border-left:3px solid var(--primary);border-radius:0 10px 10px 0;font-size:13px;display:none;}
+.q-next{margin-top:16px;text-align:right;}
+.quiz-result{display:none;text-align:center;padding:32px 16px;}
+.result-score{font-family:'Syne',sans-serif;font-size:60px;font-weight:900;color:var(--primary);line-height:1;}
+.result-msg{font-size:17px;font-weight:700;margin:10px 0 20px;}
+
+/* LEADERBOARD */
+.lb-item{display:flex;align-items:center;gap:11px;padding:11px 13px;border-radius:12px;margin-bottom:7px;background:var(--card);border:1px solid var(--border);transition:transform .2s;}
+.lb-item:hover{transform:translateX(4px);}
+.lb-item.top1{background:rgba(200,134,26,.12);border-color:var(--primary-light);}
+.lb-item.top2{background:rgba(180,180,180,.1);border-color:#c0c0c0;}
+.lb-item.top3{background:rgba(180,100,30,.08);border-color:#cd7f32;}
+.lb-rank{font-family:'Syne',sans-serif;font-size:16px;font-weight:800;width:26px;text-align:center;flex-shrink:0;}
+.lb-avatar{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:white;flex-shrink:0;overflow:hidden;}
+.lb-info{flex:1;}
+.lb-name{font-weight:600;font-size:13px;}
+.lb-college{font-size:11px;color:var(--muted);}
+.lb-score{font-family:'Syne',sans-serif;font-size:19px;font-weight:800;color:var(--primary);}
+.lb-badge{font-size:11px;color:var(--muted);text-align:right;}
+.live-badge{background:var(--red);color:white;font-size:9px;font-weight:700;padding:1px 6px;border-radius:6px;letter-spacing:.5px;vertical-align:middle;margin-left:4px;}
+
+/* MEMBERS */
+.members-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
+.member-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;transition:transform .2s,box-shadow .2s;}
+.member-card:hover{transform:translateY(-2px);box-shadow:var(--shadow);}
+.member-top{display:flex;gap:12px;align-items:center;margin-bottom:14px;}
+.member-av{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:17px;color:white;flex-shrink:0;overflow:hidden;}
+.member-name{font-weight:700;font-size:14px;margin-bottom:2px;}
+.member-college{font-size:11px;color:var(--muted);}
+.member-role-tag{display:inline-block;font-size:10px;font-weight:600;padding:2px 8px;border-radius:8px;margin-top:4px;}
+.teacher-tag{background:rgba(200,134,26,.15);color:var(--primary-dark);}
+.student-tag{background:rgba(26,95,168,.12);color:#1a5fa8;}
+.member-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;background:var(--card);border-radius:10px;padding:10px;}
+.ms-val{font-family:'Syne',sans-serif;font-size:18px;font-weight:800;color:var(--primary);text-align:center;}
+.ms-label{font-size:10px;color:var(--muted);text-align:center;}
+
+/* VIDEOS */
+.video-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
+.video-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;cursor:pointer;transition:transform .2s,box-shadow .2s;}
+.video-card:hover{transform:translateY(-3px);box-shadow:var(--shadow);}
+.video-thumb{height:140px;background:var(--card);position:relative;overflow:hidden;}
+.video-status-badge{position:absolute;top:8px;left:8px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;color:white;}
+.viewers-badge{position:absolute;top:8px;right:8px;background:rgba(0,0,0,.7);color:white;padding:3px 8px;border-radius:20px;font-size:11px;}
+.play-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.0);transition:background .2s;}
+.video-card:hover .play-overlay{background:rgba(0,0,0,.3);}
+.play-btn{width:42px;height:42px;background:rgba(255,255,255,.9);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;opacity:0;transition:opacity .2s;}
+.video-card:hover .play-btn{opacity:1;}
+.video-info{padding:14px;}
+.video-title{font-weight:700;font-size:13px;margin:6px 0 4px;line-height:1.4;}
+.video-meta{font-size:11px;color:var(--muted);}
+.video-price{font-family:'Syne',sans-serif;font-size:16px;font-weight:800;color:var(--primary);margin-top:6px;}
+
+/* WHATSAPP */
+.wa-card{background:linear-gradient(135deg,#25d366,#128c7e);border-radius:var(--radius);padding:24px;color:white;margin-bottom:16px;}
+.wa-card h3{font-family:'Syne',sans-serif;font-size:18px;font-weight:800;margin-bottom:8px;}
+.wa-manual{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;}
+.wa-manual h3{font-family:'Syne',sans-serif;font-size:15px;font-weight:700;margin-bottom:14px;}
+
+/* PAYMENT */
+.pay-methods{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;}
+.pay-method{border:2px solid var(--border);border-radius:12px;padding:14px;cursor:pointer;text-align:center;transition:border-color .2s;}
+.pay-method:has(input:checked){border-color:var(--primary);background:rgba(200,134,26,.05);}
+.pay-method input{display:none;}
+.pay-method .pay-logo{font-size:28px;margin-bottom:4px;}
+.pay-method .pay-name{font-size:13px;font-weight:700;}
+.pay-method .pay-num{font-size:12px;color:var(--muted);}
+.pay-instruction{background:rgba(200,134,26,.08);border:1px solid rgba(200,134,26,.2);border-radius:10px;padding:14px;margin-bottom:14px;font-size:13px;line-height:1.7;}
+
+/* PROFILE */
+.profile-hero{background:linear-gradient(135deg,var(--dark),#3a2808);border-radius:var(--radius);padding:24px;color:white;display:flex;gap:18px;align-items:center;margin-bottom:18px;}
+.profile-avatar-lg{width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--primary-dark));display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-size:28px;font-weight:800;color:white;flex-shrink:0;overflow:hidden;cursor:pointer;position:relative;}
+.profile-avatar-lg:hover::after{content:'📷';position:absolute;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;font-size:24px;border-radius:50%;}
+.profile-name{font-family:'Syne',sans-serif;font-size:20px;font-weight:800;}
+.role-badge{display:inline-block;margin-top:5px;background:rgba(245,158,11,.2);border:1px solid rgba(245,158,11,.3);color:var(--primary-light);padding:2px 12px;border-radius:20px;font-size:11px;}
+.profile-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:18px;}
+.ps-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px;text-align:center;}
+.ps-val{font-family:'Syne',sans-serif;font-size:24px;font-weight:800;color:var(--primary);}
+.ps-label{font-size:11px;color:var(--muted);margin-top:2px;}
+
+/* MODAL */
+.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:200;align-items:center;justify-content:center;padding:16px;}
+.modal-box{background:var(--surface);border-radius:20px;padding:28px;width:100%;max-width:460px;max-height:90vh;overflow-y:auto;}
+.modal-title{font-family:'Syne',sans-serif;font-size:17px;font-weight:800;margin-bottom:18px;}
+.modal-actions{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;}
+.upload-progress{display:none;margin:10px 0;}
+.upload-progress-bar-wrap{height:6px;background:var(--border);border-radius:3px;overflow:hidden;}
+.upload-progress-bar-inner{height:100%;background:var(--primary);border-radius:3px;transition:width .3s;}
+
+/* VIDEO PLAYER MODAL */
+#video-player-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:300;align-items:center;justify-content:center;flex-direction:column;padding:16px;}
+.video-player-wrap{width:100%;max-width:860px;}
+.video-player-header{display:flex;justify-content:space-between;align-items:center;color:white;margin-bottom:12px;}
+.video-player-header h3{font-family:'Syne',sans-serif;font-size:18px;font-weight:800;}
+.close-video-btn{background:rgba(255,255,255,.15);border:none;color:white;padding:6px 16px;border-radius:20px;cursor:pointer;font-size:13px;font-family:'Hind Siliguri',sans-serif;}
+.video-iframe-wrap{position:relative;padding-bottom:56.25%;height:0;border-radius:12px;overflow:hidden;}
+.video-iframe-wrap iframe{position:absolute;top:0;left:0;width:100%;height:100%;border:0;}
+
+/* TOAST */
+.toast{position:fixed;bottom:20px;right:20px;background:var(--dark);color:white;padding:11px 18px;border-radius:10px;font-size:13px;font-weight:500;box-shadow:0 8px 32px rgba(0,0,0,.3);transform:translateY(80px);opacity:0;transition:all .3s;z-index:9999;max-width:300px;}
+.toast.show{transform:translateY(0);opacity:1;}
+
+/* RESPONSIVE */
+@media(max-width:960px){
+  .sidebar{transform:translateX(-100%);}
+  .sidebar.open{transform:translateX(0);}
+  .main{margin-left:0;}
+  .stats-grid,.two-col,.three-col,.notes-grid,.video-grid,.members-grid{grid-template-columns:repeat(2,1fr);}
+  .hamburger{display:flex;}
+}
+@media(max-width:600px){
+  .stats-grid{grid-template-columns:1fr 1fr;}
+  .content{padding:14px;}
+  .topbar{padding:0 14px;}
+  .notes-grid,.video-grid,.members-grid{grid-template-columns:1fr;}
+  .profile-stats{grid-template-columns:repeat(3,1fr);}
+  .pay-methods{grid-template-columns:1fr 1fr;}
+}
+</style>
+</head>
+<body>
+
+<!-- ══ AUTH ══ -->
+<div id="auth-screen">
+  <div class="auth-box">
+    <div class="auth-logo">
+      <div style="font-size:36px;margin-bottom:4px">🎓</div>
+      <div class="mark">MH Academy</div>
+      <div class="sub">CollegeConnect BD — v2.0</div>
+    </div>
+    <!-- REGISTER -->
+    <div id="reg-form">
+      <div class="auth-tabs"><div class="auth-tab active">নিবন্ধন</div><div class="auth-tab" onclick="switchToLogin()">লগইন</div></div>
+      <div class="form-group"><label>পূর্ণ নাম *</label><input id="reg-name" type="text" placeholder="আপনার পুরো নাম"></div>
+      <div class="form-group"><label>ইমেইল *</label><input id="reg-email" type="email" placeholder="email@example.com"></div>
+      <div class="form-group"><label>পাসওয়ার্ড *</label><input id="reg-pass" type="password" placeholder="কমপক্ষে ৬ অক্ষর"></div>
+      <div class="form-group"><label>আমি একজন</label>
+        <select id="reg-role"><option value="student">শিক্ষার্থী</option><option value="teacher">শিক্ষক</option></select>
+      </div>
+      <div class="form-group"><label>কলেজের নাম *</label><input id="reg-college" type="text" placeholder="যেমন: জিয়াউদ্দিন কলেজ, কিশোরগঞ্জ"></div>
+      <div class="form-group"><label>WhatsApp নম্বর (কুইজ নোটিফিকেশনের জন্য)</label><input id="reg-phone" type="tel" placeholder="+8801XXXXXXXXX"></div>
+      <button id="reg-btn" class="auth-btn" data-label="নিবন্ধন করুন" onclick="doRegister()">নিবন্ধন করুন</button>
+      <div class="auth-switch">অ্যাকাউন্ট আছে? <span onclick="switchToLogin()">লগইন করুন</span></div>
+    </div>
+    <!-- LOGIN -->
+    <div id="login-form" style="display:none">
+      <div class="auth-tabs"><div class="auth-tab" onclick="switchToRegister()">নিবন্ধন</div><div class="auth-tab active">লগইন</div></div>
+      <div class="form-group"><label>ইমেইল</label><input id="login-email" type="email" placeholder="email@example.com"></div>
+      <div class="form-group"><label>পাসওয়ার্ড</label><input id="login-pass" type="password" placeholder="পাসওয়ার্ড"></div>
+      <button id="login-btn" class="auth-btn" data-label="লগইন করুন" onclick="doLogin()">লগইন করুন</button>
+      <div class="auth-switch">নতুন? <span onclick="switchToRegister()">নিবন্ধন করুন</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ APP ══ -->
+<div id="app-screen">
+  <div class="sidebar-overlay" id="overlay" onclick="closeSidebar()"></div>
+  <div class="app">
+
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-logo"><div class="mark">MH Academy</div><div class="sub">CollegeConnect BD</div></div>
+      <div class="sidebar-user">
+        <div class="avatar" id="sidebar-avatar">?</div>
+        <div><div class="user-name" id="sidebar-username">—</div><div class="user-role" id="sidebar-role"></div></div>
+      </div>
+      <nav class="nav">
+        <div class="nav-sl">প্রধান মেনু</div>
+        <div class="nav-item active" onclick="navigate('dashboard',this)"><span class="icon">🏠</span> ড্যাশবোর্ড</div>
+        <div class="nav-item" onclick="navigate('notes',this)"><span class="icon">📚</span> নোট লাইব্রেরি</div>
+        <div class="nav-item" onclick="navigate('quiz',this)"><span class="icon">✏️</span> কুইজ</div>
+        <div class="nav-item" onclick="navigate('videos',this)"><span class="icon">📹</span> ভিডিও ক্লাস</div>
+        <div class="nav-item" onclick="navigate('leaderboard',this)"><span class="icon">🏆</span> লিডারবোর্ড</div>
+        <div class="nav-item" onclick="navigate('members',this)"><span class="icon">👥</span> সদস্যগণ</div>
+        <div class="nav-sl" style="margin-top:4px">টুলস</div>
+        <div class="nav-item" onclick="navigate('whatsapp',this)"><span class="icon">💬</span> WhatsApp</div>
+        <div class="nav-item" onclick="navigate('profile',this)"><span class="icon">👤</span> প্রোফাইল</div>
+      </nav>
+      <div class="sidebar-footer">কিশোরগঞ্জ, ঢাকা বিভাগ<br>v2.0 — Firebase Live</div>
+    </aside>
+
+    <div class="main">
+      <header class="topbar">
+        <div style="display:flex;align-items:center;gap:10px">
+          <div class="hamburger" onclick="openSidebar()">☰</div>
+          <div class="topbar-title" id="topbar-title">ড্যাশবোর্ড</div>
+        </div>
+        <div class="topbar-right">
+          <button class="logout-btn" onclick="doLogout()">লগআউট ↩</button>
+        </div>
+      </header>
+
+      <div class="content">
+
+        <!-- DASHBOARD -->
+        <div class="page active" id="page-dashboard">
+          <div class="section-header"><h2>স্বাগতম! 👋</h2><p>MH Academy — লাইভ ড্যাশবোর্ড</p></div>
+          <div class="stats-grid">
+            <div class="stat-card amber"><div class="stat-icon">👨‍🎓</div><div class="stat-value" id="stat-users">—</div><div class="stat-label">নিবন্ধিত সদস্য</div></div>
+            <div class="stat-card green"><div class="stat-icon">📝</div><div class="stat-value" id="stat-notes">—</div><div class="stat-label">শেয়ার করা নোট</div></div>
+            <div class="stat-card blue"><div class="stat-icon">✏️</div><div class="stat-value" id="stat-quizzes">—</div><div class="stat-label">কুইজ সম্পন্ন</div></div>
+          </div>
+          <div class="two-col">
+            <div class="card">
+              <div class="card-title">📌 নোটিশ বোর্ড</div>
+              <div class="notice-input-row" id="teacher-notice-row" style="display:none">
+                <input id="notice-input" type="text" placeholder="নোটিশ লিখুন...">
+                <button class="btn-primary" style="padding:8px 16px;font-size:13px;border-radius:10px" onclick="postNotice()">পোস্ট</button>
+              </div>
+              <div id="notices-container"><p style="color:var(--muted);font-size:13px">লোড হচ্ছে...</p></div>
+            </div>
+            <div class="card">
+              <div class="card-title">🔥 শীর্ষ শিক্ষার্থী</div>
+              <div id="dash-lb"><p style="color:var(--muted);font-size:13px">লোড হচ্ছে...</p></div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title">⚡ দ্রুত অ্যাক্সেস</div>
+            <div class="three-col">
+              <div onclick="navigate('notes',document.querySelectorAll('.nav-item')[1])" style="background:rgba(200,134,26,.08);border:1.5px solid rgba(200,134,26,.2);border-radius:12px;padding:14px;cursor:pointer;transition:transform .2s" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform=''">
+                <div style="font-size:24px;margin-bottom:6px">📚</div><div style="font-weight:700;font-size:13px">নোট ডাউনলোড</div>
+              </div>
+              <div onclick="navigate('quiz',document.querySelectorAll('.nav-item')[2])" style="background:rgba(26,95,168,.08);border:1.5px solid rgba(26,95,168,.2);border-radius:12px;padding:14px;cursor:pointer;transition:transform .2s" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform=''">
+                <div style="font-size:24px;margin-bottom:6px">✏️</div><div style="font-weight:700;font-size:13px">কুইজ দিন</div>
+              </div>
+              <div onclick="navigate('videos',document.querySelectorAll('.nav-item')[3])" style="background:rgba(45,122,79,.08);border:1.5px solid rgba(45,122,79,.2);border-radius:12px;padding:14px;cursor:pointer;transition:transform .2s" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform=''">
+                <div style="font-size:24px;margin-bottom:6px">📹</div><div style="font-weight:700;font-size:13px">ভিডিও ক্লাস</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- NOTES -->
+        <div class="page" id="page-notes">
+          <div class="section-header"><h2>📚 নোট লাইব্রেরি</h2><p>PDF, ছবি ও লিঙ্ক আপলোড করুন</p></div>
+          <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:16px">
+            <div class="filter-chips">
+              <button class="filter-chip selected" onclick="filterNotes('all',this)">সব</button>
+              <button class="filter-chip" onclick="filterNotes('econ',this)">অর্থনীতি</button>
+              <button class="filter-chip" onclick="filterNotes('eng',this)">ইংরেজি</button>
+              <button class="filter-chip" onclick="filterNotes('sci',this)">বিজ্ঞান</button>
+              <button class="filter-chip" onclick="filterNotes('math',this)">গণিত</button>
+              <button class="filter-chip" onclick="filterNotes('ict',this)">ICT</button>
+            </div>
+            <button class="btn-primary" onclick="showUploadModal()" style="font-size:13px;padding:8px 20px;border-radius:10px">+ নোট আপলোড</button>
+          </div>
+          <div class="notes-grid" id="notes-grid"><p style="color:var(--muted);grid-column:1/-1;text-align:center;padding:40px">লোড হচ্ছে...</p></div>
+        </div>
+
+        <!-- QUIZ -->
+        <div class="page" id="page-quiz">
+          <div class="section-header"><h2>✏️ কুইজ</h2><p>সঠিক উত্তরে পয়েন্ট অর্জন করুন!</p></div>
+          <div class="card">
+            <div id="quiz-start" class="quiz-start-card">
+              <div style="font-size:50px;margin-bottom:14px">🧠</div>
+              <h3>কুইজ শুরু করুন</h3>
+              <p style="color:var(--muted);margin-bottom:20px;font-size:13px">বিষয় বেছে নিন — প্রতিটি সঠিক উত্তরে ১০ পয়েন্ট!</p>
+              <div class="qsubject-chips">
+                <button class="qsubject-chip selected" onclick="selectSubject('econ',this)">অর্থনীতি</button>
+                <button class="qsubject-chip" onclick="selectSubject('eng',this)">ইংরেজি</button>
+                <button class="qsubject-chip" onclick="selectSubject('math',this)">গণিত</button>
+                <button class="qsubject-chip" onclick="selectSubject('ict',this)">ICT</button>
+              </div>
+              <button class="btn-primary" onclick="startQuiz()">কুইজ শুরু করুন →</button>
+            </div>
+            <div id="quiz-active" style="display:none">
+              <div class="q-bar"><div class="q-fill" id="q-fill" style="width:10%"></div></div>
+              <div class="q-meta"><span id="q-counter">প্রশ্ন ১/৫</span><span>প্রতি সঠিকে ১০ পয়েন্ট</span></div>
+              <div class="q-text" id="q-text"></div>
+              <div class="q-options" id="q-options"></div>
+              <div class="q-explanation" id="q-explanation"></div>
+              <div class="q-next"><button class="btn-primary" id="q-next-btn" style="display:none">পরবর্তী →</button></div>
+            </div>
+            <div class="quiz-result" id="quiz-result">
+              <div style="font-size:44px;margin-bottom:12px">🎉</div>
+              <div class="result-score" id="result-score">৫/৫</div>
+              <div style="color:var(--muted);font-size:12px;margin:4px 0 10px">সঠিক উত্তর</div>
+              <div class="result-msg" id="result-msg">অসাধারণ!</div>
+              <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+                <button class="btn-primary" onclick="restartQuiz()">আবার দিন</button>
+                <button class="btn-secondary" onclick="navigate('leaderboard',document.querySelectorAll('.nav-item')[4])">লিডারবোর্ড</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- VIDEOS -->
+        <div class="page" id="page-videos">
+          <div class="section-header"><h2>📹 ভিডিও ক্লাস</h2><p>লাইভ, রেকর্ডেড ও আসন্ন ক্লাস</p></div>
+          <div class="filter-chips">
+            <button class="filter-chip selected">সব ক্লাস</button>
+            <span style="font-size:12px;background:rgba(192,57,43,.1);color:var(--red);padding:5px 12px;border-radius:20px;font-weight:600">🔴 লাইভ ১টি</span>
+          </div>
+          <div class="video-grid" id="video-grid"></div>
+          <div class="card" style="margin-top:16px;background:linear-gradient(135deg,rgba(200,134,26,.08),rgba(26,95,168,.05))">
+            <div class="card-title">💳 প্রিমিয়াম কোর্স</div>
+            <div class="three-col">
+              <div style="text-align:center;padding:16px;background:var(--surface);border:1px solid var(--border);border-radius:12px">
+                <div style="font-size:28px;margin-bottom:8px">📐</div>
+                <div style="font-weight:700;font-size:13px;margin-bottom:4px">গণিত মাস্টারক্লাস</div>
+                <div style="font-family:'Syne',sans-serif;font-size:18px;font-weight:800;color:var(--primary)">৳ ৪৯৯</div>
+                <button class="btn-primary" style="margin-top:10px;font-size:12px;padding:7px 16px;border-radius:8px" onclick="openPaymentDirect('গণিত মাস্টারক্লাস',499)">ভর্তি হন</button>
+              </div>
+              <div style="text-align:center;padding:16px;background:var(--surface);border:1px solid var(--border);border-radius:12px">
+                <div style="font-size:28px;margin-bottom:8px">📊</div>
+                <div style="font-weight:700;font-size:13px;margin-bottom:4px">অর্থনীতি বিশেষ কোর্স</div>
+                <div style="font-family:'Syne',sans-serif;font-size:18px;font-weight:800;color:var(--primary)">৳ ৩৯৯</div>
+                <button class="btn-primary" style="margin-top:10px;font-size:12px;padding:7px 16px;border-radius:8px" onclick="openPaymentDirect('অর্থনীতি বিশেষ কোর্স',399)">ভর্তি হন</button>
+              </div>
+              <div style="text-align:center;padding:16px;background:var(--surface);border:1px solid var(--border);border-radius:12px">
+                <div style="font-size:28px;margin-bottom:8px">🎯</div>
+                <div style="font-weight:700;font-size:13px;margin-bottom:4px">ভর্তি প্রস্তুতি প্যাক</div>
+                <div style="font-family:'Syne',sans-serif;font-size:18px;font-weight:800;color:var(--primary)">৳ ৯৯৯</div>
+                <button class="btn-primary" style="margin-top:10px;font-size:12px;padding:7px 16px;border-radius:8px" onclick="openPaymentDirect('ভর্তি প্রস্তুতি প্যাক',999)">ভর্তি হন</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- LEADERBOARD -->
+        <div class="page" id="page-leaderboard">
+          <div class="section-header"><h2>🏆 লিডারবোর্ড</h2><p>সর্বোচ্চ পয়েন্টধারী — রিয়েলটাইম র‍্যাংকিং</p></div>
+          <div class="card">
+            <div class="card-title" style="display:flex;justify-content:space-between">
+              <span>🥇 সার্বিক র‍্যাংকিং</span>
+              <span style="font-size:12px;color:var(--muted);font-family:'Hind Siliguri',sans-serif;font-weight:400"><span class="live-badge">LIVE</span> = নতুন সদস্য</span>
+            </div>
+            <div id="lb-all"><p style="color:var(--muted);text-align:center;padding:20px">লোড হচ্ছে...</p></div>
+          </div>
+        </div>
+
+        <!-- MEMBERS -->
+        <div class="page" id="page-members">
+          <div class="section-header">
+            <h2>👥 সদস্যগণ</h2>
+            <p>মোট <strong id="member-count">—</strong> জন সদস্য</p>
+          </div>
+          <div class="filter-chips">
+            <button class="member-filter-chip selected" onclick="filterMembers('all',this)">সকলে</button>
+            <button class="member-filter-chip" onclick="filterMembers('student',this)">শিক্ষার্থী</button>
+            <button class="member-filter-chip" onclick="filterMembers('teacher',this)">শিক্ষক</button>
+          </div>
+          <div class="members-grid" id="members-list"><p style="color:var(--muted);text-align:center;padding:40px;grid-column:1/-1">লোড হচ্ছে...</p></div>
+        </div>
+
+        <!-- WHATSAPP -->
+        <div class="page" id="page-whatsapp">
+          <div class="section-header"><h2>💬 WhatsApp নোটিফিকেশন</h2><p>শিক্ষার্থীদের WhatsApp-এ বার্তা পাঠান</p></div>
+          <div class="wa-card">
+            <h3>📱 কুইজ ফলাফল অটো-নোটিফিকেশন</h3>
+            <p style="font-size:13px;opacity:.85;line-height:1.6">কুইজ দেওয়ার পর শিক্ষার্থীর নিবন্ধিত WhatsApp নম্বরে স্বয়ংক্রিয়ভাবে ফলাফল পাঠানো হয়।<br>নিবন্ধনের সময় WhatsApp নম্বর যোগ করতে হবে।</p>
+          </div>
+          <div class="wa-manual card">
+            <h3>✉️ ম্যানুয়াল বার্তা পাঠান</h3>
+            <div class="form-group"><label>WhatsApp নম্বর</label><input id="wa-manual-phone" type="tel" placeholder="+8801XXXXXXXXX"></div>
+            <div class="form-group"><label>বার্তা</label><textarea id="wa-manual-msg" rows="4" placeholder="বার্তা লিখুন..."></textarea></div>
+            <button class="btn-primary" onclick="sendManualWA()">WhatsApp-এ পাঠান →</button>
+          </div>
+          <div class="card" style="background:rgba(37,211,102,.06);border-color:rgba(37,211,102,.2)">
+            <div class="card-title">💡 WhatsApp ব্যবহারের নিয়ম</div>
+            <p style="font-size:13px;color:var(--muted);line-height:1.8">
+              ১. শিক্ষার্থী কুইজ দিলে তার নম্বরে স্বয়ংক্রিয় বার্তা যাবে।<br>
+              ২. ম্যানুয়ালি যেকোনো নম্বরে নোটিশ পাঠানো যাবে।<br>
+              ৩. WhatsApp Business API ব্যবহার করলে bulk মেসেজ পাঠানো সম্ভব।<br>
+              ৪. <strong>নম্বর ফরম্যাট:</strong> +8801XXXXXXXXX
+            </p>
+          </div>
+        </div>
+
+        <!-- PROFILE -->
+        <div class="page" id="page-profile">
+          <div class="section-header"><h2>👤 আমার প্রোফাইল</h2><p>তথ্য ও পারফরম্যান্স</p></div>
+          <div class="profile-hero">
+            <div class="profile-avatar-lg" id="profile-avatar-lg" onclick="document.getElementById('profile-photo-input').click()">?</div>
+            <div>
+              <div class="profile-name" id="profile-name-display">—</div>
+              <div style="font-size:13px;color:rgba(245,240,232,.6);margin-top:2px" id="p-college-info"></div>
+              <div class="role-badge" id="profile-role-display">শিক্ষার্থী</div>
+              <div style="margin-top:8px;font-size:12px;color:rgba(245,240,232,.5)">📷 ছবিতে ক্লিক করে প্রোফাইল ছবি পরিবর্তন করুন</div>
+            </div>
+          </div>
+          <input type="file" id="profile-photo-input" accept="image/*" style="display:none" onchange="uploadProfilePhoto()">
+          <div style="display:none">
+            <button id="photo-upload-btn" data-label="ছবি আপলোড করুন" class="btn-primary">ছবি আপলোড করুন</button>
+          </div>
+          <div class="profile-stats">
+            <div class="ps-card"><div class="ps-val" id="p-score">—</div><div class="ps-label">মোট পয়েন্ট</div></div>
+            <div class="ps-card"><div class="ps-val" id="p-quizzes">—</div><div class="ps-label">কুইজ সম্পন্ন</div></div>
+            <div class="ps-card"><div class="ps-val" id="p-notes">—</div><div class="ps-label">নোট আপলোড</div></div>
+          </div>
+          <div class="card">
+            <div class="card-title">📊 কুইজ ইতিহাস</div>
+            <div id="quiz-history"><p style="color:var(--muted);font-size:13px">লোড হচ্ছে...</p></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ UPLOAD MODAL ══ -->
+<div class="modal" id="upload-modal">
+  <div class="modal-box">
+    <div class="modal-title">📤 নোট আপলোড করুন</div>
+    <div class="form-group"><label>শিরোনাম *</label><input id="note-title" type="text" placeholder="নোটের শিরোনাম"></div>
+    <div class="form-group"><label>বিষয় *</label>
+      <select id="note-subject">
+        <option value="econ">অর্থনীতি</option><option value="eng">ইংরেজি</option>
+        <option value="sci">বিজ্ঞান</option><option value="math">গণিত</option><option value="ict">ICT</option>
+      </select>
+    </div>
+    <div class="form-group"><label>বিবরণ *</label><input id="note-desc" type="text" placeholder="নোটটি কী বিষয়ে?"></div>
+    <div class="form-group">
+      <label>ফাইল আপলোড (PDF বা ছবি, সর্বোচ্চ ১০MB)</label>
+      <input id="note-file" type="file" accept=".pdf,image/*" style="padding:8px;background:var(--card)">
+    </div>
+    <div class="upload-progress" id="upload-progress">
+      <div class="upload-progress-bar-wrap">
+        <div class="upload-progress-bar-inner" id="upload-progress-bar" style="width:0"></div>
+      </div>
+      <div style="font-size:12px;color:var(--muted);margin-top:4px">আপলোড হচ্ছে: <span id="upload-progress-text">0%</span></div>
+    </div>
+    <div class="modal-actions">
+      <button id="upload-note-btn" class="btn-primary" data-label="আপলোড করুন" onclick="uploadNote()">আপলোড করুন</button>
+      <button class="btn-secondary" onclick="closeModal('upload-modal')">বাতিল</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ PAYMENT MODAL ══ -->
+<div class="modal" id="payment-modal">
+  <div class="modal-box">
+    <div class="modal-title">💳 পেমেন্ট করুন</div>
+    <div style="background:var(--card);border-radius:12px;padding:14px;margin-bottom:16px;text-align:center">
+      <div style="font-size:13px;color:var(--muted)">কোর্স</div>
+      <div style="font-weight:700;font-size:15px;margin:4px 0" id="payment-course-name">—</div>
+      <div style="font-family:'Syne',sans-serif;font-size:28px;font-weight:800;color:var(--primary)">৳ <span id="payment-amount">—</span></div>
+    </div>
+    <div style="font-weight:600;font-size:13px;margin-bottom:10px">পেমেন্ট পদ্ধতি বেছে নিন:</div>
+    <div class="pay-methods">
+      <label class="pay-method"><input type="radio" name="pay-method" value="bkash"><div class="pay-logo">📱</div><div class="pay-name">bKash</div><div class="pay-num">01XXXXXXXXX</div></label>
+      <label class="pay-method"><input type="radio" name="pay-method" value="nagad"><div class="pay-logo">💰</div><div class="pay-name">Nagad</div><div class="pay-num">01XXXXXXXXX</div></label>
+    </div>
+    <div class="pay-instruction">
+      <strong>পেমেন্ট করার নিয়ম:</strong><br>
+      ১. উপরের নম্বরে Send Money করুন<br>
+      ২. Transaction ID কপি করুন<br>
+      ৩. নিচে Transaction ID বসান ও জমা দিন
+    </div>
+    <div class="form-group"><label>Transaction ID *</label><input id="payment-txn" type="text" placeholder="যেমন: 8A5X2Q7L9P"></div>
+    <div class="modal-actions">
+      <button id="pay-confirm-btn" class="btn-primary" data-label="পেমেন্ট নিশ্চিত করুন" onclick="confirmPayment()">পেমেন্ট নিশ্চিত করুন</button>
+      <button class="btn-secondary" onclick="closeModal('payment-modal')">বাতিল</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ WHATSAPP RESULT MODAL ══ -->
+<div class="modal" id="wa-modal">
+  <div class="modal-box" style="max-width:380px;text-align:center">
+    <div style="font-size:48px;margin-bottom:12px">📱</div>
+    <div class="modal-title" style="text-align:center">কুইজ ফলাফল পাঠান</div>
+    <p style="font-size:14px;color:var(--muted);margin-bottom:16px">WhatsApp-এ কুইজ ফলাফল পাঠাবেন?</p>
+    <div style="background:var(--card);border-radius:10px;padding:12px;margin-bottom:16px;font-size:13px;text-align:left">
+      <div>📞 <strong id="wa-phone"></strong></div>
+      <div style="margin-top:4px">📊 <span id="wa-preview-msg"></span></div>
+    </div>
+    <div style="display:flex;gap:10px;justify-content:center">
+      <a id="wa-link" href="#" target="_blank" class="btn-primary" style="text-decoration:none;padding:10px 24px;border-radius:10px" onclick="closeModal('wa-modal')">WhatsApp খুলুন →</a>
+      <button class="btn-secondary" onclick="closeModal('wa-modal')">পরে</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ VIDEO PLAYER MODAL ══ -->
+<div id="video-player-modal">
+  <div class="video-player-wrap">
+    <div class="video-player-header">
+      <h3 id="video-player-title"></h3>
+      <button class="close-video-btn" onclick="closeVideoPlayer()">✕ বন্ধ করুন</button>
+    </div>
+    <div class="video-iframe-wrap">
+      <iframe id="video-player-iframe" src="" allowfullscreen allow="autoplay"></iframe>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+</body>
+</html>

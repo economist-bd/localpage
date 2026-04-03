@@ -1,0 +1,1658 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#0a0a0f" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="ScreenRec" />
+  <meta name="description" content="High Quality Mobile Screen Recorder - MP4 Save, PWA" />
+  <title>ScreenRec — স্ক্রিন রেকর্ডার</title>
+  <link rel="manifest" href="manifest.json" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Noto+Sans+Bengali:wght@300;400;600;700&display=swap" rel="stylesheet" />
+
+  <style>
+    :root {
+      --bg: #07070d;
+      --surface: #0f0f1a;
+      --surface2: #161625;
+      --border: #1e1e35;
+      --accent: #ff3b6b;
+      --accent2: #ff6b35;
+      --accent3: #3bffd4;
+      --text: #e8e8f0;
+      --text-dim: #7070a0;
+      --text-muted: #404060;
+      --recording: #ff3b3b;
+      --success: #3bffd4;
+      --warn: #ffb03b;
+      --font-mono: 'Space Mono', monospace;
+      --font-ui: 'Noto Sans Bengali', sans-serif;
+      --radius: 16px;
+      --radius-sm: 10px;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+    html, body {
+      height: 100%;
+      overflow: hidden;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-ui);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Noise texture overlay */
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 1000;
+      opacity: 0.5;
+    }
+
+    #app {
+      display: flex;
+      flex-direction: column;
+      height: 100dvh;
+      max-width: 430px;
+      margin: 0 auto;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* === HEADER === */
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 20px 12px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(7,7,13,0.95);
+      backdrop-filter: blur(20px);
+      position: relative;
+      z-index: 10;
+      flex-shrink: 0;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .logo-icon {
+      width: 36px; height: 36px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px;
+      box-shadow: 0 0 20px rgba(255,59,107,0.4);
+    }
+
+    .logo-text {
+      font-family: var(--font-mono);
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      background: linear-gradient(90deg, var(--text), var(--text-dim));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .header-status {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      color: var(--text-dim);
+    }
+
+    .status-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--text-muted);
+      transition: all 0.3s;
+    }
+    .status-dot.recording {
+      background: var(--recording);
+      box-shadow: 0 0 10px var(--recording);
+      animation: pulse-dot 1s infinite;
+    }
+    .status-dot.paused {
+      background: var(--warn);
+      box-shadow: 0 0 10px var(--warn);
+    }
+    .status-dot.ready {
+      background: var(--accent3);
+      box-shadow: 0 0 8px var(--accent3);
+    }
+
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(0.7); }
+    }
+
+    /* === TABS === */
+    .tabs {
+      display: flex;
+      padding: 0 20px;
+      gap: 0;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+      background: var(--bg);
+    }
+
+    .tab {
+      flex: 1;
+      padding: 12px 8px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+      background: none;
+      border: none;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: all 0.2s;
+      letter-spacing: 0.5px;
+    }
+
+    .tab.active {
+      color: var(--accent);
+      border-bottom-color: var(--accent);
+    }
+
+    /* === MAIN CONTENT === */
+    .content {
+      flex: 1;
+      overflow-y: auto;
+      overflow-x: hidden;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+    }
+    .content::-webkit-scrollbar { display: none; }
+
+    .page { display: none; padding: 20px; }
+    .page.active { display: block; }
+
+    /* === RECORDER PAGE === */
+    .preview-container {
+      width: 100%;
+      aspect-ratio: 16/9;
+      background: var(--surface);
+      border-radius: var(--radius);
+      overflow: hidden;
+      position: relative;
+      border: 1px solid var(--border);
+      margin-bottom: 20px;
+    }
+
+    #preview {
+      width: 100%; height: 100%;
+      object-fit: contain;
+      background: #000;
+    }
+
+    .preview-overlay {
+      position: absolute; inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      background: rgba(7,7,13,0.7);
+      transition: opacity 0.3s;
+    }
+    .preview-overlay.hidden { opacity: 0; pointer-events: none; }
+
+    .preview-icon {
+      font-size: 48px;
+      opacity: 0.4;
+    }
+
+    .preview-hint {
+      font-size: 13px;
+      color: var(--text-dim);
+      text-align: center;
+      padding: 0 20px;
+    }
+
+    /* Timer display */
+    .timer-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--surface);
+      border-radius: var(--radius-sm);
+      padding: 12px 16px;
+      margin-bottom: 16px;
+      border: 1px solid var(--border);
+    }
+
+    .timer-display {
+      font-family: var(--font-mono);
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--text);
+      letter-spacing: 2px;
+    }
+
+    .timer-display.recording {
+      color: var(--recording);
+      text-shadow: 0 0 20px rgba(255,59,59,0.5);
+    }
+
+    .timer-info {
+      text-align: right;
+    }
+
+    .timer-label {
+      font-size: 10px;
+      color: var(--text-muted);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: 2px;
+    }
+
+    .file-size {
+      font-family: var(--font-mono);
+      font-size: 13px;
+      color: var(--text-dim);
+    }
+
+    /* Settings panel */
+    .settings-panel {
+      background: var(--surface);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      margin-bottom: 16px;
+      overflow: hidden;
+    }
+
+    .settings-header {
+      padding: 12px 16px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .setting-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border);
+      gap: 12px;
+    }
+    .setting-row:last-child { border-bottom: none; }
+
+    .setting-label {
+      font-size: 14px;
+      color: var(--text);
+      font-weight: 500;
+    }
+    .setting-sub {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .setting-control {
+      flex-shrink: 0;
+    }
+
+    /* Toggle Switch */
+    .toggle {
+      width: 48px; height: 26px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 13px;
+      position: relative;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    .toggle.on {
+      background: var(--accent);
+      border-color: var(--accent);
+      box-shadow: 0 0 12px rgba(255,59,107,0.4);
+    }
+    .toggle::after {
+      content: '';
+      position: absolute;
+      width: 20px; height: 20px;
+      background: #fff;
+      border-radius: 50%;
+      top: 2px; left: 2px;
+      transition: transform 0.3s;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    }
+    .toggle.on::after { transform: translateX(22px); }
+
+    /* Select */
+    .select-btn {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 6px 12px;
+      font-size: 13px;
+      color: var(--text);
+      font-family: var(--font-mono);
+      cursor: pointer;
+      min-width: 80px;
+      text-align: center;
+      transition: all 0.2s;
+    }
+    .select-btn:active { opacity: 0.7; }
+
+    select.select-btn {
+      -webkit-appearance: none;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%237070a0' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 10px center;
+      padding-right: 28px;
+    }
+
+    /* Control Buttons */
+    .controls {
+      display: grid;
+      grid-template-columns: 1fr 72px 1fr;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    .btn-secondary {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      transition: all 0.2s;
+      color: var(--text-dim);
+    }
+    .btn-secondary:active { transform: scale(0.95); opacity: 0.8; }
+    .btn-secondary.disabled { opacity: 0.3; pointer-events: none; }
+    .btn-secondary .btn-icon { font-size: 22px; }
+    .btn-secondary .btn-label { font-size: 11px; font-weight: 600; letter-spacing: 0.5px; }
+
+    .btn-record {
+      width: 72px; height: 72px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      box-shadow: 0 0 30px rgba(255,59,107,0.5), 0 4px 20px rgba(0,0,0,0.4);
+      transition: all 0.2s;
+      position: relative;
+    }
+
+    .btn-record:active { transform: scale(0.93); }
+
+    .btn-record.recording {
+      background: linear-gradient(135deg, #ff3b3b, #ff6b3b);
+      box-shadow: 0 0 40px rgba(255,59,59,0.7), 0 4px 20px rgba(0,0,0,0.4);
+      animation: record-pulse 2s infinite;
+    }
+
+    @keyframes record-pulse {
+      0%, 100% { box-shadow: 0 0 30px rgba(255,59,59,0.5), 0 4px 20px rgba(0,0,0,0.4); }
+      50% { box-shadow: 0 0 50px rgba(255,59,59,0.8), 0 4px 20px rgba(0,0,0,0.4); }
+    }
+
+    .btn-record .record-ring {
+      position: absolute; inset: -6px;
+      border-radius: 50%;
+      border: 2px solid rgba(255,59,107,0.3);
+      animation: ring-expand 2s infinite;
+    }
+
+    @keyframes ring-expand {
+      0% { transform: scale(1); opacity: 0.6; }
+      100% { transform: scale(1.3); opacity: 0; }
+    }
+
+    /* === RECORDINGS PAGE === */
+    .recordings-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+
+    .recordings-title {
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+
+    .recordings-count {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--accent);
+      background: rgba(255,59,107,0.1);
+      padding: 3px 10px;
+      border-radius: 20px;
+      border: 1px solid rgba(255,59,107,0.2);
+    }
+
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 60px 20px;
+      gap: 12px;
+    }
+
+    .empty-icon { font-size: 52px; opacity: 0.2; }
+    .empty-text { font-size: 14px; color: var(--text-muted); text-align: center; }
+
+    .recording-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      transition: all 0.2s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .recording-card::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      width: 3px;
+      background: linear-gradient(180deg, var(--accent), var(--accent2));
+      border-radius: 3px 0 0 3px;
+    }
+
+    .recording-card:active { transform: scale(0.98); }
+
+    .rec-thumb {
+      width: 56px; height: 40px;
+      background: var(--surface2);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      flex-shrink: 0;
+      border: 1px solid var(--border);
+      overflow: hidden;
+    }
+
+    .rec-thumb video {
+      width: 100%; height: 100%;
+      object-fit: cover;
+    }
+
+    .rec-info { flex: 1; min-width: 0; }
+
+    .rec-name {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-bottom: 4px;
+    }
+
+    .rec-meta {
+      display: flex;
+      gap: 10px;
+      font-size: 11px;
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+    }
+
+    .rec-meta span {
+      display: flex;
+      align-items: center;
+      gap: 3px;
+    }
+
+    .rec-actions {
+      display: flex;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .icon-btn {
+      width: 34px; height: 34px;
+      border-radius: 8px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 16px;
+      transition: all 0.2s;
+    }
+    .icon-btn:active { transform: scale(0.9); opacity: 0.7; }
+    .icon-btn.danger { background: rgba(255,59,59,0.1); border-color: rgba(255,59,59,0.2); }
+
+    /* Storage bar */
+    .storage-widget {
+      background: var(--surface);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      padding: 14px 16px;
+      margin-bottom: 16px;
+    }
+
+    .storage-header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+
+    .storage-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+
+    .storage-size {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--accent3);
+    }
+
+    .storage-bar {
+      height: 4px;
+      background: var(--surface2);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .storage-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      border-radius: 4px;
+      transition: width 0.5s ease;
+    }
+
+    /* Video player modal */
+    .modal-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.9);
+      z-index: 500;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s;
+      backdrop-filter: blur(10px);
+    }
+
+    .modal-overlay.open {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .modal-video {
+      width: 100%;
+      max-width: 400px;
+      border-radius: var(--radius);
+      background: #000;
+      box-shadow: 0 0 60px rgba(0,0,0,0.8);
+    }
+
+    .modal-controls {
+      display: flex;
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .modal-btn {
+      padding: 10px 20px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .modal-btn.primary {
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      border-color: transparent;
+      color: #fff;
+      box-shadow: 0 0 20px rgba(255,59,107,0.4);
+    }
+
+    .modal-btn.secondary {
+      background: var(--surface);
+      color: var(--text-dim);
+    }
+
+    .modal-btn:active { transform: scale(0.95); }
+
+    /* Toast notification */
+    .toast {
+      position: fixed;
+      bottom: 90px;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 30px;
+      padding: 10px 20px;
+      font-size: 13px;
+      color: var(--text);
+      z-index: 600;
+      opacity: 0;
+      transition: all 0.3s;
+      white-space: nowrap;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    .toast.success { border-color: rgba(59,255,212,0.3); }
+    .toast.error { border-color: rgba(255,59,59,0.3); }
+    .toast.info { border-color: rgba(59,107,255,0.3); }
+
+    /* Bottom nav */
+    .bottom-nav {
+      padding: 0 0 env(safe-area-inset-bottom, 0);
+      background: rgba(7,7,13,0.95);
+      backdrop-filter: blur(20px);
+      border-top: 1px solid var(--border);
+      flex-shrink: 0;
+      position: relative;
+      z-index: 10;
+    }
+
+    /* Scroll indicators */
+    .scroll-hint {
+      font-size: 11px;
+      color: var(--text-muted);
+      text-align: center;
+      padding: 8px;
+      letter-spacing: 0.5px;
+    }
+
+    /* About Page */
+    .about-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      margin-bottom: 12px;
+    }
+
+    .about-title {
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+    }
+
+    .about-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 13px;
+    }
+    .about-row:last-child { border-bottom: none; }
+
+    .about-key { color: var(--text-dim); }
+    .about-val { color: var(--text); font-family: var(--font-mono); font-size: 12px; }
+
+    .install-banner {
+      background: linear-gradient(135deg, rgba(255,59,107,0.1), rgba(255,107,53,0.1));
+      border: 1px solid rgba(255,59,107,0.2);
+      border-radius: var(--radius);
+      padding: 16px;
+      margin-bottom: 12px;
+      display: none;
+    }
+    .install-banner.show { display: block; }
+
+    .install-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--accent);
+      margin-bottom: 6px;
+    }
+
+    .install-desc {
+      font-size: 12px;
+      color: var(--text-dim);
+      line-height: 1.6;
+      margin-bottom: 12px;
+    }
+
+    .install-btn {
+      width: 100%;
+      padding: 12px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      border: none;
+      border-radius: var(--radius-sm);
+      color: #fff;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      letter-spacing: 0.5px;
+    }
+
+    /* Loading spinner */
+    .spinner {
+      width: 20px; height: 20px;
+      border: 2px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      display: none;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Waveform animation during recording */
+    .waveform {
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      height: 20px;
+    }
+
+    .wave-bar {
+      width: 3px;
+      background: var(--recording);
+      border-radius: 3px;
+      animation: wave 1s infinite;
+    }
+
+    .wave-bar:nth-child(1) { animation-delay: 0s; }
+    .wave-bar:nth-child(2) { animation-delay: 0.15s; }
+    .wave-bar:nth-child(3) { animation-delay: 0.3s; }
+    .wave-bar:nth-child(4) { animation-delay: 0.15s; }
+    .wave-bar:nth-child(5) { animation-delay: 0s; }
+
+    @keyframes wave {
+      0%, 100% { height: 4px; }
+      50% { height: 18px; }
+    }
+
+    .waveform.hidden { display: none; }
+
+    /* Confirm dialog */
+    .confirm-dialog {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.85);
+      z-index: 700;
+      display: flex;
+      align-items: flex-end;
+      padding: 20px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s;
+    }
+    .confirm-dialog.open { opacity: 1; pointer-events: all; }
+
+    .confirm-box {
+      width: 100%;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 20px 20px 16px 16px;
+      padding: 24px 20px 20px;
+      transform: translateY(30px);
+      transition: transform 0.3s;
+    }
+    .confirm-dialog.open .confirm-box { transform: translateY(0); }
+
+    .confirm-title {
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+    .confirm-msg {
+      font-size: 13px;
+      color: var(--text-dim);
+      margin-bottom: 20px;
+      line-height: 1.5;
+    }
+    .confirm-buttons {
+      display: flex;
+      gap: 10px;
+    }
+    .confirm-btn {
+      flex: 1;
+      padding: 13px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .confirm-btn:active { transform: scale(0.97); }
+    .confirm-btn.danger {
+      background: rgba(255,59,59,0.15);
+      border-color: rgba(255,59,59,0.3);
+      color: var(--recording);
+    }
+    .confirm-btn.cancel {
+      background: var(--surface);
+      color: var(--text-dim);
+    }
+  </style>
+</head>
+<body>
+<div id="app">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="logo">
+      <div class="logo-icon">📹</div>
+      <div class="logo-text">SCREENREC</div>
+    </div>
+    <div class="header-status">
+      <div class="waveform hidden" id="waveform">
+        <div class="wave-bar"></div>
+        <div class="wave-bar"></div>
+        <div class="wave-bar"></div>
+        <div class="wave-bar"></div>
+        <div class="wave-bar"></div>
+      </div>
+      <div class="status-dot" id="statusDot"></div>
+      <span id="statusText" style="font-size:11px; font-family:var(--font-mono);">READY</span>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('recorder', this)">● রেকর্ড</button>
+    <button class="tab" onclick="switchTab('recordings', this)">💾 সেভ করা</button>
+    <button class="tab" onclick="switchTab('about', this)">⚙ সেটিংস</button>
+  </div>
+
+  <!-- Content -->
+  <div class="content">
+
+    <!-- === RECORDER PAGE === -->
+    <div class="page active" id="page-recorder">
+
+      <!-- Preview -->
+      <div class="preview-container">
+        <video id="preview" autoplay muted playsinline></video>
+        <div class="preview-overlay" id="previewOverlay">
+          <div class="preview-icon">🖥️</div>
+          <div class="preview-hint">রেকর্ড শুরু করতে নিচের বাটন চাপুন</div>
+        </div>
+      </div>
+
+      <!-- Timer -->
+      <div class="timer-bar">
+        <div>
+          <div class="timer-label">সময়</div>
+          <div class="timer-display" id="timerDisplay">00:00:00</div>
+        </div>
+        <div class="timer-info">
+          <div class="timer-label">সাইজ</div>
+          <div class="file-size" id="fileSizeDisplay">0 KB</div>
+        </div>
+      </div>
+
+      <!-- Settings Panel -->
+      <div class="settings-panel">
+        <div class="settings-header">⚙ রেকর্ডিং সেটিংস</div>
+
+        <div class="setting-row">
+          <div>
+            <div class="setting-label">কোয়ালিটি</div>
+            <div class="setting-sub">ভিডিও রেজোলিউশন</div>
+          </div>
+          <select class="select-btn setting-control" id="qualitySetting">
+            <option value="high">High</option>
+            <option value="medium" selected>Medium</option>
+            <option value="low">Low</option>
+          </select>
+        </div>
+
+        <div class="setting-row">
+          <div>
+            <div class="setting-label">ফ্রেম রেট</div>
+            <div class="setting-sub">FPS নির্বাচন করুন</div>
+          </div>
+          <select class="select-btn setting-control" id="fpsSetting">
+            <option value="60">60 fps</option>
+            <option value="30" selected>30 fps</option>
+            <option value="24">24 fps</option>
+            <option value="15">15 fps</option>
+          </select>
+        </div>
+
+        <div class="setting-row">
+          <div>
+            <div class="setting-label">মাইক্রোফোন</div>
+            <div class="setting-sub">অডিও রেকর্ড করুন</div>
+          </div>
+          <div class="toggle" id="micToggle" onclick="toggleSetting('mic')"></div>
+        </div>
+
+        <div class="setting-row">
+          <div>
+            <div class="setting-label">সিস্টেম অডিও</div>
+            <div class="setting-sub">স্ক্রিনের শব্দ ক্যাপচার</div>
+          </div>
+          <div class="toggle on" id="sysAudioToggle" onclick="toggleSetting('sysAudio')"></div>
+        </div>
+
+      </div>
+
+      <!-- Controls -->
+      <div class="controls">
+        <button class="btn-secondary disabled" id="btnPause" onclick="togglePause()">
+          <span class="btn-icon" id="pauseIcon">⏸</span>
+          <span class="btn-label" id="pauseLabel">বিরতি</span>
+        </button>
+
+        <button class="btn-record" id="btnRecord" onclick="toggleRecording()">
+          <div class="record-ring"></div>
+          <span id="recordIcon">⏺</span>
+        </button>
+
+        <button class="btn-secondary disabled" id="btnStop" onclick="stopRecording()">
+          <span class="btn-icon">⏹</span>
+          <span class="btn-label">থামাও</span>
+        </button>
+      </div>
+
+    </div>
+
+    <!-- === RECORDINGS PAGE === -->
+    <div class="page" id="page-recordings">
+
+      <div class="storage-widget">
+        <div class="storage-header">
+          <span class="storage-label">🗄 লোকাল স্টোরেজ</span>
+          <span class="storage-size" id="storageSizeLabel">0 MB ব্যবহৃত</span>
+        </div>
+        <div class="storage-bar">
+          <div class="storage-fill" id="storageFill" style="width:0%"></div>
+        </div>
+      </div>
+
+      <div class="recordings-header">
+        <span class="recordings-title">📂 রেকর্ডিং তালিকা</span>
+        <span class="recordings-count" id="recCount">0 টি</span>
+      </div>
+
+      <div id="recordingsList"></div>
+
+    </div>
+
+    <!-- === ABOUT PAGE === -->
+    <div class="page" id="page-about">
+
+      <div class="install-banner" id="installBanner">
+        <div class="install-title">📲 হোম স্ক্রিনে যোগ করুন</div>
+        <div class="install-desc">এই অ্যাপটি আপনার হোম স্ক্রিনে ইনস্টল করুন — অফলাইনেও কাজ করবে!</div>
+        <button class="install-btn" id="installBtn" onclick="installPWA()">📱 ইনস্টল করুন</button>
+      </div>
+
+      <div class="about-card">
+        <div class="about-title">📱 অ্যাপ তথ্য</div>
+        <div class="about-row"><span class="about-key">অ্যাপের নাম</span><span class="about-val">ScreenRec</span></div>
+        <div class="about-row"><span class="about-key">ভার্সন</span><span class="about-val">v1.0.0</span></div>
+        <div class="about-row"><span class="about-key">ফরম্যাট</span><span class="about-val">MP4 / WebM</span></div>
+        <div class="about-row"><span class="about-key">স্টোরেজ</span><span class="about-val">IndexedDB</span></div>
+        <div class="about-row"><span class="about-key">PWA</span><span class="about-val" id="pwaStatus">চেক হচ্ছে...</span></div>
+      </div>
+
+      <div class="about-card">
+        <div class="about-title">✨ ফিচার সমূহ</div>
+        <div class="about-row"><span class="about-key">📹 স্ক্রিন রেকর্ড</span><span class="about-val" style="color:var(--accent3)">✓</span></div>
+        <div class="about-row"><span class="about-key">🎙 মাইক্রোফোন</span><span class="about-val" style="color:var(--accent3)">✓</span></div>
+        <div class="about-row"><span class="about-key">🔊 সিস্টেম অডিও</span><span class="about-val" style="color:var(--accent3)">✓</span></div>
+        <div class="about-row"><span class="about-key">⏸ পজ/রিজিউম</span><span class="about-val" style="color:var(--accent3)">✓</span></div>
+        <div class="about-row"><span class="about-key">💾 MP4 সেভ</span><span class="about-val" style="color:var(--accent3)">✓</span></div>
+        <div class="about-row"><span class="about-key">🗑 ডিলিট</span><span class="about-val" style="color:var(--accent3)">✓</span></div>
+        <div class="about-row"><span class="about-key">📲 PWA সাপোর্ট</span><span class="about-val" style="color:var(--accent3)">✓</span></div>
+      </div>
+
+      <div class="about-card">
+        <div class="about-title">🗑 ডেটা ম্যানেজমেন্ট</div>
+        <button onclick="clearAllRecordings()" style="width:100%;padding:13px;background:rgba(255,59,59,0.1);border:1px solid rgba(255,59,59,0.2);border-radius:var(--radius-sm);color:var(--recording);font-size:14px;font-weight:700;cursor:pointer;margin-top:4px;">
+          🗑 সব রেকর্ডিং মুছে ফেলুন
+        </button>
+      </div>
+
+    </div>
+
+  </div>
+  <!-- end content -->
+
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<!-- Video Player Modal -->
+<div class="modal-overlay" id="videoModal">
+  <video class="modal-video" id="modalVideo" controls playsinline></video>
+  <div class="modal-controls">
+    <button class="modal-btn primary" id="modalDownload" onclick="downloadCurrent()">
+      ⬇ ডাউনলোড
+    </button>
+    <button class="modal-btn secondary" onclick="closeModal()">
+      ✕ বন্ধ করুন
+    </button>
+  </div>
+</div>
+
+<!-- Confirm Dialog -->
+<div class="confirm-dialog" id="confirmDialog">
+  <div class="confirm-box">
+    <div class="confirm-title" id="confirmTitle">নিশ্চিত করুন</div>
+    <div class="confirm-msg" id="confirmMsg">আপনি কি নিশ্চিত?</div>
+    <div class="confirm-buttons">
+      <button class="confirm-btn cancel" onclick="closeConfirm()">বাতিল</button>
+      <button class="confirm-btn danger" id="confirmOkBtn">হ্যাঁ, মুছুন</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ===== STATE =====
+let mediaRecorder = null;
+let recordedChunks = [];
+let recordingStream = null;
+let timerInterval = null;
+let elapsedSeconds = 0;
+let isRecording = false;
+let isPaused = false;
+let chunkSizeBytes = 0;
+let currentPlaybackKey = null;
+let confirmCallback = null;
+
+// Settings
+const settings = {
+  mic: false,
+  sysAudio: true,
+};
+
+// ===== IndexedDB =====
+const DB_NAME = 'ScreenRecDB';
+const DB_VERSION = 1;
+const STORE = 'recordings';
+let db;
+
+function openDB() {
+  return new Promise((res, rej) => {
+    const req = indexedDB.open(DB_NAME, DB_VERSION);
+    req.onupgradeneeded = e => {
+      const d = e.target.result;
+      if (!d.objectStoreNames.contains(STORE)) {
+        d.createObjectStore(STORE, { keyPath: 'id' });
+      }
+    };
+    req.onsuccess = e => { db = e.target.result; res(db); };
+    req.onerror = rej;
+  });
+}
+
+function saveRecording(record) {
+  return new Promise((res, rej) => {
+    const tx = db.transaction(STORE, 'readwrite');
+    tx.objectStore(STORE).put(record);
+    tx.oncomplete = res;
+    tx.onerror = rej;
+  });
+}
+
+function getAllRecordings() {
+  return new Promise((res, rej) => {
+    const tx = db.transaction(STORE, 'readonly');
+    const req = tx.objectStore(STORE).getAll();
+    req.onsuccess = e => res(e.target.result);
+    req.onerror = rej;
+  });
+}
+
+function deleteRecording(id) {
+  return new Promise((res, rej) => {
+    const tx = db.transaction(STORE, 'readwrite');
+    tx.objectStore(STORE).delete(id);
+    tx.oncomplete = res;
+    tx.onerror = rej;
+  });
+}
+
+function clearAllDB() {
+  return new Promise((res, rej) => {
+    const tx = db.transaction(STORE, 'readwrite');
+    tx.objectStore(STORE).clear();
+    tx.oncomplete = res;
+    tx.onerror = rej;
+  });
+}
+
+// ===== SETTINGS TOGGLES =====
+function toggleSetting(key) {
+  if (isRecording) return;
+  settings[key] = !settings[key];
+  document.getElementById(key + 'Toggle').classList.toggle('on', settings[key]);
+}
+
+// ===== TIMER =====
+function startTimer() {
+  elapsedSeconds = 0;
+  timerInterval = setInterval(() => {
+    if (!isPaused) {
+      elapsedSeconds++;
+      updateTimerDisplay();
+    }
+  }, 1000);
+}
+
+function updateTimerDisplay() {
+  const h = String(Math.floor(elapsedSeconds / 3600)).padStart(2, '0');
+  const m = String(Math.floor((elapsedSeconds % 3600) / 60)).padStart(2, '0');
+  const s = String(elapsedSeconds % 60).padStart(2, '0');
+  const el = document.getElementById('timerDisplay');
+  el.textContent = `${h}:${m}:${s}`;
+  el.className = 'timer-display' + (isRecording && !isPaused ? ' recording' : '');
+}
+
+function stopTimer() {
+  clearInterval(timerInterval);
+  timerInterval = null;
+}
+
+// ===== RECORDING =====
+async function toggleRecording() {
+  if (isRecording) {
+    stopRecording();
+  } else {
+    await startRecording();
+  }
+}
+
+async function startRecording() {
+  try {
+    // Get display stream
+    const displayConstraints = {
+      video: {
+        frameRate: { ideal: parseInt(document.getElementById('fpsSetting').value) },
+        ...getVideoConstraints()
+      },
+      audio: settings.sysAudio
+    };
+
+    recordingStream = await navigator.mediaDevices.getDisplayMedia(displayConstraints);
+
+    // Add mic if enabled
+    if (settings.mic) {
+      try {
+        const micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        const micTrack = micStream.getAudioTracks()[0];
+        recordingStream.addTrack(micTrack);
+      } catch(e) {
+        showToast('⚠ মাইক্রোফোন অ্যাক্সেস হয়নি', 'error');
+      }
+    }
+
+    // Show preview
+    document.getElementById('preview').srcObject = recordingStream;
+    document.getElementById('previewOverlay').classList.add('hidden');
+
+    // Setup MediaRecorder
+    const mimeType = getSupportedMimeType();
+    const bitrate = getBitrate();
+
+    mediaRecorder = new MediaRecorder(recordingStream, {
+      mimeType,
+      videoBitsPerSecond: bitrate,
+    });
+
+    recordedChunks = [];
+    chunkSizeBytes = 0;
+
+    mediaRecorder.ondataavailable = e => {
+      if (e.data && e.data.size > 0) {
+        recordedChunks.push(e.data);
+        chunkSizeBytes += e.data.size;
+        document.getElementById('fileSizeDisplay').textContent = formatSize(chunkSizeBytes);
+      }
+    };
+
+    mediaRecorder.onstop = handleRecordingStop;
+
+    mediaRecorder.start(1000); // collect chunks every 1s
+
+    // Stream ended by user (browser UI stop share)
+    recordingStream.getVideoTracks()[0].onended = () => {
+      if (isRecording) stopRecording();
+    };
+
+    isRecording = true;
+    isPaused = false;
+    updateUI();
+    startTimer();
+    showToast('🔴 রেকর্ডিং শুরু হয়েছে', 'success');
+
+  } catch (err) {
+    if (err.name !== 'NotAllowedError') {
+      showToast('❌ ' + err.message, 'error');
+    }
+    console.error(err);
+  }
+}
+
+function getVideoConstraints() {
+  const q = document.getElementById('qualitySetting').value;
+  if (q === 'high') return { width: { ideal: 1920 }, height: { ideal: 1080 } };
+  if (q === 'medium') return { width: { ideal: 1280 }, height: { ideal: 720 } };
+  return { width: { ideal: 854 }, height: { ideal: 480 } };
+}
+
+function getBitrate() {
+  const q = document.getElementById('qualitySetting').value;
+  if (q === 'high') return 8000000;
+  if (q === 'medium') return 4000000;
+  return 1500000;
+}
+
+function getSupportedMimeType() {
+  const types = [
+    'video/mp4;codecs=h264,aac',
+    'video/mp4',
+    'video/webm;codecs=vp9,opus',
+    'video/webm;codecs=vp8,opus',
+    'video/webm',
+  ];
+  for (const t of types) {
+    if (MediaRecorder.isTypeSupported(t)) return t;
+  }
+  return 'video/webm';
+}
+
+function stopRecording() {
+  if (!isRecording) return;
+  if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+    mediaRecorder.stop();
+  }
+  if (recordingStream) {
+    recordingStream.getTracks().forEach(t => t.stop());
+  }
+  stopTimer();
+  isRecording = false;
+  isPaused = false;
+  updateUI();
+}
+
+function togglePause() {
+  if (!isRecording) return;
+  if (isPaused) {
+    mediaRecorder.resume();
+    isPaused = false;
+    showToast('▶ রেকর্ডিং চলছে', 'info');
+  } else {
+    mediaRecorder.pause();
+    isPaused = true;
+    showToast('⏸ রেকর্ডিং বিরতি', 'info');
+  }
+  updateUI();
+}
+
+async function handleRecordingStop() {
+  if (recordedChunks.length === 0) return;
+
+  const mimeType = mediaRecorder.mimeType || 'video/webm';
+  const ext = mimeType.includes('mp4') ? 'mp4' : 'webm';
+  const blob = new Blob(recordedChunks, { type: mimeType });
+  const id = Date.now();
+  const name = `রেকর্ড_${formatDateTime(new Date(id))}`;
+
+  // Convert to ArrayBuffer for IndexedDB
+  const buffer = await blob.arrayBuffer();
+
+  const record = {
+    id,
+    name,
+    size: blob.size,
+    duration: elapsedSeconds,
+    date: new Date(id).toISOString(),
+    mimeType,
+    ext,
+    buffer,
+  };
+
+  await saveRecording(record);
+
+  // Reset preview
+  document.getElementById('preview').srcObject = null;
+  document.getElementById('previewOverlay').classList.remove('hidden');
+  document.getElementById('timerDisplay').textContent = '00:00:00';
+  document.getElementById('fileSizeDisplay').textContent = '0 KB';
+
+  showToast('✅ সেভ হয়েছে: ' + name, 'success');
+  loadRecordings();
+}
+
+// ===== UI UPDATE =====
+function updateUI() {
+  const btnRecord = document.getElementById('btnRecord');
+  const btnPause = document.getElementById('btnPause');
+  const btnStop = document.getElementById('btnStop');
+  const recordIcon = document.getElementById('recordIcon');
+  const pauseIcon = document.getElementById('pauseIcon');
+  const pauseLabel = document.getElementById('pauseLabel');
+  const dot = document.getElementById('statusDot');
+  const statusText = document.getElementById('statusText');
+  const waveform = document.getElementById('waveform');
+
+  if (isRecording) {
+    btnRecord.classList.add('recording');
+    recordIcon.textContent = '⏺';
+    btnPause.classList.remove('disabled');
+    btnStop.classList.remove('disabled');
+
+    if (isPaused) {
+      dot.className = 'status-dot paused';
+      statusText.textContent = 'PAUSED';
+      pauseIcon.textContent = '▶';
+      pauseLabel.textContent = 'চালু';
+      waveform.classList.add('hidden');
+    } else {
+      dot.className = 'status-dot recording';
+      statusText.textContent = 'REC';
+      pauseIcon.textContent = '⏸';
+      pauseLabel.textContent = 'বিরতি';
+      waveform.classList.remove('hidden');
+    }
+  } else {
+    btnRecord.classList.remove('recording');
+    recordIcon.textContent = '⏺';
+    btnPause.classList.add('disabled');
+    btnStop.classList.add('disabled');
+    dot.className = 'status-dot ready';
+    statusText.textContent = 'READY';
+    waveform.classList.add('hidden');
+  }
+}
+
+// ===== RECORDINGS LIST =====
+async function loadRecordings() {
+  const list = await getAllRecordings();
+  list.sort((a, b) => b.id - a.id);
+
+  const el = document.getElementById('recordingsList');
+  const countEl = document.getElementById('recCount');
+  countEl.textContent = list.length + ' টি';
+
+  if (list.length === 0) {
+    el.innerHTML = `<div class="empty-state">
+      <div class="empty-icon">🎬</div>
+      <div class="empty-text">এখনো কোনো রেকর্ডিং নেই।<br>রেকর্ড ট্যাবে গিয়ে শুরু করুন।</div>
+    </div>`;
+    updateStorageBar(0);
+    return;
+  }
+
+  let totalSize = 0;
+  el.innerHTML = '';
+
+  for (const rec of list) {
+    totalSize += rec.size;
+    const card = createRecordingCard(rec);
+    el.appendChild(card);
+  }
+
+  updateStorageBar(totalSize);
+}
+
+function createRecordingCard(rec) {
+  const div = document.createElement('div');
+  div.className = 'recording-card';
+  div.innerHTML = `
+    <div class="rec-thumb">🎬</div>
+    <div class="rec-info">
+      <div class="rec-name">${rec.name}</div>
+      <div class="rec-meta">
+        <span>⏱ ${formatDuration(rec.duration)}</span>
+        <span>📦 ${formatSize(rec.size)}</span>
+        <span>📅 ${formatDate(rec.date)}</span>
+      </div>
+    </div>
+    <div class="rec-actions">
+      <div class="icon-btn" onclick="playRecording(${rec.id})" title="চালাও">▶</div>
+      <div class="icon-btn" onclick="downloadRecording(${rec.id})" title="ডাউনলোড">⬇</div>
+      <div class="icon-btn danger" onclick="confirmDelete(${rec.id}, '${rec.name}')" title="মুছুন">🗑</div>
+    </div>
+  `;
+  return div;
+}
+
+function updateStorageBar(totalBytes) {
+  const mb = totalBytes / (1024 * 1024);
+  const pct = Math.min((mb / 500) * 100, 100); // assume 500MB max
+  document.getElementById('storageSizeLabel').textContent = mb.toFixed(1) + ' MB ব্যবহৃত';
+  document.getElementById('storageFill').style.width = pct + '%';
+}
+
+async function playRecording(id) {
+  const list = await getAllRecordings();
+  const rec = list.find(r => r.id === id);
+  if (!rec) return;
+
+  currentPlaybackKey = id;
+  const blob = new Blob([rec.buffer], { type: rec.mimeType });
+  const url = URL.createObjectURL(blob);
+  const modalVideo = document.getElementById('modalVideo');
+  modalVideo.src = url;
+  document.getElementById('videoModal').classList.add('open');
+  modalVideo.play().catch(() => {});
+}
+
+async function downloadRecording(id) {
+  const list = await getAllRecordings();
+  const rec = list.find(r => r.id === id);
+  if (!rec) return;
+
+  const blob = new Blob([rec.buffer], { type: rec.mimeType });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = rec.name + '.' + rec.ext;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('⬇ ডাউনলোড হচ্ছে...', 'info');
+}
+
+async function downloadCurrent() {
+  if (currentPlaybackKey) await downloadRecording(currentPlaybackKey);
+}
+
+function closeModal() {
+  const modal = document.getElementById('videoModal');
+  const video = document.getElementById('modalVideo');
+  video.pause();
+  URL.revokeObjectURL(video.src);
+  video.src = '';
+  modal.classList.remove('open');
+  currentPlaybackKey = null;
+}
+
+function confirmDelete(id, name) {
+  document.getElementById('confirmTitle').textContent = 'রেকর্ডিং মুছুন?';
+  document.getElementById('confirmMsg').textContent = `"${name}" — এটি স্থায়ীভাবে মুছে যাবে।`;
+  confirmCallback = async () => {
+    await deleteRecording(id);
+    showToast('🗑 মুছে ফেলা হয়েছে', 'error');
+    loadRecordings();
+    closeConfirm();
+  };
+  document.getElementById('confirmOkBtn').onclick = confirmCallback;
+  document.getElementById('confirmDialog').classList.add('open');
+}
+
+function closeConfirm() {
+  document.getElementById('confirmDialog').classList.remove('open');
+}
+
+function clearAllRecordings() {
+  document.getElementById('confirmTitle').textContent = 'সব রেকর্ডিং মুছুন?';
+  document.getElementById('confirmMsg').textContent = 'সব রেকর্ডিং স্থায়ীভাবে মুছে যাবে। এই কাজ পূর্বাবস্থায় ফেরানো যাবে না।';
+  confirmCallback = async () => {
+    await clearAllDB();
+    showToast('🗑 সব মুছে ফেলা হয়েছে', 'error');
+    loadRecordings();
+    closeConfirm();
+  };
+  document.getElementById('confirmOkBtn').onclick = confirmCallback;
+  document.getElementById('confirmDialog').classList.add('open');
+}
+
+// ===== TABS =====
+function switchTab(name, el) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('page-' + name).classList.add('active');
+  if (name === 'recordings') loadRecordings();
+}
+
+// ===== PWA =====
+let deferredPrompt = null;
+
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  document.getElementById('installBanner').classList.add('show');
+});
+
+function installPWA() {
+  if (deferredPrompt) {
+    deferredPrompt.prompt();
+    deferredPrompt.userChoice.then(result => {
+      if (result.outcome === 'accepted') {
+        showToast('✅ ইনস্টল হয়েছে!', 'success');
+        document.getElementById('installBanner').classList.remove('show');
+      }
+      deferredPrompt = null;
+    });
+  }
+}
+
+// Check PWA status
+window.addEventListener('load', () => {
+  const isPWA = window.matchMedia('(display-mode: standalone)').matches
+    || window.navigator.standalone
+    || document.referrer.includes('android-app://');
+  document.getElementById('pwaStatus').textContent = isPWA ? '✓ ইনস্টলড' : '✗ ব্রাউজার মোড';
+});
+
+// ===== TOAST =====
+let toastTimer;
+function showToast(msg, type = 'info') {
+  const toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.className = 'toast show ' + type;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => toast.classList.remove('show'), 2800);
+}
+
+// ===== HELPERS =====
+function formatSize(bytes) {
+  if (bytes < 1024) return bytes + ' B';
+  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+  return (bytes / (1024 * 1024)).toFixed(2) + ' MB';
+}
+
+function formatDuration(sec) {
+  if (!sec) return '0s';
+  const h = Math.floor(sec / 3600);
+  const m = Math.floor((sec % 3600) / 60);
+  const s = sec % 60;
+  if (h > 0) return `${h}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  return `${m}:${String(s).padStart(2,'0')}`;
+}
+
+function formatDate(iso) {
+  const d = new Date(iso);
+  return `${d.getDate()}/${d.getMonth()+1}/${d.getFullYear().toString().slice(-2)}`;
+}
+
+function formatDateTime(d) {
+  return `${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}_${String(d.getHours()).padStart(2,'0')}${String(d.getMinutes()).padStart(2,'0')}`;
+}
+
+// ===== INIT =====
+async function init() {
+  await openDB();
+  await loadRecordings();
+
+  // Initial UI
+  const dot = document.getElementById('statusDot');
+  dot.className = 'status-dot ready';
+  document.getElementById('statusText').textContent = 'READY';
+
+  // Check screen capture support
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getDisplayMedia) {
+    showToast('❌ এই ব্রাউজারে স্ক্রিন রেকর্ড সাপোর্ট নেই', 'error');
+    document.getElementById('btnRecord').style.opacity = '0.4';
+    document.getElementById('btnRecord').style.pointerEvents = 'none';
+  }
+}
+
+init();
+
+// Register Service Worker
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').then(reg => {
+      console.log('SW registered:', reg.scope);
+    }).catch(err => console.log('SW failed:', err));
+  });
+}
+</script>
+</body>
+</html>
