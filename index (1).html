@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>MH Academy – Monjurul Haque</title>
+
+  <!-- PWA -->
+  <meta name="theme-color" content="#060d1f" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="MH Academy" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
+  <link rel="apple-touch-icon" href="icon-192.png" />
+
+  <!-- Open Graph -->
+  <meta property="og:type"         content="website" />
+  <meta property="og:url"          content="https://economist-bd.github.io/localpage/" />
+  <meta property="og:title"        content="MH Academy – Monjurul Haque" />
+  <meta property="og:description"  content="ফ্রি কোর্স, বাংলা বই, AI টুলস, প্রম্পট ও গল্পের বিশাল সংগ্রহ। MH Academy-তে স্বাগতম!" />
+  <meta property="og:image"        content="https://economist-bd.github.io/localpage/og-image.png" />
+  <meta property="og:image:width"  content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:locale"       content="bn_BD" />
+  <meta property="og:site_name"    content="MH Academy" />
+  <meta name="twitter:card"        content="summary_large_image" />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&family=Tiro+Bangla:ital@0;1&display=swap" rel="stylesheet" />
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:       #060d1f;
+      --surface:  #111e38;
+      --surface2: #162544;
+      --border:   rgba(99,179,237,0.12);
+      --accent:   #38bdf8;
+      --text:     #e2e8f0;
+      --muted:    #94a3b8;
+      --radius:   18px;
+      --shadow:   0 8px 32px rgba(0,0,0,0.45);
+    }
+
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Hind Siliguri', sans-serif;
+      background: var(--bg); color: var(--text);
+      min-height: 100vh; overflow-x: hidden;
+    }
+    body::before {
+      content: ''; position: fixed; inset: 0; z-index: 0; pointer-events: none;
+      background:
+        radial-gradient(ellipse 80% 60% at 20% 10%, rgba(56,189,248,0.06) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 50% at 80% 80%, rgba(129,140,248,0.06) 0%, transparent 60%);
+    }
+
+    /* ── INSTALL BANNER ── */
+    #install-banner {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+      background: linear-gradient(135deg, #1e3a5f, #0f2744);
+      border-bottom: 1px solid var(--accent);
+      padding: 12px 16px;
+      display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap;
+      box-shadow: 0 4px 20px rgba(56,189,248,0.2);
+      transform: translateY(-110%);
+      transition: transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    #install-banner.show { transform: translateY(0); }
+    .ib-left { display: flex; align-items: center; gap: 10px; }
+    .ib-ico {
+      width: 40px; height: 40px; border-radius: 10px; flex-shrink: 0;
+      background: linear-gradient(135deg, var(--accent), #818cf8);
+      display: flex; align-items: center; justify-content: center; font-size: 20px;
+    }
+    .ib-txt strong { display: block; color: var(--accent); font-size: 13px; }
+    .ib-txt span   { color: var(--muted); font-size: 12px; }
+    .ib-btns { display: flex; gap: 8px; flex-shrink: 0; }
+    .btn-yes {
+      background: linear-gradient(135deg, var(--accent), #0284c7);
+      color: #fff; border: none; padding: 8px 16px; border-radius: 8px;
+      font-family: 'Hind Siliguri', sans-serif; font-size: 13px; font-weight: 600; cursor: pointer;
+      transition: transform .15s;
+    }
+    .btn-yes:hover { transform: scale(1.04); }
+    .btn-no {
+      background: transparent; border: 1px solid var(--border); color: var(--muted);
+      padding: 8px 12px; border-radius: 8px;
+      font-family: 'Hind Siliguri', sans-serif; font-size: 13px; cursor: pointer;
+      transition: border-color .2s;
+    }
+    .btn-no:hover { border-color: var(--accent); color: var(--text); }
+
+    /* ── HEADER ── */
+    header { position: relative; z-index: 5; padding: 60px 20px 28px; text-align: center; }
+    .logo-wrap { width: 80px; height: 80px; margin: 0 auto 18px; position: relative; }
+    .logo-ring {
+      position: absolute; inset: 0; border-radius: 50%;
+      background: conic-gradient(from 0deg, var(--accent), #818cf8, #34d399, var(--accent));
+      animation: spin 8s linear infinite;
+      -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 3px), #fff calc(100% - 3px));
+      mask: radial-gradient(farthest-side, transparent calc(100% - 3px), #fff calc(100% - 3px));
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .logo-inner {
+      position: absolute; inset: 4px; border-radius: 50%;
+      background: var(--bg); display: flex; align-items: center; justify-content: center; font-size: 32px;
+    }
+    .site-title {
+      font-family: 'Tiro Bangla', serif;
+      font-size: clamp(26px, 7vw, 46px); font-weight: 400;
+      background: linear-gradient(135deg, #e2e8f0 0%, var(--accent) 50%, #818cf8 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+      line-height: 1.2;
+    }
+    .site-sub  { font-size: 13px; color: var(--muted); margin-top: 5px; }
+    .tagline   { font-size: 14px; color: var(--muted); margin-top: 12px; max-width: 440px; margin-inline: auto; line-height: 1.65; }
+
+    /* ── STATS ── */
+    .stats {
+      display: flex; justify-content: center; margin: 24px auto 0; max-width: 380px;
+      background: var(--surface); border: 1px solid var(--border); border-radius: 14px; overflow: hidden;
+    }
+    .stat { flex: 1; padding: 14px 10px; text-align: center; border-right: 1px solid var(--border); }
+    .stat:last-child { border-right: none; }
+    .stat-n { font-size: 20px; font-weight: 700; color: var(--accent); line-height: 1; }
+    .stat-l { font-size: 11px; color: var(--muted); margin-top: 3px; }
+
+    /* ── SEARCH ── */
+    .search-wrap { max-width: 440px; margin: 28px auto 0; padding: 0 16px; position: relative; z-index: 5; }
+    .search-input {
+      width: 100%; padding: 13px 46px 13px 18px;
+      background: var(--surface); border: 1px solid var(--border); border-radius: 50px;
+      color: var(--text); font-family: 'Hind Siliguri', sans-serif; font-size: 15px; outline: none;
+      transition: border-color .25s, box-shadow .25s;
+    }
+    .search-input::placeholder { color: var(--muted); }
+    .search-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(56,189,248,0.12); }
+    .search-ico { position: absolute; right: 32px; top: 50%; transform: translateY(-50%); color: var(--muted); font-size: 17px; pointer-events: none; }
+
+    /* ── GRID ── */
+    .grid-wrap { position: relative; z-index: 5; max-width: 720px; margin: 32px auto 0; padding: 0 14px 60px; }
+    .sec-label {
+      font-size: 11px; letter-spacing: 2px; color: var(--accent); text-transform: uppercase;
+      text-align: center; margin-bottom: 22px;
+      display: flex; align-items: center; gap: 10px; justify-content: center;
+    }
+    .sec-label::before, .sec-label::after {
+      content: ''; flex: 1; max-width: 60px; height: 1px;
+    }
+    .sec-label::before { background: linear-gradient(90deg, transparent, var(--accent)); }
+    .sec-label::after  { background: linear-gradient(90deg, var(--accent), transparent); }
+
+    .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+
+    /* ── CARD (palette vars set inline by JS) ── */
+    .card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+      padding: 22px 20px 18px; display: flex; flex-direction: column; gap: 13px;
+      position: relative; overflow: hidden;
+      text-decoration: none; color: inherit;
+      transition: transform .25s cubic-bezier(.34,1.3,.64,1), box-shadow .25s, border-color .25s;
+      animation: ci .5s both;
+    }
+    @keyframes ci { from { opacity: 0; transform: translateY(16px) scale(.97); } to { opacity: 1; transform: none; } }
+
+    .card::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+      background: var(--c-grad); border-radius: var(--radius) var(--radius) 0 0;
+    }
+    .card::after {
+      content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 0;
+      background: radial-gradient(circle at 80% 20%, var(--c-glow) 0%, transparent 60%);
+      opacity: 0; transition: opacity .3s;
+    }
+    .card:hover { transform: translateY(-5px) scale(1.01); box-shadow: var(--shadow), 0 0 28px var(--c-glow); border-color: var(--c-border); }
+    .card:hover::after { opacity: 1; }
+    .card > * { position: relative; z-index: 1; }
+
+    .card-head { display: flex; align-items: flex-start; gap: 13px; }
+    .card-icon {
+      width: 50px; height: 50px; border-radius: 13px; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center; font-size: 22px;
+      background: var(--c-icon-bg); border: 1px solid var(--c-border);
+    }
+    .card-badge {
+      display: inline-block; font-size: 10px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase;
+      padding: 3px 8px; border-radius: 4px; margin-bottom: 5px;
+      background: var(--c-badge-bg); color: var(--c-main);
+    }
+    .card-title { font-family: 'Tiro Bangla', serif; font-size: 17px; font-weight: 400; line-height: 1.35; }
+    .card-desc  { font-size: 13px; color: var(--muted); line-height: 1.65; flex: 1; }
+
+    .card-footer { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 2px; }
+    .card-tags   { display: flex; gap: 5px; flex-wrap: wrap; }
+    .tag { font-size: 10px; padding: 3px 7px; border-radius: 30px; background: rgba(255,255,255,0.04); color: var(--muted); border: 1px solid var(--border); }
+
+    .btn-visit {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 9px 16px; border-radius: 50px;
+      background: var(--c-grad);
+      color: #fff; font-family: 'Hind Siliguri', sans-serif; font-size: 13px; font-weight: 600;
+      border: none; cursor: pointer; text-decoration: none; white-space: nowrap; flex-shrink: 0;
+      transition: transform .15s, box-shadow .15s;
+    }
+    .btn-visit:hover { transform: scale(1.05); box-shadow: 0 4px 14px var(--c-glow); }
+    .btn-visit svg { width: 13px; height: 13px; }
+
+    /* ── SKELETON ── */
+    .skeleton {
+      background: linear-gradient(90deg, var(--surface) 25%, var(--surface2) 50%, var(--surface) 75%);
+      background-size: 300% 100%; animation: shim 1.4s infinite;
+      border-radius: var(--radius); height: 185px; border: 1px solid var(--border);
+    }
+    @keyframes shim { from { background-position: 200% 0; } to { background-position: -200% 0; } }
+
+    /* ── STATE BOXES ── */
+    .state-box { grid-column: 1/-1; text-align: center; padding: 60px 20px; color: var(--muted); }
+    .state-box .ico { font-size: 46px; margin-bottom: 14px; }
+    .state-box p { font-size: 15px; margin-top: 6px; line-height: 1.6; }
+    .retry-btn {
+      margin-top: 18px; padding: 10px 24px; border-radius: 50px;
+      background: linear-gradient(135deg, var(--accent), #0284c7);
+      color: #fff; border: none; font-family: 'Hind Siliguri', sans-serif; font-size: 14px; cursor: pointer;
+    }
+    .retry-btn:hover { transform: scale(1.04); }
+
+    /* ── REFRESH BADGE ── */
+    #refresh-badge {
+      position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+      background: var(--surface); border: 1px solid var(--accent); color: var(--accent);
+      padding: 10px 20px; border-radius: 50px; font-size: 13px; cursor: pointer;
+      box-shadow: var(--shadow); z-index: 999; display: none;
+      animation: bob .7s ease-in-out infinite alternate;
+    }
+    @keyframes bob { from { transform: translateX(-50%) translateY(0); } to { transform: translateX(-50%) translateY(-5px); } }
+
+    /* ── OFFLINE ── */
+    #offline-badge {
+      position: fixed; bottom: 20px; right: 16px; z-index: 999;
+      background: #1e293b; border: 1px solid #fbbf24; color: #fbbf24;
+      padding: 10px 16px; border-radius: 10px; font-size: 13px; display: none; box-shadow: var(--shadow);
+    }
+
+    footer { text-align: center; padding: 28px 20px; color: var(--muted); font-size: 13px; border-top: 1px solid var(--border); position: relative; z-index: 5; }
+    footer a { color: var(--accent); text-decoration: none; }
+
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--surface2); border-radius: 3px; }
+
+    @media (max-width: 380px) {
+      .cards { grid-template-columns: 1fr; }
+      .btn-visit { padding: 8px 12px; font-size: 12px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- INSTALL BANNER -->
+<div id="install-banner">
+  <div class="ib-left">
+    <div class="ib-ico">🎓</div>
+    <div class="ib-txt">
+      <strong>MH Academy ইন্সটল করুন</strong>
+      <span>হোম স্ক্রিনে রাখুন, অফলাইনেও কাজ করবে!</span>
+    </div>
+  </div>
+  <div class="ib-btns">
+    <button class="btn-yes" id="btn-install">ইন্সটল করুন</button>
+    <button class="btn-no"  id="btn-dismiss">পরে</button>
+  </div>
+</div>
+
+<!-- HEADER -->
+<header>
+  <div class="logo-wrap">
+    <div class="logo-ring"></div>
+    <div class="logo-inner">🎓</div>
+  </div>
+  <h1 class="site-title">MH Academy</h1>
+  <p class="site-sub">by Monjurul Haque</p>
+  <p class="tagline">ফ্রি কোর্স, বাংলা বই, AI টুলস ও আরও অনেক কিছু — একটাই জায়গায়।</p>
+  <div class="stats">
+    <div class="stat"><div class="stat-n" id="sn-pages">…</div><div class="stat-l">পেইজ</div></div>
+    <div class="stat"><div class="stat-n">১০০%</div><div class="stat-l">ফ্রি</div></div>
+    <div class="stat"><div class="stat-n">PWA</div><div class="stat-l">অফলাইন</div></div>
+  </div>
+</header>
+
+<!-- SEARCH -->
+<div class="search-wrap">
+  <input type="search" id="search" class="search-input" placeholder="পেইজ খুঁজুন…" autocomplete="off" />
+  <span class="search-ico">🔍</span>
+</div>
+
+<!-- GRID -->
+<div class="grid-wrap">
+  <div class="sec-label" id="sec-label">লোড হচ্ছে…</div>
+  <div class="cards" id="cards">
+    <div class="skeleton"></div>
+    <div class="skeleton"></div>
+    <div class="skeleton"></div>
+  </div>
+</div>
+
+<footer>
+  <p>তৈরি করেছেন ❤ দিয়ে — <a href="https://github.com/economist-bd" target="_blank" rel="noopener">Monjurul Haque</a></p>
+  <p style="margin-top:5px;">© 2025 MH Academy · সকল অধিকার সংরক্ষিত</p>
+</footer>
+
+<div id="refresh-badge">🔄 নতুন পেইজ পাওয়া গেছে — ক্লিক করে আপডেট করুন</div>
+<div id="offline-badge">📡 অফলাইন মোড</div>
+
+<script>
+/* ═══════════════════════════════════════════════════════════
+   CONFIG — শুধু এখানে পরিবর্তন করুন
+═══════════════════════════════════════════════════════════ */
+const GH_USER   = 'economist-bd';
+const GH_REPO   = 'localpage';
+const GH_BRANCH = 'main';
+const BASE_URL  = `https://${GH_USER}.github.io/${GH_REPO}/`;
+const API_URL   = `https://api.github.com/repos/${GH_USER}/${GH_REPO}/git/trees/${GH_BRANCH}?recursive=1`;
+
+// এই ফাইলগুলো কার্ডে আসবে না
+const EXCLUDE = new Set(['index.html', '404.html', 'og-image.html']);
+
+/* ─── পরিচিত ফাইলের বাংলা তথ্য ───────────────────────── */
+const META_MAP = {
+  'free-ai-tools':    { title:'ফ্রি AI টুলস',       desc:'সেরা বিনামূল্যে AI টুলসের বিশাল সংগ্রহ — ChatGPT থেকে ইমেজ জেনারেটর পর্যন্ত সব।',            icon:'🤖', badge:'AI Tools', tags:['AI','ফ্রি','টুলস']           },
+  'free-prompt':      { title:'ফ্রি প্রম্পট',        desc:'ChatGPT ও অন্যান্য AI-তে ব্যবহারের জন্য কার্যকর বাংলা ও ইংরেজি প্রম্পট কালেকশন।',            icon:'✍️', badge:'Prompt',   tags:['Prompt','ChatGPT','ফ্রি']     },
+  'bangla-book-list': { title:'বাংলা বই তালিকা',    desc:'বিভিন্ন বিষয়ের সেরা বাংলা বইয়ের কিউরেটেড তালিকা — শিক্ষামূলক ও সাহিত্যিক।',                  icon:'📚', badge:'বই',       tags:['বাংলা','বই','পড়াশোনা']       },
+  'story':            { title:'গল্পের ভুবন',          desc:'বাংলা সাহিত্যের মনোমুগ্ধকর গল্পের সংগ্রহ — ছোটগল্প, রোমান্টিক, রহস্য ও আরও।',                icon:'📖', badge:'গল্প',     tags:['গল্প','সাহিত্য','বাংলা']      },
+  'freecourse':       { title:'ফ্রি কোর্স',           desc:'ওয়েব ডিজাইন, প্রোগ্রামিং, গ্রাফিক্স সহ বিভিন্ন বিষয়ের সম্পূর্ণ বিনামূল্যে কোর্স।',           icon:'🎓', badge:'Course',   tags:['কোর্স','ফ্রি','শিক্ষা']       },
+};
+
+/* ─── কীওয়ার্ড দিয়ে আইকন বের করা (নতুন ফাইলের জন্য) ── */
+const KW_ICONS = [
+  [['ai','gpt','llm','bot','gemini','claude'],   '🤖','AI'],
+  [['prompt','template','script'],               '✍️','Prompt'],
+  [['book','boi','library','read'],              '📚','বই'],
+  [['story','golpo','novel','galpo'],            '📖','গল্প'],
+  [['course','class','tutorial','learn','free'], '🎓','Course'],
+  [['tool','toolkit','resource','utility'],      '🛠️','Tools'],
+  [['video','youtube','watch'],                  '🎬','Video'],
+  [['news','blog','article','post'],             '📰','Blog'],
+  [['quiz','test','exam','mcq'],                 '📝','Quiz'],
+  [['download','file','pdf'],                    '⬇️','Download'],
+  [['image','photo','gallery','pic'],            '🖼️','Gallery'],
+  [['music','audio','song','gaan'],              '🎵','Music'],
+  [['game','play','fun'],                        '🎮','Game'],
+  [['health','medicine','doctor'],               '⚕️','Health'],
+  [['job','career','work','cv'],                 '💼','Career'],
+  [['math','science','physics','chemistry'],     '🔬','Science'],
+];
+
+/* ─── 8-রঙের প্যালেট ────────────────────────────────── */
+const PALETTES = [
+  { grad:'linear-gradient(135deg,#38bdf8,#818cf8)', main:'#38bdf8', glow:'rgba(56,189,248,0.10)',  icon:'rgba(56,189,248,0.14)',  border:'rgba(56,189,248,0.28)', badge:'rgba(56,189,248,0.12)' },
+  { grad:'linear-gradient(135deg,#818cf8,#c084fc)', main:'#818cf8', glow:'rgba(129,140,248,0.10)', icon:'rgba(129,140,248,0.14)', border:'rgba(129,140,248,0.28)',badge:'rgba(129,140,248,0.12)'},
+  { grad:'linear-gradient(135deg,#34d399,#10b981)', main:'#34d399', glow:'rgba(52,211,153,0.10)',  icon:'rgba(52,211,153,0.14)',  border:'rgba(52,211,153,0.28)', badge:'rgba(52,211,153,0.12)' },
+  { grad:'linear-gradient(135deg,#fb923c,#f43f5e)', main:'#fb923c', glow:'rgba(251,146,60,0.10)',  icon:'rgba(251,146,60,0.14)',  border:'rgba(251,146,60,0.28)', badge:'rgba(251,146,60,0.12)' },
+  { grad:'linear-gradient(135deg,#fbbf24,#f59e0b)', main:'#fbbf24', glow:'rgba(251,191,36,0.10)',  icon:'rgba(251,191,36,0.14)',  border:'rgba(251,191,36,0.28)', badge:'rgba(251,191,36,0.12)' },
+  { grad:'linear-gradient(135deg,#f472b6,#ec4899)', main:'#f472b6', glow:'rgba(244,114,182,0.10)', icon:'rgba(244,114,182,0.14)', border:'rgba(244,114,182,0.28)',badge:'rgba(244,114,182,0.12)'},
+  { grad:'linear-gradient(135deg,#2dd4bf,#14b8a6)', main:'#2dd4bf', glow:'rgba(45,212,191,0.10)',  icon:'rgba(45,212,191,0.14)',  border:'rgba(45,212,191,0.28)', badge:'rgba(45,212,191,0.12)' },
+  { grad:'linear-gradient(135deg,#a78bfa,#7c3aed)', main:'#a78bfa', glow:'rgba(167,139,250,0.10)', icon:'rgba(167,139,250,0.14)', border:'rgba(167,139,250,0.28)',badge:'rgba(167,139,250,0.12)'},
+];
+
+/* ─── Slug → মেটা ───────────────────────────────────── */
+function inferMeta(slug) {
+  if (META_MAP[slug]) return META_MAP[slug];
+  const lower = slug.toLowerCase();
+  for (const [keys, icon, badge] of KW_ICONS) {
+    if (keys.some(k => lower.includes(k))) {
+      return { title: toTitle(slug), desc: `"${toTitle(slug)}" — MH Academy-র একটি বিশেষ পেইজ।`, icon, badge, tags:[badge,'MH Academy'] };
+    }
+  }
+  return { title: toTitle(slug), desc: `"${toTitle(slug)}" — MH Academy-র একটি বিশেষ পেইজ।`, icon:'📄', badge:'Page', tags:['MH Academy'] };
+}
+
+function toTitle(slug) {
+  return slug.replace(/-/g,' ').replace(/\b\w/g, c => c.toUpperCase());
+}
+
+/* ═══════════════════════════════════════════════════════════
+   GITHUB API — .html ফাইল তালিকা আনা
+═══════════════════════════════════════════════════════════ */
+const LS_DATA = 'mha-pages-v3';
+const LS_TS   = 'mha-ts-v3';
+const TTL     = 10 * 60 * 1000; // 10 মিনিট ক্যাশ
+
+async function fetchFromGitHub() {
+  const res = await fetch(API_URL, { headers:{ Accept:'application/vnd.github.v3+json' } });
+  if (!res.ok) throw new Error(res.status);
+  const { tree } = await res.json();
+  return (tree || [])
+    .filter(f => f.type === 'blob' && f.path.endsWith('.html') && !f.path.includes('/'))
+    .map(f => f.path)
+    .filter(p => !EXCLUDE.has(p))
+    .sort();
+}
+
+async function getPages(forceNetwork = false) {
+  if (!forceNetwork) {
+    const cached = localStorage.getItem(LS_DATA);
+    const ts = parseInt(localStorage.getItem(LS_TS) || '0');
+    if (cached && (Date.now() - ts) < TTL) return JSON.parse(cached);
+  }
+  const files = await fetchFromGitHub();
+  localStorage.setItem(LS_DATA, JSON.stringify(files));
+  localStorage.setItem(LS_TS, String(Date.now()));
+  return files;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   RENDER
+═══════════════════════════════════════════════════════════ */
+let allPages = [];
+
+function buildCard(file, idx) {
+  const slug = file.replace('.html', '');
+  const meta = inferMeta(slug);
+  const pal  = PALETTES[idx % PALETTES.length];
+  const url  = BASE_URL + file;
+  const tags = (meta.tags || []).map(t => `<span class="tag">${t}</span>`).join('');
+
+  const a = document.createElement('a');
+  a.className = 'card';
+  a.href = url;
+  a.target = '_blank';
+  a.rel = 'noopener';
+  a.setAttribute('aria-label', meta.title);
+  a.style.animationDelay = `${Math.min(idx * 0.07, 0.5)}s`;
+
+  // Inject palette via CSS custom properties
+  a.style.cssText += `
+    --c-grad:${pal.grad};
+    --c-main:${pal.main};
+    --c-glow:${pal.glow};
+    --c-icon-bg:${pal.icon};
+    --c-border:${pal.border};
+    --c-badge-bg:${pal.badge};
+  `;
+
+  a.innerHTML = `
+    <div class="card-head">
+      <div class="card-icon">${meta.icon}</div>
+      <div>
+        <span class="card-badge">${meta.badge}</span>
+        <h2 class="card-title">${meta.title}</h2>
+      </div>
+    </div>
+    <p class="card-desc">${meta.desc}</p>
+    <div class="card-footer">
+      <div class="card-tags">${tags}</div>
+      <a class="btn-visit" href="${url}" target="_blank" rel="noopener"
+         onclick="event.stopPropagation()">
+        ভিজিট করুন
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+             stroke-linecap="round" stroke-linejoin="round">
+          <path d="M7 17L17 7M17 7H7M17 7v10"/>
+        </svg>
+      </a>
+    </div>`;
+  return a;
+}
+
+function render(pages) {
+  const grid  = document.getElementById('cards');
+  const label = document.getElementById('sec-label');
+  grid.innerHTML = '';
+
+  if (!pages.length) {
+    label.textContent = 'কোনো ফলাফল নেই';
+    document.getElementById('sn-pages').textContent = '০';
+    grid.innerHTML = `<div class="state-box"><div class="ico">🔍</div><p>এই নামে কোনো পেইজ পাওয়া যায়নি।</p></div>`;
+    return;
+  }
+
+  label.textContent = `সকল পেইজ — ${pages.length}টি`;
+  document.getElementById('sn-pages').textContent = pages.length;
+  pages.forEach((f, i) => grid.appendChild(buildCard(f, i)));
+}
+
+function showErr(msg) {
+  document.getElementById('sec-label').textContent = 'ত্রুটি';
+  document.getElementById('cards').innerHTML = `
+    <div class="state-box">
+      <div class="ico">⚠️</div>
+      <p>${msg}</p>
+      <button class="retry-btn" onclick="init()">আবার চেষ্টা করুন</button>
+    </div>`;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   INIT
+═══════════════════════════════════════════════════════════ */
+async function init() {
+  // Show skeletons
+  document.getElementById('sec-label').textContent = 'লোড হচ্ছে…';
+  const grid = document.getElementById('cards');
+  grid.innerHTML = '<div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div>';
+
+  try {
+    allPages = await getPages();
+    render(allPages);
+
+    // Background fresh check
+    silentRefresh(allPages);
+  } catch {
+    // Fallback to stale cache
+    const stale = localStorage.getItem(LS_DATA);
+    if (stale) {
+      allPages = JSON.parse(stale);
+      render(allPages);
+      document.getElementById('offline-badge').style.display = 'block';
+    } else {
+      showErr('GitHub থেকে ডেটা আনা যায়নি। ইন্টারনেট সংযোগ পরীক্ষা করুন।');
+    }
+  }
+}
+
+async function silentRefresh(current) {
+  try {
+    // Wait a bit, then fetch fresh (bypass TTL)
+    await new Promise(r => setTimeout(r, 5000));
+    const fresh = await fetchFromGitHub();
+    if (fresh.join('|') !== current.join('|')) {
+      const rb = document.getElementById('refresh-badge');
+      rb.style.display = 'block';
+      rb.onclick = () => {
+        rb.style.display = 'none';
+        allPages = fresh;
+        localStorage.setItem(LS_DATA, JSON.stringify(fresh));
+        localStorage.setItem(LS_TS, String(Date.now()));
+        applySearch();
+      };
+    }
+  } catch { /* silent */ }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   SEARCH
+═══════════════════════════════════════════════════════════ */
+function applySearch() {
+  const q = document.getElementById('search').value.trim().toLowerCase();
+  if (!q) { render(allPages); return; }
+  render(allPages.filter(file => {
+    const slug = file.replace('.html', '');
+    const m = inferMeta(slug);
+    return slug.includes(q) || m.title.toLowerCase().includes(q) ||
+           m.desc.toLowerCase().includes(q) || m.badge.toLowerCase().includes(q) ||
+           (m.tags || []).some(t => t.toLowerCase().includes(q));
+  }));
+}
+document.getElementById('search').addEventListener('input', applySearch);
+
+/* ═══════════════════════════════════════════════════════════
+   PWA — SERVICE WORKER
+═══════════════════════════════════════════════════════════ */
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').catch(() => {});
+}
+
+/* ═══════════════════════════════════════════════════════════
+   INSTALL PROMPT — 30 সেকেন্ড পরে
+═══════════════════════════════════════════════════════════ */
+let deferredPrompt = null;
+const banner = document.getElementById('install-banner');
+const isStandalone = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone;
+
+if (!isStandalone) {
+  window.addEventListener('beforeinstallprompt', e => {
+    e.preventDefault();
+    deferredPrompt = e;
+    if (!sessionStorage.getItem('mha-no-banner')) {
+      setTimeout(() => banner.classList.add('show'), 30000);
+    }
+  });
+}
+
+document.getElementById('btn-install').addEventListener('click', async () => {
+  if (deferredPrompt) { deferredPrompt.prompt(); await deferredPrompt.userChoice; deferredPrompt = null; }
+  banner.classList.remove('show');
+});
+document.getElementById('btn-dismiss').addEventListener('click', () => {
+  banner.classList.remove('show');
+  sessionStorage.setItem('mha-no-banner', '1');
+});
+
+/* ═══════════════════════════════════════════════════════════
+   ONLINE / OFFLINE
+═══════════════════════════════════════════════════════════ */
+const ob = document.getElementById('offline-badge');
+window.addEventListener('online',  () => { ob.style.display = 'none'; init(); });
+window.addEventListener('offline', () => { ob.style.display = 'block'; });
+if (!navigator.onLine) ob.style.display = 'block';
+
+/* ── START ── */
+init();
+</script>
+</body>
+</html>
