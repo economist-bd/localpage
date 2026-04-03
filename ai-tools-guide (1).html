@@ -1,0 +1,1231 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Power Tools — সেরা ১২টি AI টুল গাইড</title>
+<link href="https://fonts.googleapis.com/css2?family=Sour+Gummy:wght@300;400;500;700;900&family=Hind+Siliguri:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --bg: #04060f;
+  --surface: #0b0f1e;
+  --card: #0f1526;
+  --card-hover: #141c30;
+  --border: rgba(255,255,255,0.07);
+  --white: #f0f4ff;
+  --muted: #5a6a8a;
+  --dim: #8a9bbb;
+
+  /* Category accent colors */
+  --music: #ff6b6b;
+  --ai: #845ef7;
+  --video: #ff922b;
+  --audio: #20c997;
+  --image: #f06595;
+  --web: #4dabf7;
+  --research: #a9e34b;
+  --present: #fcc419;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--white);
+  font-family: 'Hind Siliguri', sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+  cursor: none;
+}
+
+/* Custom cursor */
+.cursor {
+  position: fixed;
+  width: 12px; height: 12px;
+  background: white;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 9999;
+  mix-blend-mode: difference;
+  transition: transform 0.15s ease;
+}
+.cursor-ring {
+  position: fixed;
+  width: 36px; height: 36px;
+  border: 1.5px solid rgba(255,255,255,0.4);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 9998;
+  transition: all 0.3s cubic-bezier(0.25,0.46,0.45,0.94);
+}
+
+/* ====== BACKGROUND ====== */
+.bg-canvas {
+  position: fixed; inset: 0; z-index: 0;
+  overflow: hidden;
+}
+
+.bg-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.35;
+  animation: drift linear infinite;
+}
+.orb1 { width:500px;height:500px;background:radial-gradient(circle,#7c3aed,transparent 70%);top:-150px;left:-100px;animation-duration:25s; }
+.orb2 { width:400px;height:400px;background:radial-gradient(circle,#dc2626,transparent 70%);top:40%;right:-100px;animation-duration:30s;animation-delay:-10s; }
+.orb3 { width:350px;height:350px;background:radial-gradient(circle,#0284c7,transparent 70%);bottom:-100px;left:30%;animation-duration:20s;animation-delay:-5s; }
+
+@keyframes drift {
+  0%,100% { transform: translate(0,0) scale(1); }
+  33% { transform: translate(40px,-30px) scale(1.05); }
+  66% { transform: translate(-20px,40px) scale(0.95); }
+}
+
+.bg-dots {
+  position: fixed; inset: 0; z-index: 0;
+  background-image: radial-gradient(circle, rgba(255,255,255,0.06) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+/* ====== NOISE TEXTURE ====== */
+body::after {
+  content:'';
+  position:fixed;inset:0;z-index:1;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events:none;
+  opacity:0.5;
+}
+
+/* ====== MAIN WRAPPER ====== */
+.wrap { position:relative;z-index:2; max-width:1100px;margin:0 auto;padding:0 1.5rem; }
+
+/* ====== HERO ====== */
+.hero {
+  min-height: 100vh;
+  display: flex; flex-direction: column;
+  justify-content: center; align-items: center;
+  text-align: center;
+  padding: 6rem 1.5rem 3rem;
+  position: relative; z-index: 2;
+}
+
+.hero-eyebrow {
+  display: inline-flex; align-items: center; gap: 0.5rem;
+  font-family: 'Sour Gummy', cursive;
+  font-size: 0.75rem;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  color: var(--muted);
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border);
+  padding: 0.4rem 1.2rem;
+  border-radius: 100px;
+  margin-bottom: 2rem;
+  animation: fadeUp 0.8s both;
+}
+
+.pulse-dot {
+  width: 6px; height: 6px;
+  background: #22c55e;
+  border-radius: 50%;
+  animation: pulse 2s infinite;
+}
+@keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(1.5)} }
+
+.hero h1 {
+  font-family: 'Sour Gummy', cursive;
+  font-size: clamp(2.8rem, 7vw, 5.5rem);
+  font-weight: 900;
+  line-height: 1.0;
+  margin-bottom: 1rem;
+  animation: fadeUp 0.8s 0.1s both;
+}
+
+.hero h1 .line1 {
+  background: linear-gradient(135deg, #e0e7ff 0%, #a5b4fc 50%, #818cf8 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  display: block;
+}
+
+.hero h1 .line2 {
+  background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #ef4444 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  display: block; font-size: 0.7em;
+}
+
+.hero-sub {
+  font-size: clamp(1rem, 2vw, 1.2rem);
+  color: var(--dim);
+  max-width: 600px;
+  margin: 0 auto 2.5rem;
+  line-height: 1.8;
+  animation: fadeUp 0.8s 0.2s both;
+}
+
+.hero-stats {
+  display: flex; gap: 2rem; justify-content: center; flex-wrap: wrap;
+  margin-bottom: 3rem;
+  animation: fadeUp 0.8s 0.3s both;
+}
+
+.stat {
+  text-align: center;
+}
+.stat-num {
+  font-family: 'Sour Gummy', cursive;
+  font-size: 2.2rem;
+  font-weight: 900;
+  background: linear-gradient(135deg, #a78bfa, #60a5fa);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
+.stat-label { font-size: 0.78rem; color: var(--muted); letter-spacing: 1px; margin-top: 0.2rem; }
+
+/* Share Bar */
+.share-bar {
+  display: flex; gap: 0.8rem; justify-content: center; flex-wrap: wrap;
+  animation: fadeUp 0.8s 0.4s both;
+  margin-bottom: 1rem;
+}
+
+.btn {
+  display: inline-flex; align-items: center; gap: 0.5rem;
+  padding: 0.7rem 1.4rem;
+  border-radius: 100px;
+  font-family: 'Hind Siliguri', sans-serif;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s;
+  border: none;
+  text-decoration: none;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #7c3aed, #4f46e5);
+  color: white;
+  box-shadow: 0 4px 20px rgba(124,58,237,0.4);
+}
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(124,58,237,0.5); }
+
+.btn-outline {
+  background: transparent;
+  color: var(--white);
+  border: 1px solid var(--border);
+  backdrop-filter: blur(10px);
+}
+.btn-outline:hover { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.2); transform: translateY(-2px); }
+
+.btn-copy {
+  background: rgba(34,197,94,0.15);
+  color: #4ade80;
+  border: 1px solid rgba(34,197,94,0.3);
+}
+.btn-copy:hover { background: rgba(34,197,94,0.25); }
+
+/* scroll arrow */
+.scroll-hint {
+  position: absolute; bottom: 2.5rem; left: 50%; transform: translateX(-50%);
+  display: flex; flex-direction: column; align-items: center; gap: 0.4rem;
+  color: var(--muted); font-size: 0.72rem; letter-spacing: 2px; text-transform: uppercase;
+  animation: arrowBounce 2s infinite;
+}
+@keyframes arrowBounce {
+  0%,100%{transform:translateX(-50%) translateY(0)}
+  50%{transform:translateX(-50%) translateY(6px)}
+}
+
+/* ====== FILTER BAR ====== */
+.filter-section { padding: 2rem 0 1rem; position: relative; z-index: 2; }
+.filter-label {
+  font-family: 'Sour Gummy', cursive;
+  font-size: 0.7rem; letter-spacing: 3px; text-transform: uppercase;
+  color: var(--muted); margin-bottom: 1rem; text-align: center;
+}
+.filters {
+  display: flex; gap: 0.6rem; flex-wrap: wrap; justify-content: center;
+}
+.filter-btn {
+  padding: 0.45rem 1.1rem;
+  border-radius: 100px;
+  font-size: 0.8rem;
+  font-family: 'Hind Siliguri', sans-serif;
+  cursor: pointer;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--dim);
+  transition: all 0.2s;
+}
+.filter-btn:hover, .filter-btn.active {
+  background: rgba(124,58,237,0.2);
+  border-color: rgba(124,58,237,0.5);
+  color: #a78bfa;
+}
+
+/* ====== TOOLS GRID ====== */
+.tools-section { padding: 2rem 0 6rem; position: relative; z-index: 2; }
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1.5rem;
+}
+
+/* ====== TOOL CARD ====== */
+.tool-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.25,0.46,0.45,0.94);
+  position: relative;
+  cursor: pointer;
+  animation: fadeUp 0.6s both;
+}
+
+.tool-card:hover {
+  background: var(--card-hover);
+  transform: translateY(-6px);
+  border-color: rgba(255,255,255,0.14);
+}
+
+/* Colored top accent */
+.card-accent {
+  height: 3px;
+  width: 100%;
+}
+
+.card-inner { padding: 1.6rem; }
+
+/* Header row */
+.card-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 1.2rem;
+}
+
+.tool-icon {
+  width: 52px; height: 52px;
+  border-radius: 14px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.6rem;
+  flex-shrink: 0;
+  position: relative;
+}
+
+.tool-meta { flex: 1; min-width: 0; }
+
+.tool-name {
+  font-family: 'Sour Gummy', cursive;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--white);
+  margin-bottom: 0.2rem;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+.tool-url {
+  font-size: 0.72rem;
+  color: var(--muted);
+  text-decoration: none;
+  display: inline-flex; align-items: center; gap: 0.3rem;
+  transition: color 0.2s;
+}
+.tool-url:hover { color: var(--dim); }
+
+.tool-tag {
+  display: inline-block;
+  padding: 0.22rem 0.7rem;
+  border-radius: 100px;
+  font-size: 0.67rem;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-top: 0.4rem;
+}
+
+/* Description */
+.tool-desc {
+  font-size: 0.92rem;
+  color: var(--dim);
+  line-height: 1.75;
+  margin-bottom: 1.3rem;
+  font-family: 'Hind Siliguri', sans-serif;
+}
+
+/* Feature list */
+.feature-list {
+  list-style: none;
+  display: flex; flex-direction: column; gap: 0.5rem;
+  margin-bottom: 1.4rem;
+}
+
+.feature-list li {
+  display: flex; align-items: flex-start; gap: 0.6rem;
+  font-size: 0.85rem;
+  color: #8a9bbb;
+  line-height: 1.5;
+}
+
+.feature-list li .fi {
+  font-size: 0.75rem;
+  flex-shrink: 0;
+  margin-top: 0.2rem;
+  opacity: 0.9;
+}
+
+/* Steps */
+.steps-title {
+  font-family: 'Sour Gummy', cursive;
+  font-size: 0.72rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 0.7rem;
+}
+
+.steps { display: flex; flex-direction: column; gap: 0.5rem; }
+
+.step {
+  display: flex; gap: 0.7rem; align-items: flex-start;
+  font-size: 0.83rem; color: #8a9bbb; line-height: 1.5;
+}
+
+.step-n {
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Sour Gummy', cursive;
+  font-size: 0.65rem; font-weight: 700;
+  color: white;
+  flex-shrink: 0; margin-top: 0.1rem;
+}
+
+/* Card footer */
+.card-foot {
+  margin-top: 1.4rem;
+  padding-top: 1.2rem;
+  border-top: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between; gap: 0.8rem;
+}
+
+.difficulty {
+  display: flex; gap: 0.3rem; align-items: center;
+}
+.diff-dot { width:7px;height:7px;border-radius:50%; }
+
+.open-btn {
+  display: inline-flex; align-items: center; gap: 0.4rem;
+  padding: 0.5rem 1.1rem;
+  border-radius: 100px;
+  font-size: 0.78rem; font-weight: 600;
+  text-decoration: none;
+  transition: all 0.2s;
+  border: 1px solid transparent;
+}
+.open-btn:hover { transform: translateY(-1px); }
+
+/* Glow on hover */
+.tool-card::before {
+  content: '';
+  position: absolute; inset: 0; border-radius: 20px;
+  opacity: 0;
+  transition: opacity 0.4s;
+  pointer-events: none;
+}
+.tool-card:hover::before { opacity: 1; }
+
+/* ====== TOAST ====== */
+.toast {
+  position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%) translateY(100px);
+  background: rgba(10,15,30,0.95); backdrop-filter: blur(20px);
+  border: 1px solid rgba(34,197,94,0.3);
+  color: #4ade80;
+  padding: 0.8rem 1.6rem;
+  border-radius: 100px;
+  font-size: 0.88rem; font-weight: 600;
+  z-index: 9999;
+  transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1);
+  pointer-events: none;
+}
+.toast.show { transform: translateX(-50%) translateY(0); }
+
+/* ====== FOOTER ====== */
+.footer {
+  position: relative; z-index: 2;
+  text-align: center;
+  padding: 2rem 1.5rem 3rem;
+  color: var(--muted);
+  font-size: 0.82rem;
+  border-top: 1px solid var(--border);
+}
+
+/* ====== ANIMATIONS ====== */
+@keyframes fadeUp {
+  from { opacity:0; transform:translateY(24px); }
+  to { opacity:1; transform:translateY(0); }
+}
+
+/* ====== RESPONSIVE ====== */
+@media(max-width:640px){
+  .grid{grid-template-columns:1fr;}
+  .hero-stats{gap:1.5rem;}
+  body{cursor:auto;}
+  .cursor,.cursor-ring{display:none;}
+}
+
+/* Scroll reveal */
+.reveal { opacity:0; transform:translateY(30px); transition:all 0.6s cubic-bezier(0.25,0.46,0.45,0.94); }
+.reveal.visible { opacity:1; transform:translateY(0); }
+
+/* Category header */
+.cat-header {
+  display: flex; align-items: center; gap: 1rem;
+  margin: 3rem 0 1.5rem;
+  font-family: 'Sour Gummy', cursive;
+  font-size: 0.7rem; letter-spacing: 3px; text-transform: uppercase;
+  color: var(--muted);
+}
+.cat-header::after {
+  content:''; flex:1; height:1px; background:var(--border);
+}
+</style>
+</head>
+<body>
+
+<!-- Custom Cursor -->
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursorRing"></div>
+
+<!-- Toast -->
+<div class="toast" id="toast">✅ লিংক কপি হয়ে গেছে!</div>
+
+<!-- Background -->
+<div class="bg-canvas">
+  <div class="bg-orb orb1"></div>
+  <div class="bg-orb orb2"></div>
+  <div class="bg-orb orb3"></div>
+</div>
+<div class="bg-dots"></div>
+
+<!-- ====== HERO ====== -->
+<section class="hero">
+  <div class="hero-eyebrow">
+    <span class="pulse-dot"></span>
+    AI Tools Collection 2024
+  </div>
+
+  <h1>
+    <span class="line1">সেরা ১২টি AI টুল</span>
+    <span class="line2">বিস্তারিত গাইডলাইন</span>
+  </h1>
+
+  <p class="hero-sub">
+    কন্টেন্ট ক্রিয়েটর, ডিজাইনার ও ফ্রিল্যান্সারদের জন্য এআই-চালিত সেরা টুলগুলো — প্রতিটির ব্যবহারবিধি, ধাপে ধাপে গাইড সহ।
+  </p>
+
+  <div class="hero-stats">
+    <div class="stat">
+      <div class="stat-num">১২</div>
+      <div class="stat-label">AI টুল</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num">৬</div>
+      <div class="stat-label">ক্যাটাগরি</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num">১০০%</div>
+      <div class="stat-label">ফ্রি/ট্রায়াল</div>
+    </div>
+  </div>
+
+  <div class="share-bar">
+    <button class="btn btn-primary" onclick="saveAsPDF()">💾 Save as PDF</button>
+    <button class="btn btn-copy" onclick="copyPageLink()">🔗 লিংক কপি করুন</button>
+    <button class="btn btn-outline" onclick="shareWhatsApp()">📤 WhatsApp-এ শেয়ার</button>
+    <button class="btn btn-outline" onclick="window.print()">🖨️ Print করুন</button>
+  </div>
+
+  <div class="scroll-hint">
+    <span>নিচে দেখুন</span>
+    <span style="font-size:1.2rem">↓</span>
+  </div>
+</section>
+
+<!-- ====== TOOLS ====== -->
+<div class="wrap">
+
+  <!-- MUSIC & AUDIO -->
+  <div class="cat-header reveal">🎵 মিউজিক ও অডিও</div>
+  <div class="grid">
+
+    <!-- 1. Suno -->
+    <div class="tool-card reveal" style="animation-delay:0.05s" data-cat="music">
+      <div class="card-accent" style="background:linear-gradient(90deg,#ff6b6b,#ee5a24)"></div>
+      <div class="card-inner">
+        <div class="card-head">
+          <div class="tool-icon" style="background:rgba(255,107,107,0.15);">🎵</div>
+          <div class="tool-meta">
+            <div class="tool-name">Suno AI</div>
+            <a class="tool-url" href="https://suno.com" target="_blank">↗ suno.com</a>
+            <div><span class="tool-tag" style="background:rgba(255,107,107,0.15);color:#ff6b6b;">🎼 Music Gen</span></div>
+          </div>
+        </div>
+
+        <p class="tool-desc">মাত্র কয়েক শব্দ লিখুন — Suno AI সম্পূর্ণ গান তৈরি করে দেবে। লিরিক্স, সুর, ভোকাল — সব কিছু একসাথে। বাংলা গান তৈরিও সম্ভব!</p>
+
+        <ul class="feature-list">
+          <li><span class="fi">🎤</span> টেক্সট প্রম্পট থেকে সম্পূর্ণ গান তৈরি</li>
+          <li><span class="fi">🎸</span> Rock, Pop, Hip-hop, Classical যেকোনো genre</li>
+          <li><span class="fi">📝</span> নিজের লিরিক্স দিলে সুর তৈরি করে দেবে</li>
+          <li><span class="fi">⬇️</span> MP3 ফরম্যাটে ডাউনলোড করা যায়</li>
+          <li><span class="fi">🆓</span> প্রতিদিন ৫টি গান ফ্রিতে তৈরি করা যায়</li>
+        </ul>
+
+        <div class="steps-title">ব্যবহারের ধাপ</div>
+        <div class="steps">
+          <div class="step"><div class="step-n" style="background:linear-gradient(135deg,#ff6b6b,#ee5a24)">১</div><span>suno.com-এ গিয়ে Google বা Discord দিয়ে Login করুন</span></div>
+          <div class="step"><div class="step-n" style="background:linear-gradient(135deg,#ff6b6b,#ee5a24)">২</div><span>"Create" বাটনে ক্লিক করুন। Song Description বক্সে লিখুন: "একটি ধীর লয়ের বাংলা প্রেমের গান"</span></div>
+          <div class="step"><div class="step-n" style="background:linear-gradient(135deg,#ff6b6b,#ee5a24)">৩</div><span>"Custom Mode" চালু করে নিজের লিরিক্স পেস্ট করুন, Style of Music-এ genre লিখুন</span></div>
+          <div class="step"><div class="step-n" style="background:linear-gradient(135deg,#ff6b6b,#ee5a24)">৪</div><span>Create বাটন চাপুন — ৩০ সেকেন্ডে গান তৈরি হয়ে যাবে! Download করুন।</span></div>
+        </div>
+
+        <div class="card-foot">
+          <div>
+            <div class="steps-title" style="margin-bottom:0.4rem;">কঠিনত্ব</div>
+            <div class="difficulty">
+              <div class="diff-dot" style="background:#22c55e"></div>
+              <div class="diff-dot" style="background:#22c55e"></div>
+              <div class="diff-dot" style="background:rgba(255,255,255,0.15)"></div>
+              <span style="font-size:0.72rem;color:var(--muted);margin-left:0.3rem">সহজ</span>
+            </div>
+          </div>
+          <a class="open-btn" href="https://suno.com" target="_blank" style="background:rgba(255,107,107,0.15);color:#ff6b6b;border-color:rgba(255,107,107,0.3)">খুলুন ↗</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. ElevenLabs -->
+    <div class="tool-card reveal" style="animation-delay:0.1s" data-cat="audio">
+      <div class="card-accent" style="background:linear-gradient(90deg,#20c997,#0ca678)"></div>
+      <div class="card-inner">
+        <div class="card-head">
+          <div class="tool-icon" style="background:rgba(32,201,151,0.15);">🎙️</div>
+          <div class="tool-meta">
+            <div class="tool-name">ElevenLabs</div>
+            <a class="tool-url" href="https://elevenlabs.io" target="_blank">↗ elevenlabs.io</a>
+            <div><span class="tool-tag" style="background:rgba(32,201,151,0.15);color:#20c997;">🔊 Voice AI</span></div>
+          </div>
+        </div>
+
+        <p class="tool-desc">পৃথিবীর সবচেয়ে রিয়েলিস্টিক AI ভয়েস জেনারেটর। যেকোনো টেক্সটকে মানুষের মতো কণ্ঠে রূপান্তর করুন। Voice Cloning দিয়ে নিজের কণ্ঠ ক্লোন করুন!</p>
+
+        <ul class="feature-list">
+          <li><span class="fi">🎭</span> ২৯টি ভাষায় ন্যাচারাল ভয়েস</li>
+          <li><span class="fi">👤</span> Voice Cloning — মাত্র ১ মিনিটের অডিও দিয়ে</li>
+          <li><span class="fi">🎚️</span> Stability ও Clarity আলাদাভাবে নিয়ন্ত্রণ</li>
+          <li><span class="fi">🔌</span> API দিয়ে যেকোনো অ্যাপে যুক্ত করা যায়</li>
+          <li><span class="fi">🆓</span> মাসে ১০,০০০ ক্যারেক্টার ফ্রি</li>
+        </ul>
+
+        <div class="steps-title">ব্যবহারের ধাপ</div>
+        <div class="steps">
+          <div class="step"><div class="step-n" style="background:linear-gradient(135deg,#20c997,#0ca678)">১</div><span>elevenlabs.io-তে Sign Up করুন (ফ্রি)</span></div>
+          <div class="step"><div class="step-n" style="background:linear-gradient(135deg,#20c997,#0ca678)">২</div><span>"Text to Speech" সেকশনে যান। Voice Library থেকে পছন্দের কণ্ঠ বেছে নিন</span></div>
+          <div class="step"><div class="step-n" style="background:linear-gradient(135deg,#20c997,#0ca678)">৩</div><span>টেক্সট বক্সে আপনার স্ক্রিপ্ট পেস্ট করুন, Generate বাটন চাপুন</span></div>
+          <div class="step"><div class="step-n" style="background:linear-gradient(135deg,#20c997,#0ca678)">৪</div><span>Voice Cloning-এর জন্য "Add Voice" → নিজের কণ্ঠের ১-৫ মিনিটের ক্লিপ আপলোড করুন</span></div>
+        </div>
+
+        <div class="card-foot">
+          <div>
+            <div class="steps-title" style="margin-bottom:0.4rem;">কঠিনত্ব</div>
+            <div class="difficulty">
+              <div class="diff-dot" style="background:#20c997"></div>
+              <div class="diff-dot" style="background:#20c997"></div>
+              <div class="diff-dot" style="background:rgba(255,255,255,0.15)"></div>
+              <span style="font-size:0.72rem;color:var(--muted);margin-left:0.3rem">সহজ</span>
+            </div>
+          </div>
+          <a class="open-btn" href="https://elevenlabs.io" target="_blank" style="background:rgba(32,201,151,0.15);color:#20c997;border-color:rgba(32,201,151,0.3)">খুলুন ↗</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. Descript -->
+    <div class="tool-card reveal" style="animation-delay:0.15s" data-cat="video">
+      <div class="card-accent" style="background:linear-gradient(90deg,#ff922b,#e67700)"></div>
+      <div class="card-inner">
+        <div class="card-head">
+          <div class="tool-icon" style="background:rgba(255,146,43,0.15);">✂️</div>
+          <div class="tool-meta">
+            <div class="tool-name">Descript</div>
+            <a class="tool-url" href="https://descript.com" target="_blank">↗ descript.com</a>
+            <div><span class="tool-tag" style="background:rgba(255,146,43,0.15);color:#ff922b;">🎬 Video Edit</span></div>
+          </div>
+        </div>
+
+        <p class="tool-desc">ভিডিও এডিটিংয়ের বিপ্লব! স্ক্রিপ্ট এডিট করুন — ভিডিও স্বয়ংক্রিয়ভাবে এডিট হয়ে যাবে। "um", "uh" মুছুন এক ক্লিকে। পডকাস্ট ও YouTube-এর জন্য পারফেক্ট।</p>
+
+        <ul class="feature-list">
+          <li><span class="fi">📄</span> ট্রান্সক্রিপ্ট এডিট = ভিডিও এডিট</li>
+          <li><span class="fi">🤫</span> Filler Words (um, uh) অটো-ডিলিট</li>
+          <li><span class="fi">🎤</span> Overdub: নিজের ভয়েস AI দিয়ে পরিবর্তন</li>
+          <li><span class="fi">👁️</span> Eye Contact Correction — ক্যামেরার দিকে তাকানো ঠিক করে</li>
+          <li><span class="fi">📱</span> সরাসরি YouTube/TikTok-এ পাবলিশ</li>
+        </ul>
+
+        <div class="steps-title">ব্যবহারের ধাপ</div>
+        <div class="steps">
+          <div class="step"><div class="step-n" style="background:linear-gradient(135deg,#ff922b,#e67700)">১</div><span>descript.com-এ Sign Up করুন, Desktop App ডাউনলোড করুন</span></div>
+          <div class="step"><div class="step-n" style="background:linear-gradient(135deg,#ff922b,#e67700)">২</div><span>New Project → ভিডিও/অডিও ফাইল Import করুন</span></div>
+          <div class="step"><div class="step-n" style="background:linear-gradient(135deg,#ff922b,#e67700)">৩</div><span>AI স্বয়ংক্রিয়ভাবে ট্রান্সক্রিপ্ট তৈরি করবে। টেক্সট এডিট করুন = ভিডিও এডিট হবে!</span></div>
+          <div class="step"><div class="step-n" style="background:linear-gradient(135deg,#ff922b,#e67700)">৪</div><span>Actions → Remove Filler Words চাপুন — সব "um/uh" গায়েব। Export করুন।</span></div>
+        </div>
+
+        <div class="card-foot">
+          <div>
+            <div class="steps-title" style="margin-bottom:0.4rem;">কঠিনত্ব</div>
+            <div class="difficulty">
+              <div class="diff-dot" style="background:#ff922b"></div>
+              <div class="diff-dot" style="background:#ff922b"></div>
+              <div class="diff-dot" style="background:#ff922b"></div>
+              <span style="font-size:0.72rem;color:var(--muted);margin-left:0.3rem">মাঝারি</span>
+            </div>
+          </div>
+          <a class="open-btn" href="https://descript.com" target="_blank" style="background:rgba(255,146,43,0.15);color:#ff922b;border-color:rgba(255,146,43,0.3)">খুলুন ↗</a>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /grid -->
+
+  <!-- VIDEO & VISUAL -->
+  <div class="cat-header reveal">🎬 ভিডিও ও ভিজ্যুয়াল</div>
+  <div class="grid">
+
+    <!-- 4. Runway -->
+    <div class="tool-card reveal" style="animation-delay:0.05s" data-cat="video">
+      <div class="card-accent" style="background:linear-gradient(90deg,#f06595,#c2255c)"></div>
+      <div class="card-inner">
+        <div class="card-head">
+          <div class="tool-icon" style="background:rgba(240,101,149,0.15);">🚀</div>
+          <div class="tool-meta">
+            <div class="tool-name">Runway ML</div>
+            <a class="tool-url" href="https://runwayml.com" target="_blank">↗ runwayml.com</a>
+            <div><span class="tool-tag" style="background:rgba(240,101,149,0.15);color:#f06595;">🎥 Video AI</span></div>
+          </div>
+        </div>
+
+        <p class="tool-desc">হলিউড-মানের AI ভিডিও জেনারেশন টুল। টেক্সট বা ছবি থেকে সিনেমাটিক ভিডিও তৈরি করুন। Gen-3 Alpha মডেল দিয়ে অবিশ্বাস্য ফলাফল পাবেন।</p>
+
+        <ul class="feature-list">
+          <li><span class="fi">✍️</span> Text-to-Video: বাক্য লিখলে ভিডিও তৈরি হবে</li>
+          <li><span class="fi">🖼️</span> Image-to-Video: ছবিকে অ্যানিমেট করুন</li>
+          <li><span class="fi">🎨</span> ব্যাকগ্রাউন্ড রিমুভ ও ইনপেইন্টিং</li>
+          <li><span class="fi">🎞️</span> Motion Brush দিয়ে নির্দিষ্ট অংশ মুভ করান</li>
+          <li><span class="fi">🆓</span> ৫২৫ ক্রেডিট ফ্রিতে (প্রায় ১০-১৫ টি ভিডিও)</li>
+        </ul>
+
+        <div class="steps-title">ব্যবহারের ধাপ</div>
+        <div class="steps">
+          <div class="step"><div class="step-n" style="background:linear-gradient(135deg,#f06595,#c2255c)">১</div><span>runwayml.com-এ Sign Up করুন → Dashboard-এ যান</span></div>
+          <div class="step"><div class="step-n" style="background:linear-gradient(135deg,#f06595,#c2255c)">২</div><span>"Gen-3 Alpha" বেছে নিন। টেক্সট বক্সে বর্ণনা লিখুন: "A cinematic drone shot of green rice fields at sunset"</span></div>
+          <div class="step"><div class="step-n" style="background:linear-gradient(135deg,#f06595,#c2255c)">৩</div><span>Camera Motion, Seed, Duration সেট করুন। Generate বাটন চাপুন</span></div>
+          <div class="step"><div class="step-n" style="background:linear-gradient(135deg,#f06595,#c2255c)">৪</div><span>পছন্দ হলে Download করুন। না হলে Variations দিয়ে আবার চেষ্টা করুন</span></div>
+        </div>
+
+        <div class="card-foot">
+          <div>
+            <div class="steps-title" style="margin-bottom:0.4rem;">কঠিনত্ব</div>
+            <div class="difficulty">
+              <div class="diff-dot" style="background:#f06595"></div>
+              <div class="diff-dot" style="background:#f06595"></div>
+              <div class="diff-dot" style="background:rgba(255,255,255,0.15)"></div>
+              <span style="font-size:0.72rem;color:var(--muted);margin-left:0.3rem">সহজ</span>
+            </div>
+          </div>
+          <a class="open-btn" href="https://runwayml.com" target="_blank" style="background:rgba(240,101,149,0.15);color:#f06595;border-color:rgba(240,101,149,0.3)">খুলুন ↗</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- 5. Luma -->
+    <div class="tool-card reveal" style="animation-delay:0.1s" data-cat="video">
+      <div class="card-accent" style="background:linear-gradient(90deg,#4dabf7,#1971c2)"></div>
+      <div class="card-inner">
+        <div class="card-head">
+          <div class="tool-icon" style="background:rgba(77,171,247,0.15);">🌐</div>
+          <div class="tool-meta">
+            <div class="tool-name">Luma AI</div>
+            <a class="tool-url" href="https://lumalabs.ai" target="_blank">↗ lumalabs.ai</a>
+            <div><span class="tool-tag" style="background:rgba(77,171,247,0.15);color:#4dabf7;">🎥 3D + Video</span></div>
+          </div>
+        </div>
+
+        <p class="tool-desc">সিনেমাটিক AI ভিডিও ও 3D অবজেক্ট জেনারেশনের লেটেস্ট টেকনোলজি। Dream Machine দিয়ে যেকোনো দৃশ্য ভিডিওতে রূপান্তর করুন। NeRF প্রযুক্তিতে 3D মডেল তৈরি করুন।</p>
+
+        <ul class="feature-list">
+          <li><span class="fi">🎬</span> Dream Machine: Text/Image থেকে ভিডিও</li>
+          <li><span class="fi">🔲</span> NeRF দিয়ে স্মার্টফোনে 3D ক্যাপচার</li>
+          <li><span class="fi">🔄</span> Camera Angles ও Loops তৈরি</li>
+          <li><span class="fi">⚡</span> অত্যন্ত দ্রুত রেন্ডারিং</li>
+          <li><span class="fi">🆓</span> প্রতিদিন ৩০টি জেনারেশন ফ্রি</li>
+        </ul>
+
+        <div class="steps-title">ব্যবহারের ধাপ</div>
+        <div class="steps">
+          <div class="step"><div class="step-n" style="background:linear-gradient(135deg,#4dabf7,#1971c2)">১</div><span>lumalabs.ai → Dream Machine-এ যান, Sign Up করুন</span></div>
+          <div class="step"><div class="step-n" style="background:linear-gradient(135deg,#4dabf7,#1971c2)">২</div><span>প্রম্পট লিখুন এবং/অথবা Reference Image আপলোড করুন</span></div>
+          <div class="step"><div class="step-n" style="background:linear-gradient(135deg,#4dabf7,#1971c2)">৩</div><span>Loop, Extend বা Camera Motion অপশন সেট করুন</span></div>
+          <div class="step"><div class="step-n" style="background:linear-gradient(135deg,#4dabf7,#1971c2)">৪</div><span>Generate → ভিডিও ডাউনলোড করুন বা Social-এ শেয়ার করুন</span></div>
+        </div>
+
+        <div class="card-foot">
+          <div>
+            <div class="steps-title" style="margin-bottom:0.4rem;">কঠিনত্ব</div>
+            <div class="difficulty">
+              <div class="diff-dot" style="background:#4dabf7"></div>
+              <div class="diff-dot" style="background:#4dabf7"></div>
+              <div class="diff-dot" style="background:rgba(255,255,255,0.15)"></div>
+              <span style="font-size:0.72rem;color:var(--muted);margin-left:0.3rem">সহজ</span>
+            </div>
+          </div>
+          <a class="open-btn" href="https://lumalabs.ai" target="_blank" style="background:rgba(77,171,247,0.15);color:#4dabf7;border-color:rgba(77,171,247,0.3)">খুলুন ↗</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- 6. RecCloud -->
+    <div class="tool-card reveal" style="animation-delay:0.15s" data-cat="audio">
+      <div class="card-accent" style="background:linear-gradient(90deg,#a9e34b,#74b816)"></div>
+      <div class="card-inner">
+        <div class="card-head">
+          <div class="tool-icon" style="background:rgba(169,227,75,0.15);">📝</div>
+          <div class="tool-meta">
+            <div class="tool-name">RecCloud</div>
+            <a class="tool-url" href="https://reccloud.com" target="_blank">↗ reccloud.com</a>
+            <div><span class="tool-tag" style="background:rgba(169,227,75,0.15);color:#a9e34b;">🎙️ Transcribe</span></div>
+          </div>
+        </div>
+
+        <p class="tool-desc">অডিও/ভিডিও থেকে নিখুঁত সাবটাইটেল ও ট্রান্সক্রিপ্ট তৈরির সেরা টুল। বাংলা সহ ১০০+ ভাষায় Speech-to-Text করা যায় অসাধারণ নির্ভুলতায়।</p>
+
+        <ul class="feature-list">
+          <li><span class="fi">🌍</span> ১০০+ ভাষার সাপোর্ট (বাংলাসহ)</li>
+          <li><span class="fi">⚡</span> ৫ গুণ রিয়েল-টাইম স্পিডে ট্রান্সক্রিপশন</li>
+          <li><span class="fi">📤</span> SRT, VTT, TXT, DOCX ফরম্যাটে এক্সপোর্ট</li>
+          <li><span class="fi">🎬</span> সরাসরি ভিডিওতে Subtitle বার্ন করা যায়</li>
+          <li><span class="fi">🔗</span> YouTube URL সরাসরি পেস্ট করে ট্রান্সক্রাইব</li>
+        </ul>
+
+        <div class="steps-title">ব্যবহারের ধাপ</div>
+        <div class="steps">
+          <div class="step"><div class="step-n" style="background:linear-gradient(135deg,#a9e34b,#74b816)">১</div><span>reccloud.com → "Transcribe Audio/Video" সেকশনে যান</span></div>
+          <div class="step"><div class="step-n" style="background:linear-gradient(135deg,#a9e34b,#74b816)">২</div><span>ফাইল আপলোড করুন অথবা YouTube লিংক পেস্ট করুন</span></div>
+          <div class="step"><div class="step-n" style="background:linear-gradient(135deg,#a9e34b,#74b816)">৩</div><span>ভাষা বেছে নিন (Bengali/English), Transcribe বাটন চাপুন</span></div>
+          <div class="step"><div class="step-n" style="background:linear-gradient(135deg,#a9e34b,#74b816)">৪</div><span>এডিট করুন, তারপর SRT/TXT ফরম্যাটে Download করুন</span></div>
+        </div>
+
+        <div class="card-foot">
+          <div>
+            <div class="steps-title" style="margin-bottom:0.4rem;">কঠিনত্ব</div>
+            <div class="difficulty">
+              <div class="diff-dot" style="background:#a9e34b"></div>
+              <div class="diff-dot" style="background:rgba(255,255,255,0.15)"></div>
+              <div class="diff-dot" style="background:rgba(255,255,255,0.15)"></div>
+              <span style="font-size:0.72rem;color:var(--muted);margin-left:0.3rem">খুব সহজ</span>
+            </div>
+          </div>
+          <a class="open-btn" href="https://reccloud.com" target="_blank" style="background:rgba(169,227,75,0.15);color:#a9e34b;border-color:rgba(169,227,75,0.3)">খুলুন ↗</a>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- IMAGE & DESIGN -->
+  <div class="cat-header reveal">🎨 ইমেজ ও ডিজাইন</div>
+  <div class="grid">
+
+    <!-- 7. Krea -->
+    <div class="tool-card reveal" style="animation-delay:0.05s" data-cat="image">
+      <div class="card-accent" style="background:linear-gradient(90deg,#845ef7,#5f3dc4)"></div>
+      <div class="card-inner">
+        <div class="card-head">
+          <div class="tool-icon" style="background:rgba(132,94,247,0.15);">🎨</div>
+          <div class="tool-meta">
+            <div class="tool-name">Krea AI</div>
+            <a class="tool-url" href="https://krea.ai" target="_blank">↗ krea.ai</a>
+            <div><span class="tool-tag" style="background:rgba(132,94,247,0.15);color:#845ef7;">🖼️ Image Gen</span></div>
+          </div>
+        </div>
+
+        <p class="tool-desc">রিয়েল-টাইমে হাই-কোয়ালিটি AI ইমেজ তৈরির অসাধারণ টুল। আঁকতে আঁকতেই ছবি তৈরি হতে দেখুন! Professional photo enhancement এবং upscaling-এর জন্যও চমৎকার।</p>
+
+        <ul class="feature-list">
+          <li><span class="fi">⚡</span> Real-time Canvas: আঁকলেই তুরন্ত ছবি তৈরি</li>
+          <li><span class="fi">📸</span> AI Enhancer: যেকোনো ছবি হাই-রেজ করুন</li>
+          <li><span class="fi">🔍</span> Upscaler: ছোট ছবি 4K করুন</li>
+          <li><span class="fi">🎭</span> Style Transfer: একটি ছবির স্টাইল অন্যটিতে</li>
+          <li><span class="fi">🆓</span> ডেইলি ফ্রি ক্রেডিট পাওয়া যায়</li>
+        </ul>
+
+        <div class="steps-title">ব্যবহারের ধাপ</div>
+        <div class="steps">
+          <div class="step"><div class="step-n" style="background:linear-gradient(135deg,#845ef7,#5f3dc4)">১</div><span>krea.ai → Sign Up করুন, Real-time Canvas-এ যান</span></div>
+          <div class="step"><div class="step-n" style="background:linear-gradient(135deg,#845ef7,#5f3dc4)">২</div><span>বামে প্রম্পট লিখুন: "A beautiful Bangladeshi village at golden hour, photorealistic"</span></div>
+          <div class="step"><div class="step-n" style="background:linear-gradient(135deg,#845ef7,#5f3dc4)">৩</div><span>Canvas-এ ব্রাশ দিয়ে আঁকুন — ডানে রিয়েল-টাইমে ছবি আপডেট হবে</span></div>
+          <div class="step"><div class="step-n" style="background:linear-gradient(135deg,#845ef7,#5f3dc4)">৪</div><span>পছন্দ হলে Download করুন বা Enhancer দিয়ে আরও শার্প করুন</span></div>
+        </div>
+
+        <div class="card-foot">
+          <div>
+            <div class="steps-title" style="margin-bottom:0.4rem;">কঠিনত্ব</div>
+            <div class="difficulty">
+              <div class="diff-dot" style="background:#845ef7"></div>
+              <div class="diff-dot" style="background:#845ef7"></div>
+              <div class="diff-dot" style="background:rgba(255,255,255,0.15)"></div>
+              <span style="font-size:0.72rem;color:var(--muted);margin-left:0.3rem">সহজ</span>
+            </div>
+          </div>
+          <a class="open-btn" href="https://krea.ai" target="_blank" style="background:rgba(132,94,247,0.15);color:#845ef7;border-color:rgba(132,94,247,0.3)">খুলুন ↗</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- 8. PicWish -->
+    <div class="tool-card reveal" style="animation-delay:0.1s" data-cat="image">
+      <div class="card-accent" style="background:linear-gradient(90deg,#fcc419,#e67700)"></div>
+      <div class="card-inner">
+        <div class="card-head">
+          <div class="tool-icon" style="background:rgba(252,196,25,0.15);">✨</div>
+          <div class="tool-meta">
+            <div class="tool-name">PicWish</div>
+            <a class="tool-url" href="https://picwish.com" target="_blank">↗ picwish.com</a>
+            <div><span class="tool-tag" style="background:rgba(252,196,25,0.15);color:#fcc419;">🖼️ Photo Edit</span></div>
+          </div>
+        </div>
+
+        <p class="tool-desc">ফটো এডিটিংয়ের সুপার-ফাস্ট AI টুল। ব্যাকগ্রাউন্ড রিমুভ, ছবি এনহ্যান্স, অবজেক্ট ডিলিট — সব কাজ নিমিষেই। ই-কমার্স প্রোডাক্ট ফটোর জন্য অপরিহার্য।</p>
+
+        <ul class="feature-list">
+          <li><span class="fi">✂️</span> ব্যাকগ্রাউন্ড রিমুভ: ১ সেকেন্ডে নিখুঁত</li>
+          <li><span class="fi">🔍</span> Image Upscaler: 4x পর্যন্ত রেজোলিউশন বাড়ান</li>
+          <li><span class="fi">🧹</span> Object Remover: যেকোনো অবজেক্ট মুছুন</li>
+          <li><span class="fi">😊</span> Face Enhancer: পোর্ট্রেট ছবি উজ্জ্বল করুন</li>
+          <li><span class="fi">🖼️</span> Old Photo Restore: পুরনো ছবি পুনরুদ্ধার</li>
+        </ul>
+
+        <div class="steps-title">ব্যবহারের ধাপ</div>
+        <div class="steps">
+          <div class="step"><div class="step-n" style="background:linear-gradient(135deg,#fcc419,#e67700)">১</div><span>picwish.com-এ যান — Sign Up ছাড়াই কিছু ফিচার ব্যবহার করা যায়</span></div>
+          <div class="step"><div class="step-n" style="background:linear-gradient(135deg,#fcc419,#e67700)">২</div><span>বামের মেনু থেকে কাজ বেছে নিন (BG Remove / Enhance / Object Remove)</span></div>
+          <div class="step"><div class="step-n" style="background:linear-gradient(135deg,#fcc419,#e67700)">৩</div><span>ছবি আপলোড করুন বা Drag করুন। AI কাজ করতে ৩-৫ সেকেন্ড লাগবে</span></div>
+          <div class="step"><div class="step-n" style="background:linear-gradient(135deg,#fcc419,#e67700)">৪</div><span>Preview দেখুন, পছন্দ হলে Download করুন (PNG/JPG)</span></div>
+        </div>
+
+        <div class="card-foot">
+          <div>
+            <div class="steps-title" style="margin-bottom:0.4rem;">কঠিনত্ব</div>
+            <div class="difficulty">
+              <div class="diff-dot" style="background:#fcc419"></div>
+              <div class="diff-dot" style="background:rgba(255,255,255,0.15)"></div>
+              <div class="diff-dot" style="background:rgba(255,255,255,0.15)"></div>
+              <span style="font-size:0.72rem;color:var(--muted);margin-left:0.3rem">খুব সহজ</span>
+            </div>
+          </div>
+          <a class="open-btn" href="https://picwish.com" target="_blank" style="background:rgba(252,196,25,0.15);color:#fcc419;border-color:rgba(252,196,25,0.3)">খুলুন ↗</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- 9. Relume -->
+    <div class="tool-card reveal" style="animation-delay:0.15s" data-cat="web">
+      <div class="card-accent" style="background:linear-gradient(90deg,#4dabf7,#74c0fc)"></div>
+      <div class="card-inner">
+        <div class="card-head">
+          <div class="tool-icon" style="background:rgba(77,171,247,0.15);">🌐</div>
+          <div class="tool-meta">
+            <div class="tool-name">Relume</div>
+            <a class="tool-url" href="https://relume.io" target="_blank">↗ relume.io</a>
+            <div><span class="tool-tag" style="background:rgba(77,171,247,0.15);color:#4dabf7;">💻 Web Design</span></div>
+          </div>
+        </div>
+
+        <p class="tool-desc">AI দিয়ে মিনিটে প্রফেশনাল ওয়েবসাইট তৈরির সবচেয়ে স্মার্ট পদ্ধতি। Sitemap থেকে শুরু করে সম্পূর্ণ UI Component — সব কিছু AI জেনারেট করে। Figma ও Webflow-এর সাথে সরাসরি কাজ করে।</p>
+
+        <ul class="feature-list">
+          <li><span class="fi">🗺️</span> AI Sitemap Generator: বর্ণনা দিলে পুরো সাইটম্যাপ</li>
+          <li><span class="fi">🧩</span> ৫০০০+ UI Components লাইব্রেরি</li>
+          <li><span class="fi">🎨</span> Figma Plugin: সরাসরি Figma-তে ব্যবহার</li>
+          <li><span class="fi">⚡</span> Webflow Export: সরাসরি পাবলিশ করুন</span></li>
+          <li><span class="fi">🆓</span> ফ্রি প্ল্যানে সীমিত কিন্তু কার্যকর</li>
+        </ul>
+
+        <div class="steps-title">ব্যবহারের ধাপ</div>
+        <div class="steps">
+          <div class="step"><div class="step-n" style="background:linear-gradient(135deg,#4dabf7,#1971c2)">১</div><span>relume.io → Sign Up করুন, "AI Sitemap" অপশনে যান</span></div>
+          <div class="step"><div class="step-n" style="background:linear-gradient(135deg,#4dabf7,#1971c2)">২</div><span>বিজনেসের বর্ণনা লিখুন: "একটি ফটোগ্রাফি পোর্টফোলিও ওয়েবসাইট" → Generate</span></div>
+          <div class="step"><div class="step-n" style="background:linear-gradient(135deg,#4dabf7,#1971c2)">৩</div><span>AI সম্পূর্ণ Sitemap ও Page structure দেবে। Edit করুন, তারপর Wireframe জেনারেট করুন</span></div>
+          <div class="step"><div class="step-n" style="background:linear-gradient(135deg,#4dabf7,#1971c2)">৪</div><span>Figma Plugin দিয়ে Import করুন অথবা Webflow-এ সরাসরি Export করুন</span></div>
+        </div>
+
+        <div class="card-foot">
+          <div>
+            <div class="steps-title" style="margin-bottom:0.4rem;">কঠিনত্ব</div>
+            <div class="difficulty">
+              <div class="diff-dot" style="background:#4dabf7"></div>
+              <div class="diff-dot" style="background:#4dabf7"></div>
+              <div class="diff-dot" style="background:#4dabf7"></div>
+              <span style="font-size:0.72rem;color:var(--muted);margin-left:0.3rem">মাঝারি</span>
+            </div>
+          </div>
+          <a class="open-btn" href="https://relume.io" target="_blank" style="background:rgba(77,171,247,0.15);color:#4dabf7;border-color:rgba(77,171,247,0.3)">খুলুন ↗</a>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- AI ASSISTANTS & RESEARCH -->
+  <div class="cat-header reveal">🤖 AI অ্যাসিস্ট্যান্ট ও রিসার্চ</div>
+  <div class="grid">
+
+    <!-- 10. Grok -->
+    <div class="tool-card reveal" style="animation-delay:0.05s" data-cat="ai">
+      <div class="card-accent" style="background:linear-gradient(90deg,#845ef7,#da77f2)"></div>
+      <div class="card-inner">
+        <div class="card-head">
+          <div class="tool-icon" style="background:rgba(132,94,247,0.15);">⚡</div>
+          <div class="tool-meta">
+            <div class="tool-name">Grok (xAI)</div>
+            <a class="tool-url" href="https://grok.com" target="_blank">↗ grok.com</a>
+            <div><span class="tool-tag" style="background:rgba(132,94,247,0.15);color:#845ef7;">🧠 AI Chat</span></div>
+          </div>
+        </div>
+
+        <p class="tool-desc">ইলন মাস্কের xAI কোম্পানির শক্তিশালী AI মডেল। রিয়েল-টাইম ইন্টারনেট অ্যাক্সেস সহ সর্বশেষ তথ্য দিতে পারে। X (Twitter) ডেটায় সরাসরি অ্যাক্সেস আছে।</p>
+
+        <ul class="feature-list">
+          <li><span class="fi">🌐</span> রিয়েল-টাইম ওয়েব সার্চ সহ উত্তর দেয়</li>
+          <li><span class="fi">🐦</span> X/Twitter-এর ট্রেন্ডিং টপিক বিশ্লেষণ</li>
+          <li><span class="fi">🖼️</span> Image Generation (Aurora মডেল)</li>
+          <li><span class="fi">💡</span> Humor মোড — মজাদার কথোপকথন</li>
+          <li><span class="fi">🆓</span> X Premium ছাড়াও সীমিতভাবে ফ্রি</li>
+        </ul>
+
+        <div class="steps-title">ব্যবহারের ধাপ</div>
+        <div class="steps">
+          <div class="step"><div class="step-n" style="background:linear-gradient(135deg,#845ef7,#da77f2)">১</div><span>grok.com বা X অ্যাপ → Grok বাটনে যান। X অ্যাকাউন্ট দিয়ে Login করুন</span></div>
+          <div class="step"><div class="step-n" style="background:linear-gradient(135deg,#845ef7,#da77f2)">২</div><span>যেকোনো প্রশ্ন করুন — বাংলায় করলেও উত্তর দেবে। "আজকের শেয়ার বাজারের অবস্থা কী?"</span></div>
+          <div class="step"><div class="step-n" style="background:linear-gradient(135deg,#845ef7,#da77f2)">৩</div><span>কন্টেন্ট তৈরিতে: "আমার YouTube চ্যানেলের জন্য একটি ভাইরাল ভিডিও স্ক্রিপ্ট লিখো"</span></div>
+          <div class="step"><div class="step-n" style="background:linear-gradient(135deg,#845ef7,#da77f2)">৪</div><span>Think mode চালু করলে জটিল সমস্যায় গভীরভাবে বিশ্লেষণ করে উত্তর দেয়</span></div>
+        </div>
+
+        <div class="card-foot">
+          <div>
+            <div class="steps-title" style="margin-bottom:0.4rem;">কঠিনত্ব</div>
+            <div class="difficulty">
+              <div class="diff-dot" style="background:#845ef7"></div>
+              <div class="diff-dot" style="background:rgba(255,255,255,0.15)"></div>
+              <div class="diff-dot" style="background:rgba(255,255,255,0.15)"></div>
+              <span style="font-size:0.72rem;color:var(--muted);margin-left:0.3rem">খুব সহজ</span>
+            </div>
+          </div>
+          <a class="open-btn" href="https://grok.com" target="_blank" style="background:rgba(132,94,247,0.15);color:#845ef7;border-color:rgba(132,94,247,0.3)">খুলুন ↗</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- 11. Perplexity -->
+    <div class="tool-card reveal" style="animation-delay:0.1s" data-cat="research">
+      <div class="card-accent" style="background:linear-gradient(90deg,#20c997,#4dabf7)"></div>
+      <div class="card-inner">
+        <div class="card-head">
+          <div class="tool-icon" style="background:rgba(32,201,151,0.15);">🔍</div>
+          <div class="tool-meta">
+            <div class="tool-name">Perplexity AI</div>
+            <a class="tool-url" href="https://perplexity.ai" target="_blank">↗ perplexity.ai</a>
+            <div><span class="tool-tag" style="background:rgba(32,201,151,0.15);color:#20c997;">🔬 Research</span></div>
+          </div>
+        </div>
+
+        <p class="tool-desc">Google সার্চের স্মার্ট বিকল্প। প্রতিটি উত্তরের সাথে সোর্স দেখায়। গবেষণা, সাংবাদিকতা এবং তথ্য যাচাইয়ের জন্য বর্তমানের সেরা AI টুল।</p>
+
+        <ul class="feature-list">
+          <li><span class="fi">📚</span> সোর্সসহ ইন-ডেপথ উত্তর — Wikipedia নয়</li>
+          <li><span class="fi">🔄</span> Follow-up প্রশ্নে ক্রমশ গভীর তথ্য</li>
+          <li><span class="fi">📄</span> PDF, URL আপলোড করে প্রশ্ন করুন</li>
+          <li><span class="fi">🖼️</span> Image Analysis করতে পারে</li>
+          <li><span class="fi">🆓</span> সম্পূর্ণ ফ্রি (Pro-তে বেশি ফিচার)</li>
+        </ul>
+
+        <div class="steps-title">ব্যবহারের ধাপ</div>
+        <div class="steps">
+          <div class="step"><div class="step-n" style="background:linear-gradient(135deg,#20c997,#4dabf7)">১</div><span>perplexity.ai খুলুন — Sign Up ছাড়াই ব্যবহার করা যায়</span></div>
+          <div class="step"><div class="step-n" style="background:linear-gradient(135deg,#20c997,#4dabf7)">২</div><span>যেকোনো রিসার্চ প্রশ্ন করুন: "বাংলাদেশে AI শিল্পের ভবিষ্যৎ কী?"</span></div>
+          <div class="step"><div class="step-n" style="background:linear-gradient(135deg,#20c997,#4dabf7)">৩</div><span>উত্তরের সাথে সোর্স লিংক দেখুন। "Related" প্রশ্নে ক্লিক করে আরও জানুন</span></div>
+          <div class="step"><div class="step-n" style="background:linear-gradient(135deg,#20c997,#4dabf7)">৪</div><span>Focus মোড: Academic → গবেষণাপত্র, YouTube → ভিডিও সোর্স থেকে খোঁজে দেয়</span></div>
+        </div>
+
+        <div class="card-foot">
+          <div>
+            <div class="steps-title" style="margin-bottom:0.4rem;">কঠিনত্ব</div>
+            <div class="difficulty">
+              <div class="diff-dot" style="background:#20c997"></div>
+              <div class="diff-dot" style="background:rgba(255,255,255,0.15)"></div>
+              <div class="diff-dot" style="background:rgba(255,255,255,0.15)"></div>
+              <span style="font-size:0.72rem;color:var(--muted);margin-left:0.3rem">খুব সহজ</span>
+            </div>
+          </div>
+          <a class="open-btn" href="https://perplexity.ai" target="_blank" style="background:rgba(32,201,151,0.15);color:#20c997;border-color:rgba(32,201,151,0.3)">খুলুন ↗</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- 12. Tome -->
+    <div class="tool-card reveal" style="animation-delay:0.15s" data-cat="present">
+      <div class="card-accent" style="background:linear-gradient(90deg,#fcc419,#ff6b6b)"></div>
+      <div class="card-inner">
+        <div class="card-head">
+          <div class="tool-icon" style="background:rgba(252,196,25,0.15);">📊</div>
+          <div class="tool-meta">
+            <div class="tool-name">Tome</div>
+            <a class="tool-url" href="https://tome.app" target="_blank">↗ tome.app</a>
+            <div><span class="tool-tag" style="background:rgba(252,196,25,0.15);color:#fcc419;">📑 Presentation</span></div>
+          </div>
+        </div>
+
+        <p class="tool-desc">কয়েক সেকেন্ডে প্রফেশনাল AI প্রেজেন্টেশন! বিষয় বলুন, Tome পুরো স্লাইড ডেক তৈরি করে দেবে — কন্টেন্ট, ছবি, লেআউট সব। PowerPoint ভুলে যান!</p>
+
+        <ul class="feature-list">
+          <li><span class="fi">⚡</span> ৩০ সেকেন্ডে সম্পূর্ণ প্রেজেন্টেশন</li>
+          <li><span class="fi">🖼️</span> AI ইমেজ অটো-জেনারেট হয় প্রতিটি স্লাইডে</li>
+          <li><span class="fi">🎨</span> Theme ও Color Palette কাস্টমাইজ</li>
+          <li><span class="fi">🔗</span> ওয়েব লিংকে শেয়ার করুন (ডাউনলোড নয়)</li>
+          <li><span class="fi">🆓</span> ফ্রি প্ল্যানে সীমাহীন প্রেজেন্টেশন</li>
+        </ul>
+
+        <div class="steps-title">ব্যবহারের ধাপ</div>
+        <div class="steps">
+          <div class="step"><div class="step-n" style="background:linear-gradient(135deg,#fcc419,#ff6b6b)">১</div><span>tome.app → Sign Up করুন, "Create with AI" বাটন চাপুন</span></div>
+          <div class="step"><div class="step-n" style="background:linear-gradient(135deg,#fcc419,#ff6b6b)">২</div><span>বিষয় লিখুন: "বাংলাদেশের পর্যটন শিল্পের সম্ভাবনা ও চ্যালেঞ্জ" → Generate</span></div>
+          <div class="step"><div class="step-n" style="background:linear-gradient(135deg,#fcc419,#ff6b6b)">৩</div><span>AI সম্পূর্ণ স্লাইড ডেক তৈরি করবে। যেকোনো স্লাইড Edit করুন, থিম পরিবর্তন করুন</span></div>
+          <div class="step"><div class="step-n" style="background:linear-gradient(135deg,#fcc419,#ff6b6b)">৪</div><span>Share বাটনে ক্লিক করে লিংক কপি করুন অথবা PDF হিসেবে Export করুন</span></div>
+        </div>
+
+        <div class="card-foot">
+          <div>
+            <div class="steps-title" style="margin-bottom:0.4rem;">কঠিনত্ব</div>
+            <div class="difficulty">
+              <div class="diff-dot" style="background:#fcc419"></div>
+              <div class="diff-dot" style="background:rgba(255,255,255,0.15)"></div>
+              <div class="diff-dot" style="background:rgba(255,255,255,0.15)"></div>
+              <span style="font-size:0.72rem;color:var(--muted);margin-left:0.3rem">খুব সহজ</span>
+            </div>
+          </div>
+          <a class="open-btn" href="https://tome.app" target="_blank" style="background:rgba(252,196,25,0.15);color:#fcc419;border-color:rgba(252,196,25,0.3)">খুলুন ↗</a>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Bottom Share Bar -->
+  <div style="text-align:center;padding:4rem 0 2rem;" class="reveal">
+    <div style="font-family:'Sour Gummy',cursive;font-size:0.7rem;letter-spacing:3px;text-transform:uppercase;color:var(--muted);margin-bottom:1.5rem;">পেজটি সেভ বা শেয়ার করুন</div>
+    <div class="share-bar">
+      <button class="btn btn-primary" onclick="saveAsPDF()">💾 Save as PDF</button>
+      <button class="btn btn-copy" onclick="copyPageLink()">🔗 লিংক কপি</button>
+      <button class="btn btn-outline" onclick="shareWhatsApp()">📤 WhatsApp</button>
+      <button class="btn btn-outline" onclick="shareFacebook()">📘 Facebook</button>
+      <button class="btn btn-outline" onclick="window.print()">🖨️ Print</button>
+    </div>
+  </div>
+
+</div><!-- /wrap -->
+
+<!-- Footer -->
+<footer class="footer">
+  <div style="margin-bottom:0.5rem;font-size:0.9rem;color:var(--dim);">সেরা ১২টি AI টুল — বাংলায় বিস্তারিত গাইড</div>
+  <div>সংকলন ও বিন্যাস: <strong style="color:var(--dim)">Md. Monjurul Haque</strong> · MH Academy</div>
+  <div style="margin-top:0.8rem;font-size:0.72rem;opacity:0.5;">© 2024 — শেয়ার করুন, ছড়িয়ে দিন 🚀</div>
+</footer>
+
+<script>
+// Cursor
+const cur = document.getElementById('cursor');
+const ring = document.getElementById('cursorRing');
+let mx=0,my=0,rx=0,ry=0;
+document.addEventListener('mousemove',e=>{
+  mx=e.clientX;my=e.clientY;
+  cur.style.left=(mx-6)+'px';cur.style.top=(my-6)+'px';
+});
+(function animRing(){
+  rx+=(mx-rx)*0.12;ry+=(my-ry)*0.12;
+  ring.style.left=(rx-18)+'px';ring.style.top=(ry-18)+'px';
+  requestAnimationFrame(animRing);
+})();
+document.querySelectorAll('a,button,.tool-card').forEach(el=>{
+  el.addEventListener('mouseenter',()=>{ cur.style.transform='scale(2.5)'; ring.style.transform='scale(1.5)'; });
+  el.addEventListener('mouseleave',()=>{ cur.style.transform='scale(1)'; ring.style.transform='scale(1)'; });
+});
+
+// Scroll reveal
+const revealEls = document.querySelectorAll('.reveal');
+const revealObs = new IntersectionObserver(entries=>{
+  entries.forEach((e,i)=>{ if(e.isIntersecting){ e.target.classList.add('visible'); } });
+},{threshold:0.08});
+revealEls.forEach(el=>revealObs.observe(el));
+
+// Toast
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2800);
+}
+
+// Share functions
+function copyPageLink(){
+  const url = window.location.href;
+  navigator.clipboard.writeText(url).then(()=>showToast('✅ লিংক কপি হয়ে গেছে!'));
+}
+
+function shareWhatsApp(){
+  const text = encodeURIComponent('🤖 সেরা ১২টি AI টুল বাংলায় বিস্তারিত গাইড — দেখো এখনই!\n\n' + window.location.href);
+  window.open('https://wa.me/?text='+text,'_blank');
+}
+
+function shareFacebook(){
+  window.open('https://www.facebook.com/sharer/sharer.php?u='+encodeURIComponent(window.location.href),'_blank');
+}
+
+function saveAsPDF(){
+  showToast('🖨️ Print dialog খুলছে — "Save as PDF" বেছে নিন');
+  setTimeout(()=>window.print(), 600);
+}
+
+// Stagger reveal cards
+document.querySelectorAll('.tool-card').forEach((card,i)=>{
+  card.style.animationDelay = (i % 3) * 0.08 + 's';
+});
+</script>
+
+<style>
+@media print {
+  .bg-canvas,.bg-dots,body::after,.cursor,.cursor-ring,.share-bar,.hero-scroll,.scroll-hint { display:none!important; }
+  body { background: white!important; color: #111!important; }
+  .tool-card { break-inside: avoid; border: 1px solid #ddd!important; background: #fafafa!important; }
+  .hero { min-height:auto; padding:2rem; }
+  .hero h1 .line1,.hero h1 .line2 { -webkit-text-fill-color: #111!important; }
+  .tool-desc,.feature-list li,.step { color: #444!important; }
+  .card-head,.tool-name { color:#111!important; }
+  .steps-title,.filter-label,.cat-header { color:#888!important; }
+}
+</style>
+</body>
+</html>

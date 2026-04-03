@@ -1,0 +1,43 @@
+{
+  "name": "MH Academy – Monjurul Haque",
+  "short_name": "MH Academy",
+  "description": "ফ্রি কোর্স, বাংলা বই, AI টুলস ও আরও অনেক কিছু।",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#060d1f",
+  "theme_color": "#0f172a",
+  "orientation": "portrait-primary",
+  "lang": "bn",
+  "categories": ["education", "books"],
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [],
+  "shortcuts": [
+    {
+      "name": "ফ্রি কোর্স",
+      "short_name": "কোর্স",
+      "description": "ফ্রি কোর্স দেখুন",
+      "url": "./freecourse.html",
+      "icons": [{ "src": "icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "AI টুলস",
+      "short_name": "AI",
+      "description": "ফ্রি AI টুলস",
+      "url": "./free-ai-tools.html",
+      "icons": [{ "src": "icon-192.png", "sizes": "192x192" }]
+    }
+  ]
+}

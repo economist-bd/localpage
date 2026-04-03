@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>MH Academy – Monjurul Haque</title>
+
+  <!-- PWA Meta -->
+  <meta name="theme-color" content="#0f172a" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="MH Academy" />
+  <link rel="manifest" href="manifest.json" />
+
+  <!-- Favicon / Icons (পরে পরিবর্তন করুন) -->
+  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
+  <link rel="apple-touch-icon" href="icon-192.png" />
+
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://economist-bd.github.io/localpage/" />
+  <meta property="og:title" content="MH Academy – Monjurul Haque" />
+  <meta property="og:description" content="ফ্রি কোর্স, বাংলা বই, AI টুলস, প্রম্পট ও গল্পের বিশাল সংগ্রহ। MH Academy-তে স্বাগতম!" />
+  <meta property="og:image" content="https://economist-bd.github.io/localpage/og-image.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:locale" content="bn_BD" />
+  <meta property="og:site_name" content="MH Academy" />
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="MH Academy – Monjurul Haque" />
+  <meta name="twitter:description" content="ফ্রি কোর্স, বাংলা বই, AI টুলস, প্রম্পট ও গল্পের বিশাল সংগ্রহ।" />
+  <meta name="twitter:image" content="https://economist-bd.github.io/localpage/og-image.png" />
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&family=Tiro+Bangla:ital@0;1&display=swap" rel="stylesheet" />
+
+  <style>
+    /* ========== RESET & ROOT ========== */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #060d1f;
+      --bg2:       #0d1b35;
+      --surface:   #111e38;
+      --surface2:  #162544;
+      --border:    rgba(99,179,237,0.12);
+      --accent:    #38bdf8;
+      --accent2:   #818cf8;
+      --accent3:   #34d399;
+      --gold:      #fbbf24;
+      --text:      #e2e8f0;
+      --muted:     #94a3b8;
+      --radius:    18px;
+      --glow:      0 0 24px rgba(56,189,248,0.18);
+      --shadow:    0 8px 32px rgba(0,0,0,0.45);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Hind Siliguri', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ========== ANIMATED BG ========== */
+    body::before {
+      content: '';
+      position: fixed; inset: 0; z-index: 0;
+      background:
+        radial-gradient(ellipse 80% 60% at 20% 10%, rgba(56,189,248,0.07) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 50% at 80% 80%, rgba(129,140,248,0.07) 0%, transparent 60%),
+        radial-gradient(ellipse 50% 40% at 50% 50%, rgba(52,211,153,0.04) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    /* ========== INSTALL BANNER ========== */
+    #install-banner {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+      background: linear-gradient(135deg, #1e3a5f 0%, #0f2744 100%);
+      border-bottom: 1px solid var(--accent);
+      padding: 12px 20px;
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+      box-shadow: 0 4px 20px rgba(56,189,248,0.2);
+      transform: translateY(-100%);
+      transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+      flex-wrap: wrap;
+    }
+    #install-banner.visible { transform: translateY(0); }
+
+    .banner-left { display: flex; align-items: center; gap: 12px; }
+    .banner-icon {
+      width: 42px; height: 42px; border-radius: 10px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px; flex-shrink: 0;
+    }
+    .banner-text { font-size: 13px; }
+    .banner-text strong { display: block; color: var(--accent); font-size: 14px; }
+    .banner-text span { color: var(--muted); }
+
+    .banner-actions { display: flex; gap: 8px; align-items: center; flex-shrink: 0; }
+
+    .btn-install {
+      background: linear-gradient(135deg, var(--accent), #0284c7);
+      color: #fff; border: none; padding: 8px 18px; border-radius: 8px;
+      font-family: 'Hind Siliguri', sans-serif; font-size: 13px; font-weight: 600;
+      cursor: pointer; white-space: nowrap;
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+    .btn-install:hover { transform: scale(1.03); box-shadow: var(--glow); }
+
+    .btn-dismiss {
+      background: transparent; border: 1px solid var(--border);
+      color: var(--muted); padding: 8px 14px; border-radius: 8px;
+      font-family: 'Hind Siliguri', sans-serif; font-size: 13px; cursor: pointer;
+      transition: border-color 0.2s;
+    }
+    .btn-dismiss:hover { border-color: var(--accent); color: var(--text); }
+
+    /* ========== HEADER ========== */
+    header {
+      position: relative; z-index: 10;
+      padding: 60px 20px 40px;
+      text-align: center;
+    }
+
+    .logo-ring {
+      width: 80px; height: 80px; margin: 0 auto 20px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), var(--accent2), var(--accent3));
+      padding: 3px;
+      animation: spin-ring 8s linear infinite;
+    }
+    .logo-inner {
+      width: 100%; height: 100%; border-radius: 50%;
+      background: var(--bg);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 32px;
+    }
+    @keyframes spin-ring {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .site-title {
+      font-family: 'Tiro Bangla', serif;
+      font-size: clamp(28px, 7vw, 48px);
+      font-weight: 400;
+      background: linear-gradient(135deg, #e2e8f0 0%, var(--accent) 50%, var(--accent2) 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+      letter-spacing: -0.5px;
+      line-height: 1.2;
+    }
+
+    .site-sub {
+      font-size: 14px; color: var(--muted); margin-top: 6px; letter-spacing: 0.5px;
+    }
+
+    .tagline {
+      margin-top: 16px; font-size: 15px; color: var(--muted);
+      max-width: 480px; margin-left: auto; margin-right: auto; line-height: 1.6;
+    }
+
+    /* ========== STATS BAR ========== */
+    .stats-bar {
+      display: flex; justify-content: center; gap: 0; flex-wrap: wrap;
+      margin: 30px auto; max-width: 480px;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 14px; overflow: hidden;
+    }
+    .stat-item {
+      flex: 1; min-width: 80px; padding: 16px 12px;
+      text-align: center; border-right: 1px solid var(--border);
+      transition: background 0.2s;
+    }
+    .stat-item:last-child { border-right: none; }
+    .stat-item:hover { background: var(--surface2); }
+    .stat-num { font-size: 22px; font-weight: 700; color: var(--accent); line-height: 1; }
+    .stat-lbl { font-size: 11px; color: var(--muted); margin-top: 4px; }
+
+    /* ========== SEARCH ========== */
+    .search-wrap {
+      max-width: 460px; margin: 0 auto 40px;
+      padding: 0 20px; position: relative; z-index: 5;
+    }
+    .search-input {
+      width: 100%; padding: 14px 48px 14px 20px;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 50px; color: var(--text);
+      font-family: 'Hind Siliguri', sans-serif; font-size: 15px;
+      outline: none; transition: border-color 0.25s, box-shadow 0.25s;
+    }
+    .search-input::placeholder { color: var(--muted); }
+    .search-input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(56,189,248,0.12);
+    }
+    .search-icon {
+      position: absolute; right: 36px; top: 50%; transform: translateY(-50%);
+      color: var(--muted); font-size: 18px; pointer-events: none;
+    }
+
+    /* ========== GRID ========== */
+    .grid-section {
+      position: relative; z-index: 5;
+      max-width: 700px; margin: 0 auto;
+      padding: 0 16px 40px;
+    }
+
+    .section-label {
+      font-size: 12px; letter-spacing: 2px; color: var(--accent);
+      text-transform: uppercase; text-align: center; margin-bottom: 24px;
+      display: flex; align-items: center; gap: 12px; justify-content: center;
+    }
+    .section-label::before, .section-label::after {
+      content: ''; flex: 1; max-width: 60px; height: 1px;
+      background: linear-gradient(90deg, transparent, var(--accent));
+    }
+    .section-label::after { background: linear-gradient(90deg, var(--accent), transparent); }
+
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 18px;
+    }
+
+    /* ========== CARD ========== */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px 22px 20px;
+      display: flex; flex-direction: column; gap: 14px;
+      position: relative; overflow: hidden;
+      cursor: pointer;
+      transition: transform 0.25s cubic-bezier(0.34,1.3,0.64,1),
+                  box-shadow 0.25s, border-color 0.25s;
+      animation: card-in 0.5s both;
+      text-decoration: none; color: inherit;
+    }
+
+    @keyframes card-in {
+      from { opacity: 0; transform: translateY(20px) scale(0.97); }
+      to   { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .card:nth-child(1) { animation-delay: 0.05s; }
+    .card:nth-child(2) { animation-delay: 0.10s; }
+    .card:nth-child(3) { animation-delay: 0.15s; }
+    .card:nth-child(4) { animation-delay: 0.20s; }
+    .card:nth-child(5) { animation-delay: 0.25s; }
+    .card:nth-child(6) { animation-delay: 0.30s; }
+
+    .card::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0; height: 3px;
+      background: var(--card-accent, linear-gradient(90deg, var(--accent), var(--accent2)));
+      border-radius: var(--radius) var(--radius) 0 0;
+    }
+
+    .card::after {
+      content: '';
+      position: absolute; inset: 0; z-index: 0;
+      background: radial-gradient(circle at 80% 20%, var(--card-glow, rgba(56,189,248,0.06)) 0%, transparent 60%);
+      pointer-events: none;
+      transition: opacity 0.3s;
+      opacity: 0;
+    }
+
+    .card:hover { transform: translateY(-5px) scale(1.01); box-shadow: var(--shadow), var(--glow); border-color: rgba(56,189,248,0.3); }
+    .card:hover::after { opacity: 1; }
+
+    .card > * { position: relative; z-index: 1; }
+
+    .card-head { display: flex; align-items: flex-start; gap: 14px; }
+
+    .card-icon {
+      width: 52px; height: 52px; border-radius: 14px; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 24px;
+      background: var(--icon-bg, linear-gradient(135deg, rgba(56,189,248,0.15), rgba(56,189,248,0.05)));
+      border: 1px solid var(--icon-border, rgba(56,189,248,0.2));
+    }
+
+    .card-meta { flex: 1; }
+
+    .card-badge {
+      display: inline-block; font-size: 10px; font-weight: 600;
+      letter-spacing: 1px; text-transform: uppercase;
+      padding: 3px 8px; border-radius: 4px;
+      background: var(--badge-bg, rgba(56,189,248,0.12));
+      color: var(--badge-color, var(--accent));
+      margin-bottom: 6px;
+    }
+
+    .card-title {
+      font-family: 'Tiro Bangla', serif;
+      font-size: 18px; font-weight: 400; line-height: 1.3; color: var(--text);
+    }
+
+    .card-desc {
+      font-size: 13px; color: var(--muted); line-height: 1.6;
+    }
+
+    .card-footer { display: flex; align-items: center; justify-content: space-between; margin-top: 4px; }
+
+    .card-tags { display: flex; gap: 6px; flex-wrap: wrap; }
+    .tag {
+      font-size: 10px; padding: 3px 8px; border-radius: 30px;
+      background: rgba(255,255,255,0.05); color: var(--muted);
+      border: 1px solid var(--border);
+    }
+
+    .btn-visit {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 9px 18px; border-radius: 50px;
+      background: linear-gradient(135deg, var(--btn-from, var(--accent)), var(--btn-to, #0284c7));
+      color: #fff; font-family: 'Hind Siliguri', sans-serif;
+      font-size: 13px; font-weight: 600; white-space: nowrap;
+      border: none; cursor: pointer; text-decoration: none;
+      transition: transform 0.15s, box-shadow 0.15s;
+      flex-shrink: 0;
+    }
+    .btn-visit:hover { transform: scale(1.05); box-shadow: 0 4px 14px rgba(56,189,248,0.35); }
+    .btn-visit svg { width: 14px; height: 14px; }
+
+    /* ========== EMPTY STATE ========== */
+    .empty-state {
+      text-align: center; padding: 60px 20px; color: var(--muted);
+      display: none;
+    }
+    .empty-state .es-icon { font-size: 48px; margin-bottom: 16px; }
+
+    /* ========== FOOTER ========== */
+    footer {
+      text-align: center; padding: 30px 20px;
+      color: var(--muted); font-size: 13px;
+      border-top: 1px solid var(--border);
+      position: relative; z-index: 5;
+    }
+    footer a { color: var(--accent); text-decoration: none; }
+    footer span { color: #e74c3c; }
+
+    /* ========== OFFLINE BADGE ========== */
+    #offline-badge {
+      position: fixed; bottom: 20px; right: 20px; z-index: 999;
+      background: #1e293b; border: 1px solid var(--gold);
+      color: var(--gold); padding: 10px 16px; border-radius: 10px;
+      font-size: 13px; display: none; box-shadow: var(--shadow);
+    }
+
+    /* ========== SCROLLBAR ========== */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--surface2); border-radius: 3px; }
+
+    /* ========== LOADING SHIMMER ========== */
+    .shimmer {
+      background: linear-gradient(90deg, var(--surface) 25%, var(--surface2) 50%, var(--surface) 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite;
+      border-radius: var(--radius); height: 200px;
+    }
+    @keyframes shimmer { from { background-position: 200% 0; } to { background-position: -200% 0; } }
+
+    @media (max-width: 400px) {
+      .cards-grid { grid-template-columns: 1fr; }
+      .btn-visit { padding: 8px 14px; font-size: 12px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ===== INSTALL BANNER ===== -->
+<div id="install-banner" role="banner" aria-label="অ্যাপ ইন্সটল করুন">
+  <div class="banner-left">
+    <div class="banner-icon">🎓</div>
+    <div class="banner-text">
+      <strong>MH Academy অ্যাপ ইন্সটল করুন</strong>
+      <span>হোম স্ক্রিনে রাখুন, অফলাইনেও কাজ করবে!</span>
+    </div>
+  </div>
+  <div class="banner-actions">
+    <button class="btn-install" id="btn-install">ইন্সটল করুন</button>
+    <button class="btn-dismiss" id="btn-dismiss">পরে</button>
+  </div>
+</div>
+
+<!-- ===== HEADER ===== -->
+<header>
+  <div class="logo-ring">
+    <div class="logo-inner">🎓</div>
+  </div>
+  <h1 class="site-title">MH Academy</h1>
+  <p class="site-sub">by Monjurul Haque</p>
+  <p class="tagline">ফ্রি কোর্স, বাংলা বই, AI টুলস ও আরও অনেক কিছু — একটাই জায়গায়।</p>
+
+  <div class="stats-bar" id="stats-bar">
+    <div class="stat-item"><div class="stat-num" id="stat-pages">৬</div><div class="stat-lbl">পেইজ</div></div>
+    <div class="stat-item"><div class="stat-num">১০০%</div><div class="stat-lbl">ফ্রি</div></div>
+    <div class="stat-item"><div class="stat-num">PWA</div><div class="stat-lbl">অফলাইন</div></div>
+  </div>
+</header>
+
+<!-- ===== SEARCH ===== -->
+<div class="search-wrap">
+  <input type="search" class="search-input" id="search" placeholder="পেইজ খুঁজুন..." autocomplete="off" />
+  <span class="search-icon">🔍</span>
+</div>
+
+<!-- ===== CARDS GRID ===== -->
+<main class="grid-section" id="main-grid">
+  <div class="section-label">সকল পেইজ</div>
+  <div class="cards-grid" id="cards-grid">
+    <!-- shimmer placeholders -->
+    <div class="shimmer"></div>
+    <div class="shimmer"></div>
+    <div class="shimmer"></div>
+  </div>
+  <div class="empty-state" id="empty-state">
+    <div class="es-icon">🔍</div>
+    <p>কোনো পেইজ পাওয়া যায়নি</p>
+  </div>
+</main>
+
+<!-- ===== FOOTER ===== -->
+<footer>
+  <p>তৈরি করেছেন <span>❤</span> দিয়ে — <a href="https://github.com/economist-bd" target="_blank" rel="noopener">Monjurul Haque</a></p>
+  <p style="margin-top:6px;">© 2025 MH Academy · সকল অধিকার সংরক্ষিত</p>
+</footer>
+
+<div id="offline-badge">📡 আপনি অফলাইনে আছেন</div>
+
+<script>
+// ============================================================
+// PAGE DATA – GitHub Raw base
+// ============================================================
+const BASE = 'https://economist-bd.github.io/localpage/';
+
+const PAGES = [
+  {
+    file: 'free-ai-tools.html',
+    title: 'ফ্রি AI টুলস',
+    desc: 'সেরা বিনামূল্যে AI টুলসের বিশাল সংগ্রহ। ChatGPT থেকে শুরু করে ইমেজ জেনারেটর পর্যন্ত সব।',
+    icon: '🤖',
+    badge: 'AI Tools',
+    tags: ['AI', 'ফ্রি', 'টুলস'],
+    accent: 'linear-gradient(90deg,#38bdf8,#818cf8)',
+    glow: 'rgba(56,189,248,0.08)',
+    iconBg: 'linear-gradient(135deg,rgba(56,189,248,0.18),rgba(56,189,248,0.05))',
+    iconBorder: 'rgba(56,189,248,0.25)',
+    badgeBg: 'rgba(56,189,248,0.12)', badgeColor: '#38bdf8',
+    btnFrom: '#38bdf8', btnTo: '#0284c7',
+  },
+  {
+    file: 'free-prompt.html',
+    title: 'ফ্রি প্রম্পট',
+    desc: 'ChatGPT ও অন্যান্য AI-তে ব্যবহারের জন্য কার্যকর বাংলা ও ইংরেজি প্রম্পট কালেকশন।',
+    icon: '✍️',
+    badge: 'Prompt',
+    tags: ['Prompt', 'ChatGPT', 'ফ্রি'],
+    accent: 'linear-gradient(90deg,#818cf8,#c084fc)',
+    glow: 'rgba(129,140,248,0.08)',
+    iconBg: 'linear-gradient(135deg,rgba(129,140,248,0.18),rgba(129,140,248,0.05))',
+    iconBorder: 'rgba(129,140,248,0.25)',
+    badgeBg: 'rgba(129,140,248,0.12)', badgeColor: '#818cf8',
+    btnFrom: '#818cf8', btnTo: '#6d28d9',
+  },
+  {
+    file: 'bangla-book-list.html',
+    title: 'বাংলা বই তালিকা',
+    desc: 'বিভিন্ন বিষয়ের সেরা বাংলা বইয়ের কিউরেটেড তালিকা। শিক্ষামূলক ও সাহিত্যিক বই একসাথে।',
+    icon: '📚',
+    badge: 'বই',
+    tags: ['বাংলা', 'বই', 'পড়াশোনা'],
+    accent: 'linear-gradient(90deg,#34d399,#10b981)',
+    glow: 'rgba(52,211,153,0.08)',
+    iconBg: 'linear-gradient(135deg,rgba(52,211,153,0.18),rgba(52,211,153,0.05))',
+    iconBorder: 'rgba(52,211,153,0.25)',
+    badgeBg: 'rgba(52,211,153,0.12)', badgeColor: '#34d399',
+    btnFrom: '#34d399', btnTo: '#059669',
+  },
+  {
+    file: 'story.html',
+    title: 'গল্পের ভুবন',
+    desc: 'বাংলা সাহিত্যের মনোমুগ্ধকর গল্পের সংগ্রহ। ছোটগল্প, রোমান্টিক, রহস্য ও আরও অনেক ধরন।',
+    icon: '📖',
+    badge: 'গল্প',
+    tags: ['গল্প', 'সাহিত্য', 'বাংলা'],
+    accent: 'linear-gradient(90deg,#fb923c,#f43f5e)',
+    glow: 'rgba(251,146,60,0.08)',
+    iconBg: 'linear-gradient(135deg,rgba(251,146,60,0.18),rgba(251,146,60,0.05))',
+    iconBorder: 'rgba(251,146,60,0.25)',
+    badgeBg: 'rgba(251,146,60,0.12)', badgeColor: '#fb923c',
+    btnFrom: '#fb923c', btnTo: '#dc2626',
+  },
+  {
+    file: 'freecourse.html',
+    title: 'ফ্রি কোর্স',
+    desc: 'ওয়েব ডিজাইন, প্রোগ্রামিং, গ্রাফিক্স সহ বিভিন্ন বিষয়ের সম্পূর্ণ বিনামূল্যে কোর্স।',
+    icon: '🎓',
+    badge: 'Course',
+    tags: ['কোর্স', 'ফ্রি', 'শিক্ষা'],
+    accent: 'linear-gradient(90deg,#fbbf24,#f59e0b)',
+    glow: 'rgba(251,191,36,0.08)',
+    iconBg: 'linear-gradient(135deg,rgba(251,191,36,0.18),rgba(251,191,36,0.05))',
+    iconBorder: 'rgba(251,191,36,0.25)',
+    badgeBg: 'rgba(251,191,36,0.12)', badgeColor: '#fbbf24',
+    btnFrom: '#fbbf24', btnTo: '#b45309',
+  },
+];
+
+// ============================================================
+// RENDER CARDS
+// ============================================================
+function buildCard(p) {
+  const url = BASE + p.file;
+  const card = document.createElement('a');
+  card.className = 'card';
+  card.href = url;
+  card.target = '_blank';
+  card.rel = 'noopener';
+  card.setAttribute('aria-label', p.title + ' পেইজ ভিজিট করুন');
+
+  card.style.setProperty('--card-accent', p.accent);
+  card.style.setProperty('--card-glow', p.glow);
+  card.style.setProperty('--icon-bg', p.iconBg);
+  card.style.setProperty('--icon-border', p.iconBorder);
+  card.style.setProperty('--badge-bg', p.badgeBg);
+  card.style.setProperty('--badge-color', p.badgeColor);
+  card.style.setProperty('--btn-from', p.btnFrom);
+  card.style.setProperty('--btn-to', p.btnTo);
+
+  const tags = p.tags.map(t => `<span class="tag">${t}</span>`).join('');
+
+  card.innerHTML = `
+    <div class="card-head">
+      <div class="card-icon">${p.icon}</div>
+      <div class="card-meta">
+        <span class="card-badge">${p.badge}</span>
+        <h2 class="card-title">${p.title}</h2>
+      </div>
+    </div>
+    <p class="card-desc">${p.desc}</p>
+    <div class="card-footer">
+      <div class="card-tags">${tags}</div>
+      <span class="btn-visit">
+        ভিজিট করুন
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M7 17L17 7M17 7H7M17 7v10"/>
+        </svg>
+      </span>
+    </div>
+  `;
+
+  // prevent double navigation
+  card.querySelector('.btn-visit').addEventListener('click', e => e.stopPropagation());
+  return card;
+}
+
+function renderCards(pages) {
+  const grid = document.getElementById('cards-grid');
+  const empty = document.getElementById('empty-state');
+  grid.innerHTML = '';
+  if (!pages.length) {
+    empty.style.display = 'block';
+    return;
+  }
+  empty.style.display = 'none';
+  pages.forEach(p => grid.appendChild(buildCard(p)));
+  document.getElementById('stat-pages').textContent = pages.length;
+}
+
+// Initial render
+setTimeout(() => renderCards(PAGES), 300);
+
+// ============================================================
+// SEARCH
+// ============================================================
+document.getElementById('search').addEventListener('input', function () {
+  const q = this.value.trim().toLowerCase();
+  if (!q) { renderCards(PAGES); return; }
+  const filtered = PAGES.filter(p =>
+    p.title.toLowerCase().includes(q) ||
+    p.desc.toLowerCase().includes(q) ||
+    p.tags.some(t => t.toLowerCase().includes(q)) ||
+    p.badge.toLowerCase().includes(q)
+  );
+  renderCards(filtered);
+});
+
+// ============================================================
+// PWA – SERVICE WORKER
+// ============================================================
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').catch(() => {});
+}
+
+// ============================================================
+// INSTALL PROMPT – show after 30s if not installed
+// ============================================================
+let deferredPrompt = null;
+const banner = document.getElementById('install-banner');
+const btnInstall = document.getElementById('btn-install');
+const btnDismiss = document.getElementById('btn-dismiss');
+
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredPrompt = e;
+
+  // Show after 30 seconds if not dismissed
+  const dismissed = sessionStorage.getItem('mha-install-dismissed');
+  if (!dismissed) {
+    setTimeout(() => {
+      banner.classList.add('visible');
+    }, 30000);
+  }
+});
+
+btnInstall.addEventListener('click', async () => {
+  if (deferredPrompt) {
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    deferredPrompt = null;
+  }
+  banner.classList.remove('visible');
+});
+
+btnDismiss.addEventListener('click', () => {
+  banner.classList.remove('visible');
+  sessionStorage.setItem('mha-install-dismissed', '1');
+});
+
+// If already installed (standalone mode), never show banner
+if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone) {
+  banner.style.display = 'none';
+}
+
+// ============================================================
+// OFFLINE DETECTION
+// ============================================================
+const offlineBadge = document.getElementById('offline-badge');
+function updateOnlineStatus() {
+  offlineBadge.style.display = navigator.onLine ? 'none' : 'block';
+}
+window.addEventListener('online', updateOnlineStatus);
+window.addEventListener('offline', updateOnlineStatus);
+updateOnlineStatus();
+</script>
+</body>
+</html>

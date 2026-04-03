@@ -1,0 +1,1763 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>অ্যাডোবি আফটার ইফেক্টস গাইড - MH Academy</title>
+<link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&family=Exo+2:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-dark: #060a14;
+    --bg-card: #0d1428;
+    --bg-card2: #111b35;
+    --accent-red: #ff2d55;
+    --accent-blue: #00c2ff;
+    --accent-gold: #ffd60a;
+    --accent-purple: #bf5af2;
+    --accent-green: #30d158;
+    --text-primary: #e8f0ff;
+    --text-secondary: #8ca0c8;
+    --text-muted: #4a5f8a;
+    --border: rgba(0,194,255,0.15);
+    --glow-blue: 0 0 30px rgba(0,194,255,0.3);
+    --glow-red: 0 0 30px rgba(255,45,85,0.4);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg-dark);
+    color: var(--text-primary);
+    font-family: 'Hind Siliguri', sans-serif;
+    line-height: 1.8;
+    overflow-x: hidden;
+  }
+
+  /* ===== ANIMATED BACKGROUND ===== */
+  .bg-grid {
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,194,255,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,194,255,0.04) 1px, transparent 1px);
+    background-size: 50px 50px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .bg-glow-1 {
+    position: fixed;
+    top: -200px; left: -200px;
+    width: 600px; height: 600px;
+    background: radial-gradient(circle, rgba(0,194,255,0.08) 0%, transparent 70%);
+    pointer-events: none; z-index: 0;
+    animation: floatGlow 8s ease-in-out infinite;
+  }
+  .bg-glow-2 {
+    position: fixed;
+    bottom: -200px; right: -200px;
+    width: 700px; height: 700px;
+    background: radial-gradient(circle, rgba(255,45,85,0.07) 0%, transparent 70%);
+    pointer-events: none; z-index: 0;
+    animation: floatGlow 10s ease-in-out infinite reverse;
+  }
+
+  @keyframes floatGlow {
+    0%, 100% { transform: translate(0,0); }
+    50% { transform: translate(30px, 30px); }
+  }
+
+  /* ===== SIDEBAR NAV ===== */
+  .sidebar {
+    position: fixed;
+    left: 0; top: 0;
+    width: 280px; height: 100vh;
+    background: linear-gradient(180deg, #0a1020 0%, #060a14 100%);
+    border-right: 1px solid var(--border);
+    z-index: 100;
+    overflow-y: auto;
+    padding: 0 0 2rem 0;
+  }
+
+  .sidebar::-webkit-scrollbar { width: 4px; }
+  .sidebar::-webkit-scrollbar-track { background: transparent; }
+  .sidebar::-webkit-scrollbar-thumb { background: var(--accent-blue); border-radius: 2px; }
+
+  .sidebar-logo {
+    padding: 1.5rem 1.5rem 1rem;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 1rem;
+  }
+
+  .logo-badge {
+    display: inline-block;
+    background: linear-gradient(135deg, var(--accent-red), #ff6b35);
+    color: white;
+    font-family: 'Exo 2', sans-serif;
+    font-weight: 900;
+    font-size: 1.4rem;
+    padding: 0.3rem 0.8rem;
+    border-radius: 6px;
+    letter-spacing: 1px;
+    margin-bottom: 0.5rem;
+  }
+
+  .logo-sub {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  .nav-section-title {
+    font-size: 0.65rem;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    padding: 1rem 1.5rem 0.4rem;
+    font-family: 'Exo 2', sans-serif;
+  }
+
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    padding: 0.55rem 1.5rem;
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-size: 0.88rem;
+    transition: all 0.2s;
+    border-left: 3px solid transparent;
+    cursor: pointer;
+  }
+
+  .nav-item:hover, .nav-item.active {
+    color: var(--accent-blue);
+    background: rgba(0,194,255,0.06);
+    border-left-color: var(--accent-blue);
+  }
+
+  .nav-num {
+    font-family: 'Exo 2', sans-serif;
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    width: 22px;
+    text-align: right;
+    flex-shrink: 0;
+  }
+
+  /* ===== MAIN CONTENT ===== */
+  .main {
+    margin-left: 280px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ===== HERO ===== */
+  .hero {
+    position: relative;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 4rem 3rem;
+    overflow: hidden;
+  }
+
+  .hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 80% 60% at 50% 40%, rgba(0,194,255,0.1) 0%, transparent 60%),
+      radial-gradient(ellipse 50% 40% at 20% 80%, rgba(255,45,85,0.08) 0%, transparent 60%);
+  }
+
+  .hero-content { position: relative; z-index: 1; max-width: 800px; }
+
+  .hero-eyebrow {
+    font-family: 'Exo 2', sans-serif;
+    font-size: 0.75rem;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--accent-blue);
+    margin-bottom: 1.5rem;
+    animation: fadeInUp 0.8s ease both;
+  }
+
+  .hero-title {
+    font-family: 'Exo 2', sans-serif;
+    font-size: clamp(2.5rem, 5vw, 4rem);
+    font-weight: 900;
+    line-height: 1.1;
+    margin-bottom: 1rem;
+    animation: fadeInUp 0.8s 0.1s ease both;
+  }
+
+  .hero-title-bn {
+    font-family: 'Hind Siliguri', sans-serif;
+    font-size: clamp(1.8rem, 3.5vw, 2.8rem);
+    font-weight: 700;
+    color: var(--text-secondary);
+    margin-bottom: 2rem;
+    animation: fadeInUp 0.8s 0.2s ease both;
+  }
+
+  .gradient-text {
+    background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple), var(--accent-red));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .hero-desc {
+    font-size: 1.05rem;
+    color: var(--text-secondary);
+    max-width: 600px;
+    margin: 0 auto 2.5rem;
+    animation: fadeInUp 0.8s 0.3s ease both;
+  }
+
+  .hero-badges {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+    animation: fadeInUp 0.8s 0.4s ease both;
+  }
+
+  .badge {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.6rem 1.2rem;
+    border-radius: 50px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    border: 1px solid;
+  }
+
+  .badge-blue { border-color: var(--accent-blue); color: var(--accent-blue); background: rgba(0,194,255,0.08); }
+  .badge-red { border-color: var(--accent-red); color: var(--accent-red); background: rgba(255,45,85,0.08); }
+  .badge-gold { border-color: var(--accent-gold); color: var(--accent-gold); background: rgba(255,214,10,0.08); }
+
+  .hero-scroll {
+    position: absolute;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-muted);
+    font-size: 0.75rem;
+    letter-spacing: 2px;
+    animation: bounce 2s infinite;
+  }
+
+  @keyframes bounce {
+    0%, 100% { transform: translateX(-50%) translateY(0); }
+    50% { transform: translateX(-50%) translateY(-8px); }
+  }
+
+  /* ===== SECTIONS ===== */
+  .section {
+    padding: 4rem 3rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .section-header {
+    margin-bottom: 2.5rem;
+  }
+
+  .section-num {
+    font-family: 'Exo 2', sans-serif;
+    font-size: 0.7rem;
+    letter-spacing: 3px;
+    color: var(--accent-blue);
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+  }
+
+  .section-title {
+    font-family: 'Exo 2', sans-serif;
+    font-size: clamp(1.6rem, 3vw, 2.2rem);
+    font-weight: 800;
+    color: var(--text-primary);
+    line-height: 1.2;
+  }
+
+  .section-title-bn {
+    font-family: 'Hind Siliguri', sans-serif;
+    font-size: clamp(1.3rem, 2.5vw, 1.8rem);
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-top: 0.3rem;
+  }
+
+  .section-divider {
+    width: 60px;
+    height: 3px;
+    background: linear-gradient(90deg, var(--accent-blue), var(--accent-purple));
+    border-radius: 2px;
+    margin-top: 1rem;
+  }
+
+  /* ===== INTRO CARDS ===== */
+  .intro-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2.5rem;
+  }
+
+  .intro-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 1.8rem;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.3s, box-shadow 0.3s;
+  }
+
+  .intro-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--glow-blue);
+  }
+
+  .intro-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--accent-blue), var(--accent-purple));
+  }
+
+  .card-icon {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .card-title {
+    font-family: 'Exo 2', sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--accent-blue);
+    margin-bottom: 0.5rem;
+  }
+
+  .card-desc {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    line-height: 1.7;
+  }
+
+  /* ===== CHAPTER HEADER ===== */
+  .chapter-header {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    background: linear-gradient(135deg, var(--bg-card2), var(--bg-card));
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 2rem 2.5rem;
+    margin-bottom: 2rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .chapter-header::after {
+    content: '';
+    position: absolute;
+    right: -30px; top: -30px;
+    width: 150px; height: 150px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(0,194,255,0.08) 0%, transparent 70%);
+  }
+
+  .chapter-num-big {
+    font-family: 'Exo 2', sans-serif;
+    font-size: 4rem;
+    font-weight: 900;
+    color: rgba(0,194,255,0.15);
+    line-height: 1;
+    flex-shrink: 0;
+  }
+
+  .chapter-info .ch-label {
+    font-size: 0.7rem;
+    letter-spacing: 3px;
+    color: var(--accent-blue);
+    text-transform: uppercase;
+  }
+
+  .chapter-info .ch-title {
+    font-family: 'Exo 2', sans-serif;
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    margin: 0.3rem 0;
+  }
+
+  .chapter-info .ch-title-bn {
+    font-family: 'Hind Siliguri', sans-serif;
+    font-size: 1.1rem;
+    color: var(--text-secondary);
+  }
+
+  /* ===== CONTENT BLOCKS ===== */
+  .content-block {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.8rem 2rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .block-title {
+    font-family: 'Exo 2', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--accent-blue);
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+  }
+
+  .block-title::before {
+    content: '';
+    display: inline-block;
+    width: 4px; height: 1em;
+    background: var(--accent-blue);
+    border-radius: 2px;
+  }
+
+  .content-text {
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+    line-height: 1.9;
+    margin-bottom: 1rem;
+  }
+
+  /* ===== STEP LIST ===== */
+  .step-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+  }
+
+  .step-list li {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1rem 1.2rem;
+    background: rgba(0,194,255,0.04);
+    border: 1px solid rgba(0,194,255,0.1);
+    border-radius: 10px;
+    font-size: 0.92rem;
+    color: var(--text-secondary);
+    transition: background 0.2s;
+  }
+
+  .step-list li:hover { background: rgba(0,194,255,0.08); }
+
+  .step-num {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px; height: 28px;
+    background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+    color: white;
+    font-family: 'Exo 2', sans-serif;
+    font-size: 0.75rem;
+    font-weight: 700;
+    border-radius: 50%;
+    flex-shrink: 0;
+    margin-top: 0.1rem;
+  }
+
+  /* ===== TIP BOX ===== */
+  .tip-box {
+    display: flex;
+    gap: 1rem;
+    padding: 1.2rem 1.5rem;
+    border-radius: 10px;
+    margin: 1rem 0;
+    font-size: 0.9rem;
+  }
+
+  .tip-box.tip { background: rgba(0,194,255,0.07); border-left: 4px solid var(--accent-blue); }
+  .tip-box.warn { background: rgba(255,214,10,0.07); border-left: 4px solid var(--accent-gold); }
+  .tip-box.note { background: rgba(255,45,85,0.07); border-left: 4px solid var(--accent-red); }
+  .tip-box.pro { background: rgba(48,209,88,0.07); border-left: 4px solid var(--accent-green); }
+
+  .tip-icon { font-size: 1.3rem; flex-shrink: 0; margin-top: 0.1rem; }
+  .tip-content { color: var(--text-secondary); line-height: 1.7; }
+  .tip-label {
+    font-family: 'Exo 2', sans-serif;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 0.3rem;
+  }
+
+  .tip .tip-label { color: var(--accent-blue); }
+  .warn .tip-label { color: var(--accent-gold); }
+  .note .tip-label { color: var(--accent-red); }
+  .pro .tip-label { color: var(--accent-green); }
+
+  /* ===== CODE BLOCK ===== */
+  .shortcut-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 0.8rem;
+    margin: 1rem 0;
+  }
+
+  .shortcut-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.7rem 1rem;
+    background: rgba(0,0,0,0.3);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 8px;
+    font-size: 0.85rem;
+  }
+
+  .shortcut-action { color: var(--text-secondary); }
+  .shortcut-key {
+    display: flex;
+    gap: 0.3rem;
+  }
+  .key {
+    background: var(--bg-card2);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-bottom: 2px solid rgba(255,255,255,0.1);
+    color: var(--accent-blue);
+    font-family: 'Exo 2', sans-serif;
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+  }
+
+  /* ===== PANEL DIAGRAM ===== */
+  .panel-diagram {
+    background: #0a0f1e;
+    border: 1px solid rgba(0,194,255,0.2);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin: 1.2rem 0;
+    font-family: 'Exo 2', sans-serif;
+  }
+
+  .panel-row {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  .panel-box {
+    padding: 0.6rem 1rem;
+    border-radius: 6px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    text-align: center;
+    flex: 1;
+    min-width: 80px;
+  }
+
+  .p-menu { background: #1a2035; color: #8ca0c8; border: 1px solid rgba(255,255,255,0.08); }
+  .p-comp { background: rgba(0,194,255,0.15); color: var(--accent-blue); border: 1px solid rgba(0,194,255,0.3); flex: 3; }
+  .p-tool { background: rgba(255,45,85,0.15); color: var(--accent-red); border: 1px solid rgba(255,45,85,0.3); flex: 0.5; }
+  .p-project { background: rgba(191,90,242,0.12); color: var(--accent-purple); border: 1px solid rgba(191,90,242,0.3); }
+  .p-timeline { background: rgba(48,209,88,0.1); color: var(--accent-green); border: 1px solid rgba(48,209,88,0.2); flex: 4; }
+  .p-effects { background: rgba(255,214,10,0.1); color: var(--accent-gold); border: 1px solid rgba(255,214,10,0.2); }
+  .p-info { background: #1a2035; color: #8ca0c8; border: 1px solid rgba(255,255,255,0.08); }
+
+  /* ===== EFFECT CARD ===== */
+  .effects-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin: 1rem 0;
+  }
+
+  .effect-card {
+    background: var(--bg-card2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1.2rem;
+    text-align: center;
+    transition: all 0.3s;
+    cursor: default;
+  }
+
+  .effect-card:hover {
+    border-color: var(--accent-purple);
+    box-shadow: 0 0 20px rgba(191,90,242,0.2);
+    transform: scale(1.02);
+  }
+
+  .effect-icon { font-size: 2rem; margin-bottom: 0.6rem; }
+  .effect-name {
+    font-family: 'Exo 2', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 0.3rem;
+  }
+  .effect-desc { font-size: 0.78rem; color: var(--text-muted); }
+
+  /* ===== TWO COL ===== */
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin: 1rem 0; }
+
+  /* ===== PROGRESS TRACK ===== */
+  .progress-track {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    margin: 2rem 0;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+  }
+
+  .pt-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 1;
+    min-width: 80px;
+    position: relative;
+  }
+
+  .pt-circle {
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Exo 2', sans-serif;
+    font-weight: 700;
+    font-size: 0.85rem;
+    border: 2px solid;
+    position: relative;
+    z-index: 1;
+    background: var(--bg-dark);
+  }
+
+  .pt-circle.done { border-color: var(--accent-blue); color: var(--accent-blue); }
+  .pt-circle.current { border-color: var(--accent-red); color: var(--accent-red); background: rgba(255,45,85,0.1); }
+  .pt-circle.upcoming { border-color: var(--text-muted); color: var(--text-muted); }
+
+  .pt-label { font-size: 0.65rem; color: var(--text-muted); margin-top: 0.5rem; text-align: center; }
+
+  .pt-line {
+    height: 2px;
+    flex: 1;
+    background: linear-gradient(90deg, var(--accent-blue), var(--text-muted));
+    margin-top: -22px;
+    min-width: 20px;
+  }
+
+  /* ===== QUIZ ===== */
+  .quiz-box {
+    background: var(--bg-card);
+    border: 1px solid rgba(255,214,10,0.2);
+    border-radius: 12px;
+    padding: 2rem;
+    margin: 2rem 0;
+  }
+
+  .quiz-title {
+    font-family: 'Exo 2', sans-serif;
+    font-size: 0.8rem;
+    letter-spacing: 3px;
+    color: var(--accent-gold);
+    text-transform: uppercase;
+    margin-bottom: 1rem;
+  }
+
+  .quiz-q {
+    font-size: 1rem;
+    color: var(--text-primary);
+    margin-bottom: 1rem;
+    font-weight: 600;
+  }
+
+  .quiz-options { display: flex; flex-direction: column; gap: 0.6rem; }
+
+  .quiz-opt {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    padding: 0.8rem 1rem;
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    transition: all 0.2s;
+  }
+
+  .quiz-opt:hover { border-color: var(--accent-gold); color: var(--text-primary); background: rgba(255,214,10,0.05); }
+
+  .quiz-opt input[type=radio] { accent-color: var(--accent-gold); }
+
+  .quiz-check {
+    margin-top: 1rem;
+    padding: 0.7rem 1.5rem;
+    background: linear-gradient(135deg, var(--accent-gold), #ff9f00);
+    color: #000;
+    border: none;
+    border-radius: 8px;
+    font-family: 'Exo 2', sans-serif;
+    font-weight: 700;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: opacity 0.2s;
+  }
+
+  .quiz-check:hover { opacity: 0.9; }
+
+  .quiz-result {
+    margin-top: 0.8rem;
+    padding: 0.8rem 1rem;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    display: none;
+  }
+
+  .quiz-result.correct { background: rgba(48,209,88,0.1); border: 1px solid var(--accent-green); color: var(--accent-green); }
+  .quiz-result.wrong { background: rgba(255,45,85,0.1); border: 1px solid var(--accent-red); color: var(--accent-red); }
+
+  /* ===== TABLE ===== */
+  .data-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1rem 0;
+    font-size: 0.88rem;
+  }
+
+  .data-table th {
+    background: rgba(0,194,255,0.1);
+    color: var(--accent-blue);
+    font-family: 'Exo 2', sans-serif;
+    font-weight: 700;
+    padding: 0.8rem 1rem;
+    text-align: left;
+    border-bottom: 2px solid rgba(0,194,255,0.3);
+    font-size: 0.8rem;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  .data-table td {
+    padding: 0.8rem 1rem;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    color: var(--text-secondary);
+  }
+
+  .data-table tr:hover td { background: rgba(0,194,255,0.04); }
+
+  /* ===== FOOTER ===== */
+  .footer {
+    background: var(--bg-card);
+    border-top: 1px solid var(--border);
+    padding: 3rem;
+    text-align: center;
+  }
+
+  .footer-logo { font-family: 'Exo 2', sans-serif; font-size: 1.8rem; font-weight: 900; margin-bottom: 0.5rem; }
+  .footer-text { color: var(--text-muted); font-size: 0.88rem; }
+
+  /* ===== ANIMATIONS ===== */
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .fade-in {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+  }
+
+  .fade-in.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* ===== MOBILE ===== */
+  @media (max-width: 900px) {
+    .sidebar { display: none; }
+    .main { margin-left: 0; }
+    .section { padding: 2.5rem 1.5rem; }
+    .hero { padding: 3rem 1.5rem; min-height: 80vh; }
+    .two-col { grid-template-columns: 1fr; }
+    .shortcut-grid { grid-template-columns: 1fr; }
+  }
+
+  .tag {
+    display: inline-block;
+    padding: 0.2rem 0.6rem;
+    border-radius: 4px;
+    font-size: 0.72rem;
+    font-family: 'Exo 2', sans-serif;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    vertical-align: middle;
+    margin-left: 0.4rem;
+  }
+
+  .tag-new { background: rgba(48,209,88,0.15); color: var(--accent-green); border: 1px solid rgba(48,209,88,0.3); }
+  .tag-imp { background: rgba(255,45,85,0.15); color: var(--accent-red); border: 1px solid rgba(255,45,85,0.3); }
+</style>
+</head>
+<body>
+
+<div class="bg-grid"></div>
+<div class="bg-glow-1"></div>
+<div class="bg-glow-2"></div>
+
+<!-- ===== SIDEBAR ===== -->
+<nav class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-badge">MH</div>
+    <div style="font-family:'Exo 2',sans-serif; font-size:1rem; font-weight:700; color:var(--text-primary); margin-top:0.3rem;">MH Academy</div>
+    <div class="logo-sub">Motion Graphics Guide</div>
+  </div>
+
+  <div class="nav-section-title">শুরু করুন</div>
+  <a class="nav-item" href="#intro"><span class="nav-num">00</span> ভূমিকা</a>
+  <a class="nav-item" href="#install"><span class="nav-num">01</span> ইন্সটল ও সেটআপ</a>
+
+  <div class="nav-section-title">মূল বিষয়বস্তু</div>
+  <a class="nav-item" href="#interface"><span class="nav-num">02</span> ইন্টারফেস পরিচিতি</a>
+  <a class="nav-item" href="#composition"><span class="nav-num">03</span> Composition তৈরি</a>
+  <a class="nav-item" href="#layers"><span class="nav-num">04</span> Layers ও Timeline</a>
+  <a class="nav-item" href="#keyframes"><span class="nav-num">05</span> Keyframe অ্যানিমেশন</a>
+
+  <div class="nav-section-title">ইফেক্টস</div>
+  <a class="nav-item" href="#effects"><span class="nav-num">06</span> Effects & Presets</a>
+  <a class="nav-item" href="#text"><span class="nav-num">07</span> Text অ্যানিমেশন</a>
+  <a class="nav-item" href="#motion"><span class="nav-num">08</span> Motion Graphics</a>
+
+  <div class="nav-section-title">অ্যাডভান্সড</div>
+  <a class="nav-item" href="#expressions"><span class="nav-num">09</span> Expressions</a>
+  <a class="nav-item" href="#render"><span class="nav-num">10</span> Render ও Export</a>
+  <a class="nav-item" href="#shortcuts"><span class="nav-num">11</span> Shortcuts</a>
+  <a class="nav-item" href="#projects"><span class="nav-num">12</span> প্র্যাকটিস প্রজেক্ট</a>
+</nav>
+
+<!-- ===== MAIN ===== -->
+<main class="main">
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-content">
+      <div class="hero-eyebrow">MH Academy Presents</div>
+      <h1 class="hero-title">
+        <span class="gradient-text">Adobe After Effects</span>
+      </h1>
+      <div class="hero-title-bn">মোশন গ্রাফিক্সের দুনিয়ায় হাতেখড়ি</div>
+      <p class="hero-desc">
+        বিগেনারদের জন্য সম্পূর্ণ বাংলা গাইড — ইন্সটল থেকে রেন্ডার পর্যন্ত প্রতিটি ধাপ হাতে-কলমে শিখুন
+      </p>
+      <div class="hero-badges">
+        <div class="badge badge-blue">📚 বিগেনার ফ্রেন্ডলি</div>
+        <div class="badge badge-red">🎬 হাতে-কলমে</div>
+        <div class="badge badge-gold">⭐ সম্পূর্ণ বাংলা</div>
+      </div>
+      <div style="margin-top:2rem; color:var(--text-muted); font-size:0.85rem;">
+        পরিচালনায়: <strong style="color:var(--accent-blue)">Md. Monjurul Haque</strong>
+      </div>
+    </div>
+    <div class="hero-scroll">▼ নিচে স্ক্রোল করুন</div>
+  </section>
+
+  <!-- INTRO -->
+  <section class="section fade-in" id="intro">
+    <div class="section-header">
+      <div class="section-num">Chapter 00</div>
+      <h2 class="section-title">After Effects কী এবং কেন শিখবেন?</h2>
+      <div class="section-title-bn">ভূমিকা ও পরিচিতি</div>
+      <div class="section-divider"></div>
+    </div>
+
+    <div class="intro-grid">
+      <div class="intro-card">
+        <div class="card-icon">🎬</div>
+        <div class="card-title">Visual Effects</div>
+        <div class="card-desc">সিনেমা, ভিডিও এবং টেলিভিশনের জন্য অবিশ্বাস্য ভিজ্যুয়াল ইফেক্ট তৈরি করুন।</div>
+      </div>
+      <div class="intro-card">
+        <div class="card-icon">✍️</div>
+        <div class="card-title">Motion Graphics</div>
+        <div class="card-desc">লোগো অ্যানিমেশন, টাইটেল কার্ড, ইনফোগ্রাফিক এবং UI অ্যানিমেশন ডিজাইন করুন।</div>
+      </div>
+      <div class="intro-card">
+        <div class="card-icon">🌐</div>
+        <div class="card-title">সীমাহীন সুযোগ</div>
+        <div class="card-desc">YouTube, Social Media, Advertising এবং Film Industry-তে ক্যারিয়ার গড়ুন।</div>
+      </div>
+      <div class="intro-card">
+        <div class="card-icon">💰</div>
+        <div class="card-title">ফ্রিল্যান্সিং</div>
+        <div class="card-desc">Fiverr, Upwork-এ মোশন গ্রাফিক্স ডিজাইনার হিসেবে আন্তর্জাতিক আয় করুন।</div>
+      </div>
+    </div>
+
+    <div class="content-block">
+      <div class="block-title">After Effects কোথায় ব্যবহার হয়?</div>
+      <table class="data-table">
+        <thead>
+          <tr><th>ক্ষেত্র</th><th>ব্যবহার</th><th>উদাহরণ</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>🎥 চলচ্চিত্র</td><td>VFX, Title Sequence</td><td>Hollywood movies, Natok</td></tr>
+          <tr><td>📺 টেলিভিশন</td><td>News Graphics, Bumper</td><td>Channel logos, transitions</td></tr>
+          <tr><td>📱 সোশ্যাল মিডিয়া</td><td>Reels, Short videos</td><td>YouTube intros, ads</td></tr>
+          <tr><td>🖥️ UI/UX</td><td>App animations, Prototypes</td><td>App store previews</td></tr>
+          <tr><td>📢 বিজ্ঞাপন</td><td>Commercial, Explainer</td><td>Product ads, infographics</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="tip-box tip">
+      <div class="tip-icon">💡</div>
+      <div class="tip-content">
+        <div class="tip-label">টিপস</div>
+        After Effects শেখার পাশাপাশি <strong>Adobe Premiere Pro</strong> এবং <strong>Photoshop</strong> সম্পর্কে ধারণা রাখলে আপনার কাজ অনেক সহজ হবে।
+      </div>
+    </div>
+  </section>
+
+  <!-- INSTALL -->
+  <section class="section fade-in" id="install">
+    <div class="section-header">
+      <div class="section-num">Chapter 01</div>
+      <h2 class="section-title">Installation & System Setup</h2>
+      <div class="section-title-bn">ইন্সটলেশন ও সিস্টেম সেটআপ</div>
+      <div class="section-divider"></div>
+    </div>
+
+    <div class="two-col">
+      <div class="content-block">
+        <div class="block-title">🖥️ Windows Requirements</div>
+        <ul class="step-list">
+          <li><span class="step-num">✓</span><div><strong>OS:</strong> Windows 10 (64-bit) বা তার উপরে</div></li>
+          <li><span class="step-num">✓</span><div><strong>RAM:</strong> ন্যূনতম 16GB (32GB রেকমেন্ডেড)</div></li>
+          <li><span class="step-num">✓</span><div><strong>GPU:</strong> 4GB VRAM সহ GPU</div></li>
+          <li><span class="step-num">✓</span><div><strong>Storage:</strong> 15GB ফ্রি স্পেস (SSD হলে ভালো)</div></li>
+          <li><span class="step-num">✓</span><div><strong>CPU:</strong> Intel Core i7 / AMD Ryzen 7+</div></li>
+        </ul>
+      </div>
+      <div class="content-block">
+        <div class="block-title">🍎 Mac Requirements</div>
+        <ul class="step-list">
+          <li><span class="step-num">✓</span><div><strong>OS:</strong> macOS 12.0 Monterey বা উপরে</div></li>
+          <li><span class="step-num">✓</span><div><strong>RAM:</strong> 16GB (Apple Silicon-এ 8GB চলে)</div></li>
+          <li><span class="step-num">✓</span><div><strong>CPU:</strong> Apple M1/M2/M3 বা Intel Core i7</div></li>
+          <li><span class="step-num">✓</span><div><strong>Storage:</strong> 15GB ফ্রি স্পেস</div></li>
+          <li><span class="step-num">✓</span><div><strong>Display:</strong> 1280×1024 রেজোলিউশন</div></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="content-block">
+      <div class="block-title">📥 ইন্সটলেশনের ধাপগুলো</div>
+      <ul class="step-list">
+        <li><span class="step-num">১</span><div><strong>Adobe Creative Cloud</strong> ডাউনলোড করুন: <em>creativecloud.adobe.com</em> থেকে</div></li>
+        <li><span class="step-num">২</span><div>Adobe ID দিয়ে <strong>লগইন</strong> করুন অথবা নতুন অ্যাকাউন্ট তৈরি করুন</div></li>
+        <li><span class="step-num">৩</span><div>Creative Cloud App খুলে <strong>"After Effects"</strong> খুঁজুন এবং <strong>Install</strong> বাটনে ক্লিক করুন</div></li>
+        <li><span class="step-num">৪</span><div>ইন্সটলেশন সম্পন্ন হলে <strong>Launch</strong> বাটনে ক্লিক করে চালু করুন</div></li>
+        <li><span class="step-num">৫</span><div>প্রথমবার চালু হলে <strong>Preferences</strong> সেটআপ করুন (Edit → Preferences → General)</div></li>
+      </ul>
+    </div>
+
+    <div class="tip-box warn">
+      <div class="tip-icon">⚠️</div>
+      <div class="tip-content">
+        <div class="tip-label">সতর্কতা</div>
+        After Effects চালানোর সময় অন্য ভারী সফটওয়্যার বন্ধ রাখুন। RAM কম থাকলে প্রোগ্রাম ক্র্যাশ করতে পারে।
+      </div>
+    </div>
+
+    <div class="content-block">
+      <div class="block-title">⚙️ প্রথমেই করবেন এই সেটিংস</div>
+      <ul class="step-list">
+        <li><span class="step-num">১</span><div><strong>Disk Cache:</strong> Edit → Preferences → Media & Disk Cache — ক্যাশ ফোল্ডার অন্য ড্রাইভে সেট করুন</div></li>
+        <li><span class="step-num">২</span><div><strong>RAM Allocation:</strong> Edit → Preferences → Memory — After Effects-কে বেশি RAM দিন</div></li>
+        <li><span class="step-num">৩</span><div><strong>Auto-Save:</strong> Edit → Preferences → Auto-Save → Enable করুন (প্রতি ৫ মিনিটে)</div></li>
+        <li><span class="step-num">৪</span><div><strong>GPU Acceleration:</strong> File → Project Settings → Video Rendering → Mercury GPU Acceleration</div></li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- INTERFACE -->
+  <section class="section fade-in" id="interface">
+    <div class="section-header">
+      <div class="section-num">Chapter 02</div>
+      <h2 class="section-title">Interface Overview</h2>
+      <div class="section-title-bn">ইন্টারফেস পরিচিতি ও প্যানেলসমূহ</div>
+      <div class="section-divider"></div>
+    </div>
+
+    <div class="content-block">
+      <div class="block-title">🖥️ After Effects ইন্টারফেস লেআউট</div>
+      <p class="content-text">After Effects চালু করলে মূলত ৫টি প্রধান অংশ দেখা যায়। এগুলো ভালোভাবে চেনা সবচেয়ে জরুরি:</p>
+      <div class="panel-diagram">
+        <div class="panel-row">
+          <div class="panel-box p-menu">File Edit Composition Layer Effect View Window Help</div>
+        </div>
+        <div class="panel-row" style="height:40px; align-items:center;">
+          <div class="panel-box p-tool" style="height:100%;">🔧<br><small>Tools</small></div>
+          <div class="panel-box p-comp" style="height:100%;">🎬 Composition (Preview) Panel</div>
+          <div class="panel-box p-info" style="height:100%;">ℹ️ Info</div>
+        </div>
+        <div class="panel-row">
+          <div class="panel-box p-project">📁 Project Panel</div>
+          <div class="panel-box p-effects">🎨 Effects & Presets</div>
+        </div>
+        <div class="panel-row">
+          <div class="panel-box p-timeline">⏱️ Timeline Panel (Layer Stack + Time Controls)</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="intro-grid">
+      <div class="intro-card">
+        <div class="card-icon">📁</div>
+        <div class="card-title">Project Panel</div>
+        <div class="card-desc">সমস্ত ইম্পোর্ট করা ফাইল (ভিডিও, অডিও, ছবি, কম্পোজিশন) এখানে সংগঠিত থাকে।</div>
+      </div>
+      <div class="intro-card">
+        <div class="card-icon">🎬</div>
+        <div class="card-title">Composition Panel</div>
+        <div class="card-desc">আপনার কাজের লাইভ প্রিভিউ দেখা যায়। এখানে সরাসরি এলিমেন্ট সরানো বা স্কেল করা যায়।</div>
+      </div>
+      <div class="intro-card">
+        <div class="card-icon">⏱️</div>
+        <div class="card-title">Timeline Panel</div>
+        <div class="card-desc">লেয়ার স্ট্যাক ও টাইম কন্ট্রোল। এখানে Keyframe যোগ করে অ্যানিমেশন তৈরি হয়।</div>
+      </div>
+      <div class="intro-card">
+        <div class="card-icon">🔧</div>
+        <div class="card-title">Tools Panel</div>
+        <div class="card-desc">Selection, Pen, Shape, Text, Camera সহ সব টুল এখানে থাকে।</div>
+      </div>
+      <div class="intro-card">
+        <div class="card-icon">✨</div>
+        <div class="card-title">Effects & Presets</div>
+        <div class="card-desc">শত শত বিল্ট-ইন ইফেক্ট এবং অ্যানিমেশন প্রিসেট এখান থেকে ড্র্যাগ করে লেয়ারে দিন।</div>
+      </div>
+      <div class="intro-card">
+        <div class="card-icon">🎛️</div>
+        <div class="card-title">Effect Controls</div>
+        <div class="card-desc">লেয়ারে যোগ করা ইফেক্টের প্যারামিটার সামঞ্জস্য করার প্যানেল।</div>
+      </div>
+    </div>
+
+    <div class="tip-box pro">
+      <div class="tip-icon">🏆</div>
+      <div class="tip-content">
+        <div class="tip-label">Pro Tip</div>
+        Workspace লেআউট কাস্টমাইজ করতে <strong>Window → Workspaces</strong> মেনু ব্যবহার করুন। "Default" বা "Motion Graphics" ওয়ার্কস্পেস বিগেনারদের জন্য সবচেয়ে উপযুক্ত।
+      </div>
+    </div>
+  </section>
+
+  <!-- COMPOSITION -->
+  <section class="section fade-in" id="composition">
+    <div class="section-header">
+      <div class="section-num">Chapter 03</div>
+      <h2 class="section-title">Creating Compositions</h2>
+      <div class="section-title-bn">কম্পোজিশন তৈরি করা</div>
+      <div class="section-divider"></div>
+    </div>
+
+    <div class="content-block">
+      <div class="block-title">📐 Composition কী?</div>
+      <p class="content-text">Composition হলো After Effects-এর কাজের ক্ষেত্র (Canvas)। প্রতিটি প্রজেক্টে এক বা একাধিক কম্পোজিশন থাকতে পারে। প্রতিটি কম্পোজিশনে Resolution, Frame Rate, Duration এবং Background সেট করা যায়।</p>
+    </div>
+
+    <div class="content-block">
+      <div class="block-title">🆕 নতুন Composition তৈরির ধাপ</div>
+      <ul class="step-list">
+        <li><span class="step-num">১</span><div><strong>Composition Menu</strong> → <strong>New Composition</strong> — অথবা <span class="key">Ctrl</span>+<span class="key">N</span></div></li>
+        <li><span class="step-num">২</span><div><strong>Preset</strong> থেকে রেডি-মেড সাইজ বেছে নিন: HD 1920×1080, 4K 3840×2160, বা Custom</div></li>
+        <li><span class="step-num">৩</span><div><strong>Frame Rate</strong> সেট করুন: YouTube/Social = 30fps, Cinema = 24fps, Gaming = 60fps</div></li>
+        <li><span class="step-num">৪</span><div><strong>Duration</strong> দিন: কতক্ষণের ভিডিও তৈরি করবেন (যেমন: 0:00:10:00 = ১০ সেকেন্ড)</div></li>
+        <li><span class="step-num">৫</span><div><strong>Background Color</strong> বেছে নিন এবং কম্পোজিশনের নাম দিন, তারপর OK চাপুন</div></li>
+      </ul>
+    </div>
+
+    <div class="content-block">
+      <div class="block-title">📊 কমন Composition Settings</div>
+      <table class="data-table">
+        <thead>
+          <tr><th>ব্যবহার</th><th>Resolution</th><th>Frame Rate</th><th>Aspect Ratio</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>YouTube / Facebook</td><td>1920×1080</td><td>30fps</td><td>16:9</td></tr>
+          <tr><td>Instagram Post</td><td>1080×1080</td><td>30fps</td><td>1:1</td></tr>
+          <tr><td>Instagram Reels/TikTok</td><td>1080×1920</td><td>30fps</td><td>9:16</td></tr>
+          <tr><td>4K Video</td><td>3840×2160</td><td>24/30fps</td><td>16:9</td></tr>
+          <tr><td>Cinema</td><td>2048×1080</td><td>24fps</td><td>17:9</td></tr>
+          <tr><td>Twitter/X</td><td>1280×720</td><td>30fps</td><td>16:9</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="tip-box note">
+      <div class="tip-icon">🔴</div>
+      <div class="tip-content">
+        <div class="tip-label">গুরুত্বপূর্ণ</div>
+        কম্পোজিশন তৈরির পর Resolution বা Frame Rate পরিবর্তন করলে সমস্ত অ্যানিমেশন আউট-অফ-সিঙ্ক হতে পারে। তাই শুরুতেই সঠিক সেটিংস ঠিক করে নিন।
+      </div>
+    </div>
+  </section>
+
+  <!-- LAYERS -->
+  <section class="section fade-in" id="layers">
+    <div class="section-header">
+      <div class="section-num">Chapter 04</div>
+      <h2 class="section-title">Layers & Timeline</h2>
+      <div class="section-title-bn">লেয়ার ও টাইমলাইন ব্যবস্থাপনা</div>
+      <div class="section-divider"></div>
+    </div>
+
+    <div class="content-block">
+      <div class="block-title">📚 Layer-এর ধরন</div>
+      <div class="effects-grid">
+        <div class="effect-card">
+          <div class="effect-icon">🎥</div>
+          <div class="effect-name">Footage Layer</div>
+          <div class="effect-desc">ভিডিও, ছবি বা অডিও ফাইল</div>
+        </div>
+        <div class="effect-card">
+          <div class="effect-icon">✏️</div>
+          <div class="effect-name">Text Layer</div>
+          <div class="effect-desc">টেক্সট অ্যানিমেশন</div>
+        </div>
+        <div class="effect-card">
+          <div class="effect-icon">🔷</div>
+          <div class="effect-name">Shape Layer</div>
+          <div class="effect-desc">ভেক্টর আকার ও গ্রাফিক্স</div>
+        </div>
+        <div class="effect-card">
+          <div class="effect-icon">⬛</div>
+          <div class="effect-name">Solid Layer</div>
+          <div class="effect-desc">রঙিন ব্যাকগ্রাউন্ড বা বেস</div>
+        </div>
+        <div class="effect-card">
+          <div class="effect-icon">🌟</div>
+          <div class="effect-name">Null Object</div>
+          <div class="effect-desc">অদৃশ্য কন্ট্রোলার লেয়ার</div>
+        </div>
+        <div class="effect-card">
+          <div class="effect-icon">🎭</div>
+          <div class="effect-name">Adjustment Layer</div>
+          <div class="effect-desc">নিচের সব লেয়ারে ইফেক্ট দেয়</div>
+        </div>
+        <div class="effect-card">
+          <div class="effect-icon">📷</div>
+          <div class="effect-name">Camera Layer</div>
+          <div class="effect-desc">3D স্পেসে ক্যামেরা মুভমেন্ট</div>
+        </div>
+        <div class="effect-card">
+          <div class="effect-icon">💡</div>
+          <div class="effect-name">Light Layer</div>
+          <div class="effect-desc">3D লাইটিং ইফেক্ট</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="content-block">
+      <div class="block-title">🔑 Layer Properties (Transform)</div>
+      <p class="content-text">প্রতিটি লেয়ারে <strong>Transform</strong> অংশে ৫টি মূল প্রপার্টি থাকে। Timeline-এ লেয়ার সিলেক্ট করে <span class="key">P</span>, <span class="key">S</span>, <span class="key">R</span> ইত্যাদি চাপলে আলাদাভাবে দেখা যায়:</p>
+      <table class="data-table">
+        <thead><tr><th>Property</th><th>Shortcut</th><th>কাজ</th><th>ডিফল্ট মান</th></tr></thead>
+        <tbody>
+          <tr><td>Anchor Point</td><td><span class="key">A</span></td><td>ঘূর্ণনের কেন্দ্রবিন্দু</td><td>960, 540</td></tr>
+          <tr><td>Position</td><td><span class="key">P</span></td><td>X, Y অক্ষে অবস্থান</td><td>960, 540</td></tr>
+          <tr><td>Scale</td><td><span class="key">S</span></td><td>আকার পরিবর্তন</td><td>100, 100%</td></tr>
+          <tr><td>Rotation</td><td><span class="key">R</span></td><td>ঘূর্ণন (ডিগ্রি)</td><td>0°</td></tr>
+          <tr><td>Opacity</td><td><span class="key">T</span></td><td>স্বচ্ছতা</td><td>100%</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="tip-box tip">
+      <div class="tip-icon">💡</div>
+      <div class="tip-content">
+        <div class="tip-label">টিপস</div>
+        একাধিক Property একসাথে দেখতে: <span class="key">P</span> চাপুন, তারপর <span class="key">Shift</span>+<span class="key">S</span>, <span class="key">Shift</span>+<span class="key">R</span> ইত্যাদি চাপলে একসাথে দেখা যাবে।
+      </div>
+    </div>
+  </section>
+
+  <!-- KEYFRAMES -->
+  <section class="section fade-in" id="keyframes">
+    <div class="section-header">
+      <div class="section-num">Chapter 05</div>
+      <h2 class="section-title">Keyframe Animation</h2>
+      <div class="section-title-bn">কীফ্রেম অ্যানিমেশনের মূল কৌশল</div>
+      <div class="section-divider"></div>
+    </div>
+
+    <div class="content-block">
+      <div class="block-title">🔑 Keyframe কী?</div>
+      <p class="content-text">Keyframe হলো টাইমলাইনের একটি নির্দিষ্ট বিন্দু যেখানে একটি লেয়ারের প্রপার্টির মান রেকর্ড করা হয়। দুটি Keyframe-এর মাঝে After Effects স্বয়ংক্রিয়ভাবে মসৃণ ট্রানজিশন তৈরি করে — এটাই অ্যানিমেশন।</p>
+    </div>
+
+    <div class="content-block">
+      <div class="block-title">🎬 প্রথম অ্যানিমেশন তৈরি (ধাপে ধাপে)</div>
+      <ul class="step-list">
+        <li><span class="step-num">১</span><div>Timeline-এ লেয়ার সিলেক্ট করুন এবং <span class="key">P</span> চেপে <strong>Position</strong> দেখান</div></li>
+        <li><span class="step-num">২</span><div>টাইমইন্ডিকেটর <strong>0:00</strong> সেকেন্ডে রাখুন। Position-এর পাশের <strong>স্টপওয়াচ আইকন</strong> ক্লিক করুন — Keyframe রেকর্ডিং চালু হবে</div></li>
+        <li><span class="step-num">৩</span><div>এখন অবজেক্টের শুরুর অবস্থান সেট করুন (যেমন: স্ক্রিনের বাইরে বাম দিকে)</div></li>
+        <li><span class="step-num">৪</span><div>টাইমইন্ডিকেটর <strong>1:00</strong> (১ সেকেন্ড) এ নিয়ে যান</div></li>
+        <li><span class="step-num">৫</span><div>অবজেক্টকে কাঙ্ক্ষিত অবস্থানে নিয়ে যান — স্বয়ংক্রিয়ভাবে নতুন Keyframe তৈরি হবে</div></li>
+        <li><span class="step-num">৬</span><div><span class="key">Space</span> চেপে প্রিভিউ দেখুন — অবজেক্ট বাম থেকে ডানে মুভ করবে!</div></li>
+      </ul>
+    </div>
+
+    <div class="content-block">
+      <div class="block-title">🎭 Keyframe Types (Easy Ease)</div>
+      <table class="data-table">
+        <thead><tr><th>Type</th><th>আইকন</th><th>প্রভাব</th><th>ব্যবহার</th></tr></thead>
+        <tbody>
+          <tr><td>Linear</td><td>◆</td><td>সমান গতি, রোবোটিক</td><td>বেসিক মুভমেন্ট</td></tr>
+          <tr><td>Easy Ease</td><td>⏳</td><td>শুরু-শেষে ধীর, মাঝে দ্রুত</td><td>স্বাভাবিক অ্যানিমেশন</td></tr>
+          <tr><td>Easy Ease In</td><td>◁⏳</td><td>শেষে ধীর হয়</td><td>থামার আগে</td></tr>
+          <tr><td>Easy Ease Out</td><td>⏳▷</td><td>শুরুতে ধীর থেকে দ্রুত</td><td>শুরু হওয়ার সময়</td></tr>
+          <tr><td>Hold</td><td>■</td><td>হঠাৎ পরিবর্তন</td><td>Jump cuts</td></tr>
+        </tbody>
+      </table>
+      <div class="tip-box pro" style="margin-top:1rem;">
+        <div class="tip-icon">🏆</div>
+        <div class="tip-content">
+          <div class="tip-label">Pro Tip</div>
+          Keyframe সিলেক্ট করে <span class="key">F9</span> চাপলে Easy Ease লাগবে। Graph Editor (<span class="key">Shift</span>+<span class="key">F3</span>) দিয়ে আরও সূক্ষ্মভাবে নিয়ন্ত্রণ করুন।
+        </div>
+      </div>
+    </div>
+
+    <div class="quiz-box">
+      <div class="quiz-title">⚡ দ্রুত পরীক্ষা</div>
+      <div class="quiz-q">প্রশ্ন: After Effects-এ অ্যানিমেশন তৈরি করতে টাইমলাইনে কমপক্ষে কতটি Keyframe প্রয়োজন?</div>
+      <div class="quiz-options">
+        <label class="quiz-opt"><input type="radio" name="q1" value="1"> একটি (১)</label>
+        <label class="quiz-opt"><input type="radio" name="q1" value="2"> দুটি (২)</label>
+        <label class="quiz-opt"><input type="radio" name="q1" value="3"> তিনটি (৩)</label>
+        <label class="quiz-opt"><input type="radio" name="q1" value="4"> চারটি (৪)</label>
+      </div>
+      <button class="quiz-check" onclick="checkQ1()">উত্তর দেখুন</button>
+      <div class="quiz-result" id="r1"></div>
+    </div>
+  </section>
+
+  <!-- EFFECTS -->
+  <section class="section fade-in" id="effects">
+    <div class="section-header">
+      <div class="section-num">Chapter 06</div>
+      <h2 class="section-title">Effects & Presets</h2>
+      <div class="section-title-bn">ইফেক্ট ও প্রিসেটের ব্যবহার</div>
+      <div class="section-divider"></div>
+    </div>
+
+    <div class="content-block">
+      <div class="block-title">✨ ইফেক্ট যোগ করার উপায়</div>
+      <ul class="step-list">
+        <li><span class="step-num">১</span><div>Timeline-এ লেয়ার সিলেক্ট করুন</div></li>
+        <li><span class="step-num">২</span><div><strong>Effects & Presets Panel</strong>-এ সার্চ করুন (যেমন: "blur", "glow", "color")</div></li>
+        <li><span class="step-num">৩</span><div>ইফেক্টটি লেয়ারের উপর <strong>ড্র্যাগ করুন</strong> অথবা ডাবল-ক্লিক করুন</div></li>
+        <li><span class="step-num">৪</span><div><strong>Effect Controls Panel</strong>-এ ইফেক্টের সেটিংস সামঞ্জস্য করুন</div></li>
+      </ul>
+    </div>
+
+    <div class="content-block">
+      <div class="block-title">🌟 সবচেয়ে কাজের ইফেক্টগুলো</div>
+      <div class="effects-grid">
+        <div class="effect-card">
+          <div class="effect-icon">🌊</div>
+          <div class="effect-name">Gaussian Blur</div>
+          <div class="effect-desc">মসৃণ ব্লার ইফেক্ট। Blurriness বাড়িয়ে কমিয়ে ডেপথ তৈরি করুন।</div>
+        </div>
+        <div class="effect-card">
+          <div class="effect-icon">✨</div>
+          <div class="effect-name">Glow</div>
+          <div class="effect-desc">আলোকিত গ্লো ইফেক্ট। নিয়ন লাইট ও সাই-ফাই লুকের জন্য।</div>
+        </div>
+        <div class="effect-card">
+          <div class="effect-icon">🎨</div>
+          <div class="effect-name">Hue/Saturation</div>
+          <div class="effect-desc">রঙ পরিবর্তন। Colorize অপশনে সম্পূর্ণ রঙ বদলে ফেলুন।</div>
+        </div>
+        <div class="effect-card">
+          <div class="effect-icon">🌈</div>
+          <div class="effect-name">Curves</div>
+          <div class="effect-desc">প্রফেশনাল কালার গ্রেডিং। RGB চ্যানেল আলাদা নিয়ন্ত্রণ।</div>
+        </div>
+        <div class="effect-card">
+          <div class="effect-icon">⚡</div>
+          <div class="effect-name">CC Particle World</div>
+          <div class="effect-desc">পার্টিকেল সিস্টেম। আগুন, ধোঁয়া, তারার ইফেক্ট তৈরি করুন।</div>
+        </div>
+        <div class="effect-card">
+          <div class="effect-icon">💥</div>
+          <div class="effect-name">Stroke</div>
+          <div class="effect-desc">পাথ ড্র করে লাইন অ্যানিমেট করুন। লোগো অ্যানিমেশনে দারুণ।</div>
+        </div>
+        <div class="effect-card">
+          <div class="effect-icon">🔲</div>
+          <div class="effect-name">Drop Shadow</div>
+          <div class="effect-desc">ছায়া যোগ করুন। Depth ও Dimension তৈরি করে।</div>
+        </div>
+        <div class="effect-card">
+          <div class="effect-icon">🌀</div>
+          <div class="effect-name">Turbulent Displace</div>
+          <div class="effect-desc">ঢেউ বা বিকৃতি ইফেক্ট। জলের প্রতিফলন তৈরিতে ব্যবহার হয়।</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TEXT ANIMATION -->
+  <section class="section fade-in" id="text">
+    <div class="section-header">
+      <div class="section-num">Chapter 07</div>
+      <h2 class="section-title">Text Animation</h2>
+      <div class="section-title-bn">টেক্সট অ্যানিমেশন তৈরি করা</div>
+      <div class="section-divider"></div>
+    </div>
+
+    <div class="content-block">
+      <div class="block-title">✍️ টেক্সট লেয়ার তৈরি করুন</div>
+      <ul class="step-list">
+        <li><span class="step-num">১</span><div>Toolbar থেকে <strong>T (Text Tool)</strong> বেছে নিন অথবা <span class="key">Ctrl</span>+<span class="key">T</span></div></li>
+        <li><span class="step-num">২</span><div>Composition Panel-এ ক্লিক করে টাইপ করুন</div></li>
+        <li><span class="step-num">৩</span><div><strong>Character Panel</strong> থেকে Font, Size, Color সেট করুন</div></li>
+        <li><span class="step-num">৪</span><div><strong>Paragraph Panel</strong> থেকে Alignment (Left/Center/Right) সেট করুন</div></li>
+        <li><span class="step-num">৫</span><div>Selection Tool (<span class="key">V</span>) দিয়ে টেক্সট সরান বা রিসাইজ করুন</div></li>
+      </ul>
+    </div>
+
+    <div class="content-block">
+      <div class="block-title">🎭 Animator দিয়ে টেক্সট অ্যানিমেশন</div>
+      <p class="content-text">Text Layer → <strong>Animate</strong> বাটন ক্লিক করলে বিভিন্ন অ্যানিমেশন প্রপার্টি পাওয়া যায়। Animator ব্যবহার করে প্রতিটি অক্ষর আলাদাভাবে অ্যানিমেট করা যায়।</p>
+      <ul class="step-list">
+        <li><span class="step-num">১</span><div>Text Layer সিলেক্ট করুন → <strong>Animate → Opacity</strong> যোগ করুন</div></li>
+        <li><span class="step-num">২</span><div><strong>Range Selector</strong> → Offset অ্যানিমেট করুন: 0% থেকে 100%</div></li>
+        <li><span class="step-num">৩</span><div>Advanced → Shape: <strong>Ramp Up</strong> বেছে নিন</div></li>
+        <li><span class="step-num">৪</span><div>এখন প্রতিটি অক্ষর একে একে ফেড ইন হবে!</div></li>
+      </ul>
+    </div>
+
+    <div class="content-block">
+      <div class="block-title">⚡ Text Preset ব্যবহার করুন (দ্রুত পদ্ধতি)</div>
+      <p class="content-text"><strong>Effects & Presets → Animation Presets → Text</strong> — এখানে শত শত রেডি-মেড টেক্সট অ্যানিমেশন প্রিসেট আছে। টেক্সট লেয়ার সিলেক্ট করে প্রিসেট ডাবল-ক্লিক করুন — তৈরি!</p>
+      <div class="tip-box tip">
+        <div class="tip-icon">💡</div>
+        <div class="tip-content">
+          <div class="tip-label">জনপ্রিয় Text Presets</div>
+          <strong>Blurs:</strong> Blur By Character · <strong>Expressions:</strong> Random Fade Up · <strong>Organic:</strong> Typewriter · <strong>Tracking:</strong> Evaporate
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- MOTION GRAPHICS -->
+  <section class="section fade-in" id="motion">
+    <div class="section-header">
+      <div class="section-num">Chapter 08</div>
+      <h2 class="section-title">Motion Graphics Fundamentals</h2>
+      <div class="section-title-bn">মোশন গ্রাফিক্সের মূলনীতি</div>
+      <div class="section-divider"></div>
+    </div>
+
+    <div class="content-block">
+      <div class="block-title">📐 Shape Layer দিয়ে গ্রাফিক্স তৈরি</div>
+      <ul class="step-list">
+        <li><span class="step-num">১</span><div>Toolbar থেকে <strong>Rectangle/Ellipse/Star Tool</strong> বেছে নিন</div></li>
+        <li><span class="step-num">২</span><div>Composition-এ ড্র্যাগ করে শেপ তৈরি করুন</div></li>
+        <li><span class="step-num">৩</span><div>Timeline-এ Shape Layer → Contents → Add → <strong>Fill/Stroke/Gradient</strong> যোগ করুন</div></li>
+        <li><span class="step-num">৪</span><div>Trim Paths যোগ করুন → Start/End অ্যানিমেট করুন — লাইন ড্র অ্যানিমেশন তৈরি হবে!</div></li>
+      </ul>
+    </div>
+
+    <div class="two-col">
+      <div class="content-block">
+        <div class="block-title">🎯 ১২টি অ্যানিমেশন নীতি</div>
+        <ul class="step-list">
+          <li><span class="step-num">১</span><div><strong>Squash & Stretch</strong> — বস্তুর নমনীয়তা</div></li>
+          <li><span class="step-num">২</span><div><strong>Anticipation</strong> — আগাম প্রস্তুতি</div></li>
+          <li><span class="step-num">৩</span><div><strong>Follow Through</strong> — জড়তার প্রভাব</div></li>
+          <li><span class="step-num">৪</span><div><strong>Ease In/Out</strong> — গতির পরিবর্তন</div></li>
+          <li><span class="step-num">৫</span><div><strong>Arc</strong> — বাঁকা পথে চলা</div></li>
+          <li><span class="step-num">৬</span><div><strong>Timing</strong> — ছন্দ ও সময়</div></li>
+        </ul>
+      </div>
+      <div class="content-block">
+        <div class="block-title">🎨 লোগো অ্যানিমেশন গাইড</div>
+        <ul class="step-list">
+          <li><span class="step-num">১</span><div>SVG/PNG লোগো ইম্পোর্ট করুন</div></li>
+          <li><span class="step-num">২</span><div>লোগো Illustrator-এ লেয়ার ভেঙে ইম্পোর্ট করুন</div></li>
+          <li><span class="step-num">৩</span><div>প্রতিটি অংশে আলাদা অ্যানিমেশন দিন</div></li>
+          <li><span class="step-num">৪</span><div>Scale + Opacity দিয়ে Pop-in ইফেক্ট</div></li>
+          <li><span class="step-num">৫</span><div>Trim Paths দিয়ে Draw-on ইফেক্ট</div></li>
+          <li><span class="step-num">৬</span><div>Sound FX যোগ করুন শেষে</div></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- EXPRESSIONS -->
+  <section class="section fade-in" id="expressions">
+    <div class="section-header">
+      <div class="section-num">Chapter 09</div>
+      <h2 class="section-title">Expressions</h2>
+      <div class="section-title-bn">এক্সপ্রেশন — অ্যানিমেশনের সুপারপাওয়ার</div>
+      <div class="section-divider"></div>
+    </div>
+
+    <div class="content-block">
+      <div class="block-title">💻 Expression কী?</div>
+      <p class="content-text">Expression হলো JavaScript-ভিত্তিক কোড যা After Effects-এ প্রপার্টির মান স্বয়ংক্রিয়ভাবে নিয়ন্ত্রণ করে। Keyframe ছাড়াই জটিল অ্যানিমেশন তৈরি করা সম্ভব।</p>
+      <p class="content-text"><strong>Expression যোগ করুন:</strong> <span class="key">Alt</span> + প্রপার্টির স্টপওয়াচ আইকনে ক্লিক করুন।</p>
+    </div>
+
+    <div class="content-block">
+      <div class="block-title">🔥 সবচেয়ে দরকারি Expressions</div>
+      <ul class="step-list">
+        <li>
+          <span class="step-num">১</span>
+          <div>
+            <strong>wiggle()</strong> — এলোমেলো কাঁপুনি ইফেক্ট<br>
+            <code style="font-family:monospace; font-size:0.82rem; background:rgba(0,194,255,0.1); padding:0.2rem 0.6rem; border-radius:4px; color:var(--accent-blue);">wiggle(5, 30)</code>
+            <span style="font-size:0.82rem; color:var(--text-muted); margin-left:0.5rem;">— প্রতি সেকেন্ডে ৫ বার, ৩০ পিক্সেল পর্যন্ত</span>
+          </div>
+        </li>
+        <li>
+          <span class="step-num">২</span>
+          <div>
+            <strong>time</strong> — সময়ের সাথে ঘূর্ণন<br>
+            <code style="font-family:monospace; font-size:0.82rem; background:rgba(0,194,255,0.1); padding:0.2rem 0.6rem; border-radius:4px; color:var(--accent-blue);">time * 90</code>
+            <span style="font-size:0.82rem; color:var(--text-muted); margin-left:0.5rem;">— প্রতি সেকেন্ডে ৯০° ঘোরে</span>
+          </div>
+        </li>
+        <li>
+          <span class="step-num">৩</span>
+          <div>
+            <strong>loopOut()</strong> — অ্যানিমেশন লুপ করুন<br>
+            <code style="font-family:monospace; font-size:0.82rem; background:rgba(0,194,255,0.1); padding:0.2rem 0.6rem; border-radius:4px; color:var(--accent-blue);">loopOut("cycle")</code>
+            <span style="font-size:0.82rem; color:var(--text-muted); margin-left:0.5rem;">— অনন্তকাল লুপ হতে থাকবে</span>
+          </div>
+        </li>
+        <li>
+          <span class="step-num">৪</span>
+          <div>
+            <strong>random()</strong> — র‍্যান্ডম মান<br>
+            <code style="font-family:monospace; font-size:0.82rem; background:rgba(0,194,255,0.1); padding:0.2rem 0.6rem; border-radius:4px; color:var(--accent-blue);">random(0, 100)</code>
+            <span style="font-size:0.82rem; color:var(--text-muted); margin-left:0.5rem;">— ০ থেকে ১০০-এর মধ্যে র‍্যান্ডম</span>
+          </div>
+        </li>
+        <li>
+          <span class="step-num">৫</span>
+          <div>
+            <strong>thisComp.layer().transform.position</strong> — এক লেয়ার আরেক লেয়ারকে অনুসরণ করবে (Pick Whip)
+          </div>
+        </li>
+      </ul>
+    </div>
+
+    <div class="tip-box warn">
+      <div class="tip-icon">⚠️</div>
+      <div class="tip-content">
+        <div class="tip-label">মনে রাখুন</div>
+        Expression সঠিকভাবে না লিখলে হলুদ রঙের Error দেখাবে। Expression ডিসেবল করতে <span class="key">=</span> আইকনে ক্লিক করুন।
+      </div>
+    </div>
+  </section>
+
+  <!-- RENDER -->
+  <section class="section fade-in" id="render">
+    <div class="section-header">
+      <div class="section-num">Chapter 10</div>
+      <h2 class="section-title">Render & Export</h2>
+      <div class="section-title-bn">রেন্ডার ও এক্সপোর্ট করা</div>
+      <div class="section-divider"></div>
+    </div>
+
+    <div class="two-col">
+      <div class="content-block">
+        <div class="block-title">🎬 Render Queue পদ্ধতি</div>
+        <ul class="step-list">
+          <li><span class="step-num">১</span><div><span class="key">Ctrl</span>+<span class="key">M</span> চাপুন বা Composition → Add to Render Queue</div></li>
+          <li><span class="step-num">২</span><div><strong>Output Module</strong> ক্লিক করে Format বেছে নিন</div></li>
+          <li><span class="step-num">৩</span><div><strong>Output To</strong> ক্লিক করে সেভ লোকেশন দিন</div></li>
+          <li><span class="step-num">৪</span><div><strong>Render</strong> বাটন চাপুন</div></li>
+        </ul>
+      </div>
+      <div class="content-block">
+        <div class="block-title">📤 Media Encoder পদ্ধতি (রেকমেন্ডেড)</div>
+        <ul class="step-list">
+          <li><span class="step-num">১</span><div><span class="key">Ctrl</span>+<span class="key">Alt</span>+<span class="key">M</span> — Media Encoder-এ পাঠান</div></li>
+          <li><span class="step-num">২</span><div>Preset বেছে নিন (যেমন: H.264, YouTube 1080p)</div></li>
+          <li><span class="step-num">৩</span><div>Output পাথ দিন</div></li>
+          <li><span class="step-num">৪</span><div>Play বাটনে ক্লিক করুন — ব্যাকগ্রাউন্ডে রেন্ডার হবে</div></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="content-block">
+      <div class="block-title">📋 Export Format গাইড</div>
+      <table class="data-table">
+        <thead><tr><th>Format</th><th>ব্যবহার</th><th>সুবিধা</th><th>সাইজ</th></tr></thead>
+        <tbody>
+          <tr><td>H.264 (.mp4)</td><td>YouTube, Social Media</td><td>ছোট সাইজ, ভালো মান</td><td>ছোট ✅</td></tr>
+          <tr><td>ProRes 422</td><td>Video Editing-এ ব্যবহার</td><td>উচ্চমান, Lossless-কাছাকাছি</td><td>বড় ⚠️</td></tr>
+          <tr><td>GIF</td><td>ওয়েব অ্যানিমেশন</td><td>লুপিং, ট্রান্সপারেন্ট</td><td>মাঝারি</td></tr>
+          <tr><td>PNG Sequence</td><td>ট্রান্সপারেন্ট ভিডিও</td><td>Alpha Channel সহ</td><td>বড় ⚠️</td></tr>
+          <tr><td>WebM (VP9)</td><td>ওয়েবসাইট ব্যবহার</td><td>Alpha সহ, ওয়েব অপ্টিমাইজড</td><td>মাঝারি</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="tip-box pro">
+      <div class="tip-icon">🏆</div>
+      <div class="tip-content">
+        <div class="tip-label">Pro Tip</div>
+        YouTube-এর জন্য <strong>H.264, Bitrate 20-40 Mbps</strong> ব্যবহার করুন। Transparent background দরকার হলে <strong>PNG Sequence বা ProRes 4444</strong> এক্সপোর্ট করুন।
+      </div>
+    </div>
+  </section>
+
+  <!-- SHORTCUTS -->
+  <section class="section fade-in" id="shortcuts">
+    <div class="section-header">
+      <div class="section-num">Chapter 11</div>
+      <h2 class="section-title">Essential Shortcuts</h2>
+      <div class="section-title-bn">অবশ্যই জানতে হবে এই শর্টকাটগুলো</div>
+      <div class="section-divider"></div>
+    </div>
+
+    <div class="content-block">
+      <div class="block-title">⌨️ সাধারণ শর্টকাট</div>
+      <div class="shortcut-grid">
+        <div class="shortcut-item"><span class="shortcut-action">নতুন কম্পোজিশন</span><span class="shortcut-key"><span class="key">Ctrl</span><span class="key">N</span></span></div>
+        <div class="shortcut-item"><span class="shortcut-action">ফাইল সেভ</span><span class="shortcut-key"><span class="key">Ctrl</span><span class="key">S</span></span></div>
+        <div class="shortcut-item"><span class="shortcut-action">Undo</span><span class="shortcut-key"><span class="key">Ctrl</span><span class="key">Z</span></span></div>
+        <div class="shortcut-item"><span class="shortcut-action">Redo</span><span class="shortcut-key"><span class="key">Ctrl</span><span class="key">Shift</span><span class="key">Z</span></span></div>
+        <div class="shortcut-item"><span class="shortcut-action">Render Queue</span><span class="shortcut-key"><span class="key">Ctrl</span><span class="key">M</span></span></div>
+        <div class="shortcut-item"><span class="shortcut-action">Duplicate Layer</span><span class="shortcut-key"><span class="key">Ctrl</span><span class="key">D</span></span></div>
+        <div class="shortcut-item"><span class="shortcut-action">Split Layer</span><span class="shortcut-key"><span class="key">Ctrl</span><span class="key">Shift</span><span class="key">D</span></span></div>
+        <div class="shortcut-item"><span class="shortcut-action">Group (Pre-comp)</span><span class="shortcut-key"><span class="key">Ctrl</span><span class="key">Shift</span><span class="key">C</span></span></div>
+      </div>
+    </div>
+
+    <div class="content-block">
+      <div class="block-title">▶️ প্লেব্যাক ও নেভিগেশন</div>
+      <div class="shortcut-grid">
+        <div class="shortcut-item"><span class="shortcut-action">Play/Pause</span><span class="shortcut-key"><span class="key">Space</span></span></div>
+        <div class="shortcut-item"><span class="shortcut-action">RAM Preview</span><span class="shortcut-key"><span class="key">0</span> (NumPad)</span></div>
+        <div class="shortcut-item"><span class="shortcut-action">শুরুতে যান</span><span class="shortcut-key"><span class="key">Home</span></span></div>
+        <div class="shortcut-item"><span class="shortcut-action">শেষে যান</span><span class="shortcut-key"><span class="key">End</span></span></div>
+        <div class="shortcut-item"><span class="shortcut-action">১ ফ্রেম আগে</span><span class="shortcut-key"><span class="key">Page Up</span></span></div>
+        <div class="shortcut-item"><span class="shortcut-action">১ ফ্রেম পরে</span><span class="shortcut-key"><span class="key">Page Down</span></span></div>
+        <div class="shortcut-item"><span class="shortcut-action">Zoom In Comp</span><span class="shortcut-key"><span class="key">,</span></span></div>
+        <div class="shortcut-item"><span class="shortcut-action">Zoom Out Comp</span><span class="shortcut-key"><span class="key">.</span></span></div>
+      </div>
+    </div>
+
+    <div class="content-block">
+      <div class="block-title">🎬 Layer Properties Shortcuts</div>
+      <div class="shortcut-grid">
+        <div class="shortcut-item"><span class="shortcut-action">Position</span><span class="shortcut-key"><span class="key">P</span></span></div>
+        <div class="shortcut-item"><span class="shortcut-action">Scale</span><span class="shortcut-key"><span class="key">S</span></span></div>
+        <div class="shortcut-item"><span class="shortcut-action">Rotation</span><span class="shortcut-key"><span class="key">R</span></span></div>
+        <div class="shortcut-item"><span class="shortcut-action">Opacity (T)</span><span class="shortcut-key"><span class="key">T</span></span></div>
+        <div class="shortcut-item"><span class="shortcut-action">Anchor Point</span><span class="shortcut-key"><span class="key">A</span></span></div>
+        <div class="shortcut-item"><span class="shortcut-action">সব Properties</span><span class="shortcut-key"><span class="key">U</span></span></div>
+        <div class="shortcut-item"><span class="shortcut-action">Easy Ease</span><span class="shortcut-key"><span class="key">F9</span></span></div>
+        <div class="shortcut-item"><span class="shortcut-action">Keyframe যোগ</span><span class="shortcut-key"><span class="key">Alt</span><span class="key">Shift</span><span class="key">P/S/R</span></span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PROJECTS -->
+  <section class="section fade-in" id="projects">
+    <div class="section-header">
+      <div class="section-num">Chapter 12</div>
+      <h2 class="section-title">Practice Projects</h2>
+      <div class="section-title-bn">হাতে-কলমে প্র্যাকটিস প্রজেক্ট</div>
+      <div class="section-divider"></div>
+    </div>
+
+    <div class="progress-track">
+      <div class="pt-step">
+        <div class="pt-circle done">১</div>
+        <div class="pt-label">Bouncing Ball</div>
+      </div>
+      <div class="pt-line"></div>
+      <div class="pt-step">
+        <div class="pt-circle done">২</div>
+        <div class="pt-label">Text Reveal</div>
+      </div>
+      <div class="pt-line"></div>
+      <div class="pt-step">
+        <div class="pt-circle current">৩</div>
+        <div class="pt-label">Lower Third</div>
+      </div>
+      <div class="pt-line"></div>
+      <div class="pt-step">
+        <div class="pt-circle upcoming">৪</div>
+        <div class="pt-label">Logo Animation</div>
+      </div>
+      <div class="pt-line"></div>
+      <div class="pt-step">
+        <div class="pt-circle upcoming">৫</div>
+        <div class="pt-label">Kinetic Typography</div>
+      </div>
+    </div>
+
+    <div class="intro-grid">
+      <div class="intro-card">
+        <div class="card-icon">⚽</div>
+        <div class="card-title">Project 1: Bouncing Ball</div>
+        <div class="card-desc">একটি বৃত্ত তৈরি করুন। Position অ্যানিমেট করে বাউন্সিং ইফেক্ট তৈরি করুন। Easy Ease ও Squash-Stretch শিখুন।<br><br><strong style="color:var(--accent-gold)">সময়: ৩০ মিনিট</strong></div>
+      </div>
+      <div class="intro-card">
+        <div class="card-icon">📝</div>
+        <div class="card-title">Project 2: Text Reveal</div>
+        <div class="card-desc">আপনার নাম লিখুন। Opacity + Position Keyframe দিয়ে Slide-Up Reveal তৈরি করুন। Mask ব্যবহার করুন।<br><br><strong style="color:var(--accent-gold)">সময়: ৪৫ মিনিট</strong></div>
+      </div>
+      <div class="intro-card">
+        <div class="card-icon">📺</div>
+        <div class="card-title">Project 3: Lower Third</div>
+        <div class="card-desc">News-style নামের বার তৈরি করুন। Shape Layer + Text Animation কমবাইন করুন।<br><br><strong style="color:var(--accent-gold)">সময়: ১ ঘণ্টা</strong></div>
+      </div>
+      <div class="intro-card">
+        <div class="card-icon">⭐</div>
+        <div class="card-title">Project 4: Logo Animation</div>
+        <div class="card-desc">একটি লোগো ইম্পোর্ট করুন। Trim Paths + Scale ব্যবহার করে প্রফেশনাল Logo Sting তৈরি করুন।<br><br><strong style="color:var(--accent-gold)">সময়: ২ ঘণ্টা</strong></div>
+      </div>
+      <div class="intro-card">
+        <div class="card-icon">🎵</div>
+        <div class="card-title">Project 5: Kinetic Typography</div>
+        <div class="card-desc">একটি গানের লিরিক্স বা বাক্যকে শব্দে-শব্দে অ্যানিমেট করুন। Text Animator + Expression ব্যবহার করুন।<br><br><strong style="color:var(--accent-gold)">সময়: ৩ ঘণ্টা</strong></div>
+      </div>
+      <div class="intro-card">
+        <div class="card-icon">🎬</div>
+        <div class="card-title">Final Project: YouTube Intro</div>
+        <div class="card-desc">MH Academy-র জন্য একটি ১৫ সেকেন্ডের চ্যানেল ইন্ট্রো তৈরি করুন। সব শেখা স্কিল প্রয়োগ করুন।<br><br><strong style="color:var(--accent-red)">সময়: ৫+ ঘণ্টা</strong></div>
+      </div>
+    </div>
+
+    <div class="quiz-box">
+      <div class="quiz-title">⚡ সেশন পরীক্ষা</div>
+      <div class="quiz-q">প্রশ্ন: After Effects-এ ট্রান্সপারেন্ট ব্যাকগ্রাউন্ড সহ ভিডিও এক্সপোর্ট করতে কোন ফরম্যাট ব্যবহার করবেন?</div>
+      <div class="quiz-options">
+        <label class="quiz-opt"><input type="radio" name="q2" value="1"> H.264 (.mp4)</label>
+        <label class="quiz-opt"><input type="radio" name="q2" value="2"> ProRes 4444 বা PNG Sequence</label>
+        <label class="quiz-opt"><input type="radio" name="q2" value="3"> GIF</label>
+        <label class="quiz-opt"><input type="radio" name="q2" value="4"> MP3</label>
+      </div>
+      <button class="quiz-check" onclick="checkQ2()">উত্তর দেখুন</button>
+      <div class="quiz-result" id="r2"></div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="footer-logo gradient-text">MH Academy</div>
+    <div style="margin:0.5rem 0; color:var(--text-secondary); font-size:1rem;">অ্যাডোবি আফটার ইফেক্টস — মোশন গ্রাফিক্সের দুনিয়ায় হাতেখড়ি</div>
+    <div class="footer-text">পরিচালক: <strong style="color:var(--accent-blue)">Md. Monjurul Haque</strong> | সম্পূর্ণ বাংলায় শিখুন, দক্ষ হয়ে উঠুন</div>
+    <div style="margin-top:1.5rem; display:flex; gap:1rem; justify-content:center; flex-wrap:wrap;">
+      <span class="badge badge-blue">📚 ১২টি অধ্যায়</span>
+      <span class="badge badge-red">🎬 ৫টি প্রজেক্ট</span>
+      <span class="badge badge-gold">⭐ ১০০% বাংলা</span>
+    </div>
+    <div style="margin-top:2rem; font-size:0.75rem; color:var(--text-muted);">
+      © 2024 MH Academy — সর্বস্বত্ব সংরক্ষিত
+    </div>
+  </footer>
+
+</main>
+
+<script>
+  // Scroll Animation
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) entry.target.classList.add('visible');
+    });
+  }, { threshold: 0.1 });
+
+  document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+
+  // Active nav
+  const sections = document.querySelectorAll('section[id]');
+  const navItems = document.querySelectorAll('.nav-item');
+
+  window.addEventListener('scroll', () => {
+    let current = '';
+    sections.forEach(section => {
+      const sTop = section.offsetTop - 100;
+      if (pageYOffset >= sTop) current = section.getAttribute('id');
+    });
+    navItems.forEach(item => {
+      item.classList.remove('active');
+      if (item.getAttribute('href') === '#' + current) item.classList.add('active');
+    });
+  });
+
+  // Quiz 1
+  function checkQ1() {
+    const val = document.querySelector('input[name="q1"]:checked')?.value;
+    const r = document.getElementById('r1');
+    r.style.display = 'block';
+    if (val === '2') {
+      r.className = 'quiz-result correct';
+      r.innerHTML = '✅ সঠিক! দুটি Keyframe থাকলেই After Effects তাদের মাঝে অ্যানিমেশন তৈরি করতে পারে।';
+    } else if (!val) {
+      r.className = 'quiz-result wrong';
+      r.innerHTML = '⚠️ একটি উত্তর বেছে নিন।';
+    } else {
+      r.className = 'quiz-result wrong';
+      r.innerHTML = '❌ ভুল! সঠিক উত্তর: দুটি (২)। একটি Keyframe শুধু একটি মান রেকর্ড করে, অ্যানিমেশন হয় না।';
+    }
+  }
+
+  // Quiz 2
+  function checkQ2() {
+    const val = document.querySelector('input[name="q2"]:checked')?.value;
+    const r = document.getElementById('r2');
+    r.style.display = 'block';
+    if (val === '2') {
+      r.className = 'quiz-result correct';
+      r.innerHTML = '✅ সঠিক! ProRes 4444 বা PNG Sequence Alpha Channel সহ ট্রান্সপারেন্ট ব্যাকগ্রাউন্ড সাপোর্ট করে।';
+    } else if (!val) {
+      r.className = 'quiz-result wrong';
+      r.innerHTML = '⚠️ একটি উত্তর বেছে নিন।';
+    } else {
+      r.className = 'quiz-result wrong';
+      r.innerHTML = '❌ ভুল! H.264 বা GIF Alpha Channel সাপোর্ট করে না। ProRes 4444 বা PNG Sequence ব্যবহার করুন।';
+    }
+  }
+</script>
+</body>
+</html>
